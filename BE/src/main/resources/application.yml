@@ -7,7 +7,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-
     show-sql: true
 
   mail:
@@ -15,10 +14,20 @@ spring:
     port: 587
     username: vanbenha123@gmail.com
     password: kebe jcks whag txqb
-
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
+# ─── OAuth2 Google (Task 1.7) ────────────────────────────────
+# Tạo credentials tại: https://console.cloud.google.com/apis/credentials
+oauth2:
+  google:
+    client-id: YOUR_GOOGLE_CLIENT_ID
+    client-secret: YOUR_GOOGLE_CLIENT_SECRET
+    redirect-uri: http://localhost:8080/api/auth/oauth2/google/callback
+
+# ─── SQL bảng mới cần thêm vào fashion_shop.sql ──────────────
+# Xem file refresh_tokens_and_login_attempts.sql

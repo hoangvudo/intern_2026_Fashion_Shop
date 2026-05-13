@@ -1,7 +1,9 @@
 package com.fashion.backend.service;
 
 import com.fashion.backend.dto.LoginRequest;
+import com.fashion.backend.dto.LoginResponse;
 import com.fashion.backend.dto.RegisterRequest;
+import com.fashion.backend.dto.TokenRefreshResponse;
 import com.fashion.backend.entity.User;
 import com.fashion.backend.repository.UserRepository;
 import com.fashion.backend.utils.JwtUtils;
@@ -18,19 +20,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-
-    private final PasswordEncoder passwordEncoder;
-
-    private final EmailService emailService;
-
-    private final JwtUtils jwtUtils;
+    private final UserRepository      userRepository;
+    private final PasswordEncoder     passwordEncoder;
+    private final EmailService        emailService;
+    private final JwtUtils            jwtUtils;
+    private final RefreshTokenService refreshTokenService;
+    private final RateLimitService    rateLimitService;
 
     // =========================
     // CHECK EMAIL
     // =========================
     public boolean checkEmail(String email) {
-
         return userRepository.existsByEmail(email);
     }
 
@@ -39,79 +39,34 @@ public class AuthService {
     // =========================
     public void register(RegisterRequest request) {
 
-        // check confirm password
         if (!request.getPassword()
                 .equals(request.getConfirmPassword())) {
-
-            throw new RuntimeException(
-                    "Password not match"
-            );
+            throw new RuntimeException("Password not match");
         }
 
-        // check email existed
         if (userRepository.existsByEmail(request.getEmail())) {
-
-            throw new RuntimeException(
-                    "Email existed"
-            );
+            throw new RuntimeException("Email existed");
         }
 
-        // check phone existed
         if (userRepository.existsByPhone(request.getPhone())) {
-
-            throw new RuntimeException(
-                    "Phone existed"
-            );
+            throw new RuntimeException("Phone existed");
         }
 
-        // hash password
-        String hash =
-                passwordEncoder.encode(
-                        request.getPassword()
-                );
-
-        // generate verify token
-        String token =
-                UUID.randomUUID().toString();
+        String hash  = passwordEncoder.encode(request.getPassword());
+        String token = UUID.randomUUID().toString();
 
         User user = new User();
-
-        user.setFullName(
-                request.getFullName()
-        );
-
-        user.setEmail(
-                request.getEmail()
-        );
-
-        user.setPhone(
-                request.getPhone()
-        );
-
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
         user.setPassword(hash);
-
-        // verify email token
         user.setEmailToken(token);
-
-        user.setTokenExpiredAt(
-                LocalDateTime.now().plusHours(24)
-        );
-
-        // verify status
+        user.setTokenExpiredAt(LocalDateTime.now().plusHours(24));
         user.setIsVerified(false);
-
-        // default role
         user.setRole("USER");
+        user.setCreatedAt(LocalDateTime.now());
 
-        // created time
-        user.setCreatedAt(
-                LocalDateTime.now()
-        );
-
-        // save db
         userRepository.save(user);
-
-        // send mail
         emailService.sendVerifyEmail(user);
     }
 
@@ -123,69 +78,78 @@ public class AuthService {
         User user = userRepository
                 .findByEmailToken(token)
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Token không hợp lệ"
-                        ));
+                        new RuntimeException("Token không hợp lệ")
+                );
 
-        // check expired
         if (user.getTokenExpiredAt()
                 .isBefore(LocalDateTime.now())) {
-
-            throw new RuntimeException(
-                    "Token đã hết hạn"
-            );
+            throw new RuntimeException("Token đã hết hạn");
         }
 
-        // update verify
         user.setIsVerified(true);
-
         user.setEmailToken(null);
-
         user.setTokenExpiredAt(null);
-
         userRepository.save(user);
     }
 
     // =========================
-    // LOGIN
+    // LOGIN — Task 1.5 + 1.6 + 1.8
     // =========================
-    public String login(
-            LoginRequest request
-    ) {
+    public LoginResponse login(LoginRequest request, String clientIp) {
+
+        // 1.8 — Kiểm tra rate limit trước
+        rateLimitService.checkRateLimit(clientIp);
 
         User user = userRepository
                 .findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Email không tồn tại"
-                        ));
+                .orElseThrow(() -> {
+                    rateLimitService.recordFailure(clientIp);
+                    return new RuntimeException("Email không tồn tại");
+                });
 
-        // check verify
+        // Kiểm tra xác thực email
         if (!user.getIsVerified()) {
-
-            throw new RuntimeException(
-                    "Email chưa xác thực"
-            );
+            rateLimitService.recordFailure(clientIp);
+            throw new RuntimeException("Email chưa xác thực");
         }
 
-        // check password
-        boolean match =
-                passwordEncoder.matches(
-                        request.getPassword(),
-                        user.getPassword()
-                );
-
-        if (!match) {
-
-            throw new RuntimeException(
-                    "Sai mật khẩu"
-            );
+        // Kiểm tra mật khẩu
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+            rateLimitService.recordFailure(clientIp);
+            throw new RuntimeException("Sai mật khẩu");
         }
 
-        // generate jwt token
-        return jwtUtils.generateToken(
-                user.getEmail(),
-                user.getRole()
-        );
+        // Login thành công → reset attempt counter
+        rateLimitService.resetAttempts(clientIp);
+
+        // 1.6 — Tạo access token (15 phút) + refresh token (7 ngày)
+        String accessToken  = jwtUtils.generateAccessToken(user.getEmail(), user.getRole());
+        String refreshToken = refreshTokenService.createRefreshToken(user);
+
+        return new LoginResponse(accessToken, refreshToken);
+    }
+
+    // =========================
+    // REFRESH TOKEN — Task 1.6
+    // =========================
+    public TokenRefreshResponse refresh(String rawRefreshToken) {
+
+        // Xác thực + rotate token cũ
+        User user = refreshTokenService.validateAndRotate(rawRefreshToken);
+
+        // Phát token mới
+        String newAccessToken  = jwtUtils.generateAccessToken(user.getEmail(), user.getRole());
+        String newRefreshToken = refreshTokenService.createRefreshToken(user);
+
+        return new TokenRefreshResponse(newAccessToken, newRefreshToken);
+    }
+
+    // =========================
+    // LOGOUT — Thu hồi refresh token
+    // =========================
+    public void logout(String rawRefreshToken) {
+        refreshTokenService.revokeByRawToken(rawRefreshToken);
     }
 }

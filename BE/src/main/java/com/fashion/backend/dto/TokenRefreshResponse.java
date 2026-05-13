@@ -5,11 +5,11 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class LoginResponse {
+public class TokenRefreshResponse {
 
-    // JWT access token - hết hạn sau 15 phút
+    // Access token mới (15 phút)
     private String accessToken;
 
-    // Refresh token raw - hết hạn sau 7 ngày
+    // Refresh token mới (rotation - 7 ngày)
     private String refreshToken;
 }
