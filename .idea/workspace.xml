@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e732cd02-4904-4567-a8ba-1e060a01243c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/BackendApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/config/SecurityConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/AdminController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/AuthController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/OAuth2Controller.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/UserController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/CheckEmailResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/GoogleUserInfo.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/LoginRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/LoginResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/RegisterRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/TokenRefreshRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/TokenRefreshResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/entity/LoginAttempt.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/entity/RefreshToken.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/entity/User.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/exception/GlobalException.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/repository/LoginAttemptRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/repository/RefreshTokenRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/repository/UserRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/security/JwtFilter.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/AuthService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/EmailService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/OAuth2Service.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/RateLimitService$TooManyRequestsException.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/RateLimitService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/RefreshTokenService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/utils/JwtUtils.class" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="3DeZ7fKwUi1Aj6zBrDsbw3MXzcl" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.BackendApplication.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "BE/fix/Scrum-11-LOGIN",
+    "last_opened_file_path": "D:/Hoctap/JavaSpring/JavaSpring/intern_2026_Fashion_Shop"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e732cd02-4904-4567-a8ba-1e060a01243c" name="Changes" comment="" />
+      <created>1778644329363</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778644329363</updated>
+    </task>
+    <servers />
+  </component>
+</project>
