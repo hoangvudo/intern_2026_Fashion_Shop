@@ -59,7 +59,7 @@ public class AuthService {
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setPassword(hash);
+        user.setPasswordHash(hash);
         user.setEmailToken(token);
         user.setTokenExpiredAt(LocalDateTime.now().plusHours(24));
         user.setIsVerified(false);
@@ -116,7 +116,7 @@ public class AuthService {
         // Kiểm tra mật khẩu
         if (!passwordEncoder.matches(
                 request.getPassword(),
-                user.getPassword())) {
+                user.getPasswordHash())) {
             rateLimitService.recordFailure(clientIp);
             throw new RuntimeException("Sai mật khẩu");
         }

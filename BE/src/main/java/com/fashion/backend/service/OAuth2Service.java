@@ -176,7 +176,7 @@ public class OAuth2Service {
 
                     // OAuth2 user không cần password / phone
                     // Đặt password random để không đăng nhập bằng form được
-                    newUser.setPassword("[oauth2-google]");
+                    newUser.setPasswordHash("[oauth2-google]");
                     newUser.setPhone(null);
 
                     newUser.setIsVerified(true);   // Google đã xác thực email

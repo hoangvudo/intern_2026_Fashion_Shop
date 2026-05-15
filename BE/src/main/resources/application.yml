@@ -20,14 +20,21 @@ spring:
           auth: true
           starttls:
             enable: true
+# JWT
+jwt:
+  secret: fashionshop-super-secret-key-must-be-at-least-32-characters-long
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
 
-# ─── OAuth2 Google (Task 1.7) ────────────────────────────────
-# Tạo credentials tại: https://console.cloud.google.com/apis/credentials
+# Frontend URL (dùng trong link email reset mật khẩu)
+app:
+  frontend-url: http://localhost:3000
+
+# OAuth2 Google
 oauth2:
   google:
     client-id: YOUR_GOOGLE_CLIENT_ID
     client-secret: YOUR_GOOGLE_CLIENT_SECRET
     redirect-uri: http://localhost:8080/api/auth/oauth2/google/callback
 
-# ─── SQL bảng mới cần thêm vào fashion_shop.sql ──────────────
-# Xem file refresh_tokens_and_login_attempts.sql
+spring.application.name: backend

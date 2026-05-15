@@ -42,8 +42,13 @@ public class SecurityConfig {
 
                         // Public endpoints
                         .requestMatchers(
-                                "/api/auth/**",
-                                "/api/auth/oauth2/**"    // OAuth2 callback
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/refresh-token",
+                                "/api/auth/oauth2/**",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password/validate",
+                                "/api/auth/reset-password"
                         ).permitAll()
 
                         // Admin only
@@ -68,4 +73,6 @@ public class SecurityConfig {
     ) throws Exception {
         return config.getAuthenticationManager();
     }
+
+
 }
