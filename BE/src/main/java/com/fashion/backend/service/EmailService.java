@@ -21,16 +21,25 @@ public class EmailService {
 
     public void sendVerifyEmail(User user) {
         try {
-            String verifyLink = "http://localhost:8080/api/auth/verify?token="
-                    + user.getEmailToken();
+            String verifyLink = frontendUrl + "/verify-email?token=" + user.getEmailToken();
 
             String body = """
-                    <h2>Xác nhận tài khoản</h2>
-                    <p>Nhấn link bên dưới:</p>
-                    <a href="%s">Verify Email</a>
-                    """.formatted(verifyLink);
+                <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:24px">
+                  <h2 style="color:#333">Xác nhận tài khoản</h2>
+                  <p>Xin chào <strong>%s</strong>,</p>
+                  <p>Nhấn link bên dưới để xác thực email
+                     (link có hiệu lực trong <strong>24 giờ</strong>):</p>
+                  <div style="text-align:center;margin:28px 0">
+                    <a href="%s"
+                       style="background:#2563eb;color:#fff;padding:12px 28px;
+                              border-radius:6px;text-decoration:none;font-weight:bold">
+                      Xác nhận tài khoản
+                    </a>
+                  </div>
+                </div>
+                """.formatted(user.getFullName(), verifyLink);
 
-            sendHtml(user.getEmail(), "Verify Account", body);
+            sendHtml(user.getEmail(), "[Fashion Shop] Xác nhận tài khoản", body);
         } catch (Exception e) {
             throw new RuntimeException("Không gửi được email");
         }
