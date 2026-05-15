@@ -5,38 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e732cd02-4904-4567-a8ba-1e060a01243c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/BackendApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/config/SecurityConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/AdminController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/AuthController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/OAuth2Controller.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/controller/UserController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/CheckEmailResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/GoogleUserInfo.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/LoginRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/LoginResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/RegisterRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/TokenRefreshRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/dto/TokenRefreshResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/entity/LoginAttempt.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/entity/RefreshToken.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/entity/User.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/exception/GlobalException.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/repository/LoginAttemptRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/repository/RefreshTokenRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/repository/UserRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/security/JwtFilter.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/AuthService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/EmailService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/OAuth2Service.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/RateLimitService$TooManyRequestsException.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/RateLimitService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/service/RefreshTokenService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/target/classes/com/fashion/backend/utils/JwtUtils.class" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/mvnw" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/mvnw.cmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/BackendApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/controller/AdminController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/controller/AuthController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/controller/UserController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/dto/CheckEmailResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/dto/LoginRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/dto/LoginResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/dto/RegisterRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/entity/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/exception/GlobalException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/repository/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/security/JwtFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/service/AuthService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/service/EmailService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/java/com/fashion/backend/utils/JwtUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/resources/application.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/main/resources/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/BE/src/test/java/com/fashion/backend/BackendApplicationTests.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,16 +54,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.BackendApplication.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "BE/fix/Scrum-11-LOGIN",
-    "last_opened_file_path": "D:/Hoctap/JavaSpring/JavaSpring/intern_2026_Fashion_Shop"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.BackendApplication.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;BE/fix/Scrum-11-LOGIN&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Hoctap/JavaSpring/JavaSpring/intern_2026_Fashion_Shop&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="e732cd02-4904-4567-a8ba-1e060a01243c" name="Changes" comment="" />
