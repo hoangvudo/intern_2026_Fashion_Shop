@@ -9,62 +9,51 @@ const useAuthStore = create(
       refreshToken: null,
       isAuthenticated: false,
 
-      // Login action
       login: ({ user, accessToken, refreshToken }) => {
-        set({
-          user,
-          accessToken,
-          refreshToken,
-          isAuthenticated: true
-        })
+        set({ user, accessToken, refreshToken, isAuthenticated: true })
       },
 
-      // Logout action
       logout: () => {
-        // Call logout API with refresh token before clearing state
         const refreshToken = get().refreshToken
         if (refreshToken) {
-          // Fire and forget - don't wait for response
           import('../services/authService').then(module => {
             module.default.logout(refreshToken).catch(console.error)
           })
         }
-        
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false
-        })
+        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
       },
 
-      // Update access token (for refresh token flow)
-      updateAccessToken: (accessToken) => {
-        set({ accessToken })
+      // ✅ Thêm hàm này: dùng refreshToken để lấy accessToken mới
+      initializeAuth: async () => {
+        const { refreshToken, isAuthenticated } = get()
+        if (!refreshToken || !isAuthenticated) return
+
+        try {
+          const { default: authService } = await import('../services/authService')
+          const response = await authService.refreshToken(refreshToken)
+           set({ 
+             accessToken: response.accessToken,
+             user: response.user 
+           })
+        } catch (error) {
+          // refreshToken hết hạn → logout
+          set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+        }
       },
 
-      // Update user info
-      updateUser: (user) => {
-        set({ user })
-      },
-
-      // Get current user
+      updateAccessToken: (accessToken) => set({ accessToken }),
+      updateUser: (user) => set({ user }),
       getUser: () => get().user,
-
-      // Get access token
       getAccessToken: () => get().accessToken,
-
-      // Get refresh token
       getRefreshToken: () => get().refreshToken
     }),
     {
-      name: 'auth-storage', // localStorage key
+      name: 'auth-storage',
       partialize: (state) => ({
-        // Only persist these fields
         user: state.user,
+        accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated
-        // accessToken is NOT persisted for security (stored in memory only)
       })
     }
   )

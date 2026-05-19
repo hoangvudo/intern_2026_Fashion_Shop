@@ -45,10 +45,24 @@ function Register() {
     }
   }
 
-  const handleGoogleRegister = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google'
-  }
 
+const handleGoogleRegister = () => {
+  window.location.href =
+    "https://accounts.google.com/o/oauth2/v2/auth" +
+    "?client_id=779501654477-mm9vj298v1071gdgq42dr2nauaajnt20.apps.googleusercontent.com" +
+    "&redirect_uri=http://localhost:8080/api/auth/oauth2/google/callback" +
+    "&response_type=code" +
+    "&scope=openid%20email%20profile"
+}
+
+const handleFacebookRegister = () => {
+  window.location.href =
+    "https://www.facebook.com/v18.0/dialog/oauth" +
+    "?client_id=975365101857178" +
+    "&redirect_uri=http://localhost:8080/api/auth/oauth2/facebook/callback" +
+    "&response_type=code" +
+    "&scope=public_profile"
+}
   const getStrengthBars = () => {
     const bars = [false, false, false]
     if (passwordStrength.percentage >= 33) bars[0] = true
@@ -297,6 +311,7 @@ function Register() {
           </button>
           <button
             type="button"
+            onClick={handleFacebookRegister}
             className="flex items-center justify-center gap-xs h-12 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all font-label-bold text-on-surface"
           >
             <svg className="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">

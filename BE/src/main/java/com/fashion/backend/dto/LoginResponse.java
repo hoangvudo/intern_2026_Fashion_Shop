@@ -12,4 +12,7 @@ public class LoginResponse {
 
     // Refresh token raw - hết hạn sau 7 ngày
     private String refreshToken;
+
+    // User info
+    private UserDto user;
 }

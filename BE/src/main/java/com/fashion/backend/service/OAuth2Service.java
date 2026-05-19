@@ -1,7 +1,9 @@
 package com.fashion.backend.service;
 
 import com.fashion.backend.dto.GoogleUserInfo;
+import com.fashion.backend.dto.FacebookUserInfo;
 import com.fashion.backend.dto.LoginResponse;
+import com.fashion.backend.dto.UserDto;
 import com.fashion.backend.entity.User;
 import com.fashion.backend.repository.UserRepository;
 import com.fashion.backend.utils.JwtUtils;
@@ -19,36 +21,42 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/**
- * Task 1.7 — OAuth2 Google callback.
- *
- * Flow:
- *  1. Client gọi GET /api/auth/oauth2/google?code=...
- *  2. Server đổi code → access_token Google
- *  3. Dùng access_token lấy profile (email, name)
- *  4. Upsert user vào DB
- *  5. Phát JWT access + refresh token như login thường
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2Service {
 
-    // Cấu hình trong application.yml
+    // Google OAuth2
     @Value("${oauth2.google.client-id}")
-    private String clientId;
+    private String googleClientId;
 
     @Value("${oauth2.google.client-secret}")
-    private String clientSecret;
+    private String googleClientSecret;
 
     @Value("${oauth2.google.redirect-uri}")
-    private String redirectUri;
+    private String googleRedirectUri;
 
-    private static final String TOKEN_URL =
+    // Facebook OAuth2
+    @Value("${oauth2.facebook.client-id}")
+    private String facebookClientId;
+
+    @Value("${oauth2.facebook.client-secret}")
+    private String facebookClientSecret;
+
+    @Value("${oauth2.facebook.redirect-uri}")
+    private String facebookRedirectUri;
+
+    private static final String GOOGLE_TOKEN_URL =
             "https://oauth2.googleapis.com/token";
 
-    private static final String USERINFO_URL =
+    private static final String GOOGLE_USERINFO_URL =
             "https://www.googleapis.com/oauth2/v3/userinfo";
+
+    private static final String FACEBOOK_TOKEN_URL =
+            "https://graph.facebook.com/v18.0/oauth/access_token";
+
+    private static final String FACEBOOK_USERINFO_URL =
+            "https://graph.facebook.com/me";
 
     private final UserRepository      userRepository;
     private final JwtUtils            jwtUtils;
@@ -61,11 +69,8 @@ public class OAuth2Service {
     // =========================
     public LoginResponse handleGoogleCallback(String code) {
 
-        // Bước 1: Đổi authorization code → Google access token
-        String googleAccessToken = exchangeCodeForToken(code);
-
-        // Bước 2: Lấy thông tin user từ Google
-        GoogleUserInfo profile = fetchUserInfo(googleAccessToken);
+        String googleAccessToken = exchangeCodeForGoogleToken(code);
+        GoogleUserInfo profile = fetchGoogleUserInfo(googleAccessToken);
 
         if (!profile.isEmailVerified()) {
             throw new RuntimeException(
@@ -73,32 +78,58 @@ public class OAuth2Service {
             );
         }
 
-        // Bước 3: Upsert user (tìm hoặc tạo mới)
-        User user = upsertUser(profile);
+        User user = upsertGoogleUser(profile);
 
-        // Bước 4: Phát JWT giống như login thường
         String accessToken  = jwtUtils.generateAccessToken(
                 user.getEmail(), user.getRole()
         );
         String refreshToken = refreshTokenService.createRefreshToken(user);
 
-        log.info("[OAuth2] Login thành công: {}", user.getEmail());
+        log.info("[OAuth2] Google login thành công: {}", user.getEmail());
 
-        return new LoginResponse(accessToken, refreshToken);
+        UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+        return new LoginResponse(accessToken, refreshToken, userDto);
     }
 
     // =========================
-    // ĐỔI CODE → GOOGLE ACCESS TOKEN
+    // HANDLE FACEBOOK CALLBACK
     // =========================
-    private String exchangeCodeForToken(String code) {
+    public LoginResponse handleFacebookCallback(String code) {
+
+        String facebookAccessToken = exchangeCodeForFacebookToken(code);
+        FacebookUserInfo profile = fetchFacebookUserInfo(facebookAccessToken);
+
+        if (profile.getEmail() == null) {
+            throw new RuntimeException(
+                    "Không lấy được email từ Facebook. Vui lòng cấp quyền email trong cài đặt ứng dụng."
+            );
+        }
+
+        User user = upsertFacebookUser(profile);
+
+        String accessToken  = jwtUtils.generateAccessToken(
+                user.getEmail(), user.getRole()
+        );
+        String refreshToken = refreshTokenService.createRefreshToken(user);
+
+        log.info("[OAuth2] Facebook login thành công: {}", user.getEmail());
+
+        UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+        return new LoginResponse(accessToken, refreshToken, userDto);
+    }
+
+    // ========================
+    // GOOGLE HELPERS
+    // ========================
+    private String exchangeCodeForGoogleToken(String code) {
 
         MultiValueMap<String, String> params =
                 new LinkedMultiValueMap<>();
 
         params.add("code",          code);
-        params.add("client_id",     clientId);
-        params.add("client_secret", clientSecret);
-        params.add("redirect_uri",  redirectUri);
+        params.add("client_id",     googleClientId);
+        params.add("client_secret", googleClientSecret);
+        params.add("redirect_uri",  googleRedirectUri);
         params.add("grant_type",    "authorization_code");
 
         HttpHeaders headers = new HttpHeaders();
@@ -109,7 +140,7 @@ public class OAuth2Service {
 
         try {
             ResponseEntity<Map> response =
-                    restTemplate.postForEntity(TOKEN_URL, entity, Map.class);
+                    restTemplate.postForEntity(GOOGLE_TOKEN_URL, entity, Map.class);
 
             Map<?, ?> body = response.getBody();
 
@@ -122,15 +153,12 @@ public class OAuth2Service {
             return (String) body.get("access_token");
 
         } catch (Exception e) {
-            log.error("[OAuth2] Lỗi đổi code: {}", e.getMessage());
+            log.error("[OAuth2] Lỗi đổi code Google: {}", e.getMessage());
             throw new RuntimeException("Lỗi xác thực Google: " + e.getMessage());
         }
     }
 
-    // =========================
-    // LẤY PROFILE TỪ GOOGLE
-    // =========================
-    private GoogleUserInfo fetchUserInfo(String googleAccessToken) {
+    private GoogleUserInfo fetchGoogleUserInfo(String googleAccessToken) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(googleAccessToken);
@@ -140,7 +168,7 @@ public class OAuth2Service {
         try {
             ResponseEntity<GoogleUserInfo> response =
                     restTemplate.exchange(
-                            USERINFO_URL,
+                            GOOGLE_USERINFO_URL,
                             HttpMethod.GET,
                             entity,
                             GoogleUserInfo.class
@@ -155,16 +183,12 @@ public class OAuth2Service {
             return info;
 
         } catch (Exception e) {
-            log.error("[OAuth2] Lỗi lấy profile: {}", e.getMessage());
+            log.error("[OAuth2] Lỗi lấy profile Google: {}", e.getMessage());
             throw new RuntimeException("Lỗi lấy thông tin Google: " + e.getMessage());
         }
     }
 
-    // =========================
-    // UPSERT USER
-    // Tìm theo email → nếu chưa có thì tạo mới
-    // =========================
-    private User upsertUser(GoogleUserInfo profile) {
+    private User upsertGoogleUser(GoogleUserInfo profile) {
 
         return userRepository
                 .findByEmail(profile.getEmail())
@@ -173,19 +197,116 @@ public class OAuth2Service {
                     User newUser = new User();
                     newUser.setEmail(profile.getEmail());
                     newUser.setFullName(profile.getName());
-
-                    // OAuth2 user không cần password / phone
-                    // Đặt password random để không đăng nhập bằng form được
                     newUser.setPasswordHash("[oauth2-google]");
                     newUser.setPhone(null);
 
-                    newUser.setIsVerified(true);   // Google đã xác thực email
+                    newUser.setIsVerified(true);
                     newUser.setEmailToken(null);
                     newUser.setTokenExpiredAt(null);
                     newUser.setRole("USER");
                     newUser.setCreatedAt(LocalDateTime.now());
 
-                    log.info("[OAuth2] Tạo user mới: {}", profile.getEmail());
+                    log.info("[OAuth2] Tạo user mới (Google): {}", profile.getEmail());
+
+                    return userRepository.save(newUser);
+                });
+    }
+
+    // ========================
+    // FACEBOOK HELPERS
+    // ========================
+    private String exchangeCodeForFacebookToken(String code) {
+
+        MultiValueMap<String, String> params =
+                new LinkedMultiValueMap<>();
+
+        params.add("client_id",     facebookClientId);
+        params.add("client_secret", facebookClientSecret);
+        params.add("redirect_uri",  facebookRedirectUri);
+        params.add("code",          code);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> entity =
+                new HttpEntity<>(params, headers);
+
+        try {
+            ResponseEntity<Map> response =
+                    restTemplate.postForEntity(FACEBOOK_TOKEN_URL, entity, Map.class);
+
+            Map<?, ?> body = response.getBody();
+
+            if (body == null || !body.containsKey("access_token")) {
+                throw new RuntimeException(
+                        "Không lấy được token từ Facebook"
+                );
+            }
+
+            return (String) body.get("access_token");
+
+        } catch (Exception e) {
+            log.error("[OAuth2] Lỗi đổi code Facebook: {}", e.getMessage());
+            throw new RuntimeException("Lỗi xác thực Facebook: " + e.getMessage());
+        }
+    }
+
+    private FacebookUserInfo fetchFacebookUserInfo(String facebookAccessToken) {
+
+        String url = FACEBOOK_USERINFO_URL + 
+                "?fields=id,name,email,picture.width(200).height(200)" +
+                "&access_token=" + facebookAccessToken;
+
+        try {
+            ResponseEntity<FacebookUserInfo> response =
+                    restTemplate.getForEntity(url, FacebookUserInfo.class);
+
+            FacebookUserInfo info = response.getBody();
+
+            if (info == null) {
+                throw new RuntimeException("Không lấy được profile từ Facebook");
+            }
+
+            log.info("[OAuth2] Facebook profile: id={}, name={}, email={}", 
+                    info.getId(), info.getName(), info.getEmail());
+
+            // Nếu không có email (do scope), tạo email fake từ ID
+            if (info.getEmail() == null && info.getId() != null) {
+                info.setEmail(info.getId() + "@facebook.com");
+                log.warn("[OAuth2] Email null, dùng email fake: {}", info.getEmail());
+            }
+
+            if (info.getEmail() == null) {
+                throw new RuntimeException("Không lấy được email từ Facebook");
+            }
+
+            return info;
+
+        } catch (Exception e) {
+            log.error("[OAuth2] Lỗi lấy profile Facebook: {}", e.getMessage(), e);
+            throw new RuntimeException("Lỗi lấy thông tin Facebook: " + e.getMessage());
+        }
+    }
+
+    private User upsertFacebookUser(FacebookUserInfo profile) {
+
+        return userRepository
+                .findByEmail(profile.getEmail())
+                .orElseGet(() -> {
+
+                    User newUser = new User();
+                    newUser.setEmail(profile.getEmail());
+                    newUser.setFullName(profile.getName());
+                    newUser.setPasswordHash("[oauth2-facebook]");
+                    newUser.setPhone(null);
+
+                    newUser.setIsVerified(true);
+                    newUser.setEmailToken(null);
+                    newUser.setTokenExpiredAt(null);
+                    newUser.setRole("USER");
+                    newUser.setCreatedAt(LocalDateTime.now());
+
+                    log.info("[OAuth2] Tạo user mới (Facebook): {}", profile.getEmail());
 
                     return userRepository.save(newUser);
                 });

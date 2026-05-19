@@ -46,12 +46,12 @@ api.interceptors.response.use(
           refreshToken
         })
 
-        // Backend returns both accessToken and refreshToken (rotation)
-        const { accessToken, refreshToken: newRefreshToken } = response.data
+        // Backend returns both accessToken, refreshToken, and user (rotation)
+        const { accessToken, refreshToken: newRefreshToken, user } = response.data
 
-        // Update both tokens in Zustand store
+        // Update tokens and user in Zustand store
         useAuthStore.getState().login({
-          user: useAuthStore.getState().user,
+          user,
           accessToken,
           refreshToken: newRefreshToken
         })

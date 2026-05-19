@@ -12,4 +12,7 @@ public class TokenRefreshResponse {
 
     // Refresh token mới (rotation - 7 ngày)
     private String refreshToken;
+
+    // User info
+    private UserDto user;
 }

@@ -44,12 +44,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/auth/refresh-token",
+                                "/api/auth/refresh",
+                                "/api/auth/check-email",
                                 "/api/auth/oauth2/**",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password/validate",
                                 "/api/auth/reset-password",
-                                "/api/auth/verify"          // ← thêm dòng này
+                                "/api/auth/verify"
                         ).permitAll()
                         // Admin only
                         .requestMatchers(

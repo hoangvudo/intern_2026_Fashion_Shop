@@ -2,6 +2,7 @@ package com.fashion.backend.controller;
 
 import com.fashion.backend.dto.*;
 import com.fashion.backend.service.AuthService;
+import com.fashion.backend.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
     // ─── REGISTER ────────────────────────────────────────────
     @PostMapping("/register")
@@ -66,13 +69,26 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // ─── LOGOUT ───────────────────────────────────────────────
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(
-            @RequestBody TokenRefreshRequest request
-    ) {
-        authService.logout(request.getRefreshToken());
-        return ResponseEntity.ok("Đăng xuất thành công");
+    // ─── GET CURRENT USER ─────────────────────────────────────
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        // JwtFilter đã set userId vào request
+        String userEmail = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+        
+        com.fashion.backend.entity.User user = userRepository
+                .findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User không tìm thấy"));
+        
+        UserDto userDto = new UserDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getRole()
+        );
+        
+        return ResponseEntity.ok(userDto);
     }
 
     // ─── HELPER: lấy real IP kể cả sau proxy/nginx ────────────

@@ -1,11 +1,19 @@
+import { useEffect } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import TopNav from './components/TopNav'
 import Footer from './components/Footer'
 import AppRoutes from './routes/AppRoutes'
+import useAuthStore from './store/authStore'
 import './App.css'
 
 function App() {
+  const initializeAuth = useAuthStore(state => state.initializeAuth)
+
+  useEffect(() => {
+    initializeAuth() // ✅ tự refresh token khi reload trang
+  }, [])
+
   return (
     <Router>
       <div className="App min-h-screen flex flex-col bg-background">

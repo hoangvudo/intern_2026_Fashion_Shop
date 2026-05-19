@@ -2,28 +2,35 @@ package com.fashion.backend.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor
 public class JwtUtils {
-
-    // =========================
-    // SECRET KEY (nên đưa vào application.yml)
-    // =========================
-    private final String jwtSecret =
-            "abcdefghijklmnopqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
-
-    // Access token: 15 phút
-    private final long ACCESS_TOKEN_MS = 15 * 60 * 1000L;
 
     // Refresh token expiry: 7 ngày (dùng khi lưu DB)
     public static final long REFRESH_TOKEN_DAYS = 7;
+
+    // Đọc từ application.yml
+    @Value("${jwt.secret}")
+    private String jwtSecretString;
+
+    @Value("${jwt.access-token-expiration}")
+    private long accessTokenExpiration;
+
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = jwtSecretString.getBytes();
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // =========================
     // GENERATE ACCESS TOKEN (15 phút)
@@ -38,9 +45,9 @@ public class JwtUtils {
                 .claim("type", "access")
                 .setIssuedAt(new Date())
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + ACCESS_TOKEN_MS)
+                        new Date(System.currentTimeMillis() + accessTokenExpiration)
                 )
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -75,8 +82,9 @@ public class JwtUtils {
     // GET CLAIMS
     // =========================
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
@@ -86,8 +94,9 @@ public class JwtUtils {
     // =========================
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .setSigningKey(jwtSecret)
+            Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {

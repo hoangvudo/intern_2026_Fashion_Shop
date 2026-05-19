@@ -4,6 +4,7 @@ import com.fashion.backend.dto.LoginRequest;
 import com.fashion.backend.dto.LoginResponse;
 import com.fashion.backend.dto.RegisterRequest;
 import com.fashion.backend.dto.TokenRefreshResponse;
+import com.fashion.backend.dto.UserDto;
 import com.fashion.backend.entity.User;
 import com.fashion.backend.repository.UserRepository;
 import com.fashion.backend.utils.JwtUtils;
@@ -128,7 +129,8 @@ public class AuthService {
         String accessToken  = jwtUtils.generateAccessToken(user.getEmail(), user.getRole());
         String refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return new LoginResponse(accessToken, refreshToken);
+        UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+        return new LoginResponse(accessToken, refreshToken, userDto);
     }
 
     // =========================
@@ -143,7 +145,8 @@ public class AuthService {
         String newAccessToken  = jwtUtils.generateAccessToken(user.getEmail(), user.getRole());
         String newRefreshToken = refreshTokenService.createRefreshToken(user);
 
-        return new TokenRefreshResponse(newAccessToken, newRefreshToken);
+        UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+        return new TokenRefreshResponse(newAccessToken, newRefreshToken, userDto);
     }
 
     // =========================
