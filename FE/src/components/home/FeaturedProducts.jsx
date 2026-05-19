@@ -1,36 +1,61 @@
-function FeaturedProducts() {
-  const products = [
-    { name: "Áo Sơ Mi Oxford", price: 1290000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.8 },
-    { name: "Quần Chinos", price: 990000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.6 },
-    { name: "Áo Polo Premium", price: 790000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.9 },
-    { name: "Giày Loafer", price: 1890000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.7 },
-    { name: "Thắt Lưng Da", price: 590000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.5 },
-    { name: "Ví Da Cao Cấp", price: 890000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.8 },
-    { name: "Túi Xách Công Sở", price: 1590000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.6 },
-    { name: "Kính Mát Thời Trang", price: 690000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD54VAZUf5xQ2FzQ-9nLanRdoVOD_Jiw80PXrrFaIU--1UlP9K2qqeIYp9VwO4hN8iUAd1ubjSIq4b1w_Xj4PSZaMFrWmaE1oqfYL7Q8-Dstrr6uvqhJni3lda6hzye6RglhOQipZOTkCaU5MMY7uI97dLM1W8i4B0Qo7tuJOzcpB8Ty3uryNmnVfuegYjzxuETNYsMaD8EpSvi9LS9i-aBpG2jKaii27EEH2AeBU4dHZDB-SV_hw3As15JQHT7Zg3NLAvbzj4Aeno", rating: 4.7 }
-  ]
+const products = [
+  {
+    category: 'So mi',
+    name: 'Ao So Mi Lua Trang',
+    price: 950000,
+    image: 'https://images.unsplash.com/photo-1598032895397-b9472444bf93?auto=format&fit=crop&w=900&q=80',
+  },
+  {
+    category: 'Quan',
+    name: 'Quan Tay Slim Fit',
+    price: 1100000,
+    image: 'https://images.unsplash.com/photo-1506629905607-d405b7a30db9?auto=format&fit=crop&w=900&q=80',
+  },
+  {
+    category: 'Vay',
+    name: 'Vay Midi Dang A',
+    price: 1450000,
+    image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=900&q=80',
+  },
+  {
+    category: 'Ao khoac',
+    name: 'Ao Blazer Cong So',
+    price: 1850000,
+    image: 'https://images.unsplash.com/photo-1548624313-0396c75e4b1a?auto=format&fit=crop&w=900&q=80',
+  },
+]
 
+const formatPrice = (price) => `${price.toLocaleString('vi-VN')}d`
+
+function FeaturedProducts() {
   return (
-    <section className="py-xl px-lg max-w-container-max mx-auto">
-      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-lg">Sản Phẩm Nổi Bật</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
-        {products.map((product, index) => (
-          <div key={index} className="bg-surface rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
-            <div className="relative aspect-square overflow-hidden">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-              <button className="absolute top-sm right-sm bg-surface/80 backdrop-blur-sm p-xs rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="material-symbols-outlined text-primary">favorite_border</span>
-              </button>
+    <section className="mx-auto max-w-[1280px] px-5 py-16 md:px-10">
+      <h2 className="mb-10 text-left font-[Manrope] text-[28px] font-semibold leading-9 text-[#041B3C]">
+        San pham noi bat
+      </h2>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {products.map((product) => (
+          <article
+            key={product.name}
+            className="rounded-xl border border-[#C3C6D6] bg-[#F9F9FF] p-4 text-left transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="aspect-[4/5] overflow-hidden rounded-lg bg-[#E8EDFF]">
+              <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
             </div>
-            <div className="p-md">
-              <h3 className="font-body-md text-on-surface mb-xs">{product.name}</h3>
-              <div className="flex items-center gap-xs mb-xs">
-                <span className="material-symbols-outlined text-sm text-tertiary">star</span>
-                <span className="font-body-sm text-on-surface-variant">{product.rating}</span>
-              </div>
-              <span className="font-price-lg text-primary">{product.price.toLocaleString('vi-VN')}₫</span>
-            </div>
-          </div>
+            <p className="mt-4 font-['Hanken_Grotesk'] text-sm text-[#434654]">
+              {product.category}
+            </p>
+            <h3 className="mt-1 min-h-[56px] font-[Manrope] text-xl font-semibold leading-7 text-[#041B3C]">
+              {product.name}
+            </h3>
+            <p className="mt-2 font-['Hanken_Grotesk'] text-[22px] font-bold leading-7 text-[#003D9B]">
+              {formatPrice(product.price)}
+            </p>
+            <button className="mt-6 w-full rounded-lg border border-[#003D9B] bg-transparent px-4 py-2 font-['Hanken_Grotesk'] text-base text-[#003D9B] transition hover:bg-[#003D9B] hover:text-white">
+              Xem chi tiet
+            </button>
+          </article>
         ))}
       </div>
     </section>
