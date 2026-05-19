@@ -48,9 +48,9 @@ public class SecurityConfig {
                                 "/api/auth/oauth2/**",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password/validate",
-                                "/api/auth/reset-password"
+                                "/api/auth/reset-password",
+                                "/api/auth/verify"          // ← thêm dòng này
                         ).permitAll()
-
                         // Admin only
                         .requestMatchers(
                                 "/api/admin/**"

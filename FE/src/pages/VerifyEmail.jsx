@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import authService from '../services/authService'
 
@@ -7,7 +8,7 @@ function VerifyEmail() {
   const navigate = useNavigate()
   const [status, setStatus] = useState('verifying') // verifying, success, error
   const [message, setMessage] = useState('')
-
+ const hasVerified = useRef(false) 
   useEffect(() => {
     const token = searchParams.get('token')
     
@@ -16,7 +17,8 @@ function VerifyEmail() {
       setMessage('Token xác thực không hợp lệ')
       return
     }
-
+ if (hasVerified.current) return  
+    hasVerified.current = true   
     // Call verify API
     const verifyToken = async () => {
       try {
