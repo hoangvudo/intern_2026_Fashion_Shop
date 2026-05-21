@@ -22,6 +22,7 @@ function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
     }
@@ -29,31 +30,39 @@ function Login() {
 
   const validateForm = () => {
     const newErrors = {}
+    
     if (!formData.email) {
       newErrors.email = 'Email không được để trống'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email không hợp lệ'
     }
+    
     if (!formData.password) {
       newErrors.password = 'Mật khẩu không được để trống'
     } else if (formData.password.length < 6) {
       newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
     }
+    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
     if (!validateForm()) return
+    
     setIsLoading(true)
     try {
       const response = await authService.login(formData.email, formData.password)
-      storeLogin({
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        user: response.user,
+      
+      // Store tokens and user info - authStore.login expects an object
+      storeLogin({ 
+        accessToken: response.accessToken, 
+        refreshToken: response.refreshToken, 
+        user: response.user 
       })
+      
       toast.success('Đăng nhập thành công!')
       navigate('/')
     } catch (error) {
@@ -66,17 +75,16 @@ function Login() {
   const handleGoogleLogin = () => {
     window.location.href =
       'https://accounts.google.com/o/oauth2/v2/auth' +
-      '?client_id=779501654477-oemekgq0tenrh073hlra1sbngj739qgd.apps.googleusercontent.com' +
+      '?client_id=1026429745383-sl1pr3kvfhtvk7fan8627ig45m2v0etf.apps.googleusercontent.com' +
       '&redirect_uri=http://localhost:8080/api/auth/oauth2/google/callback' +
       '&response_type=code' +
       '&scope=openid email profile'
   }
 
   const handleFacebookLogin = () => {
-    // ✅ Dùng đúng client_id khớp với application.yaml
     window.location.href =
       'https://www.facebook.com/v18.0/dialog/oauth' +
-      '?client_id=975365101857178' +
+      '?client_id=1766654577638082' +
       '&redirect_uri=http://localhost:8080/api/auth/oauth2/facebook/callback' +
       '&response_type=code' +
       '&scope=public_profile,email'
@@ -84,6 +92,7 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black py-12 px-4">
+      {/* Back to Home Button */}
       <Link to="/">
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -101,7 +110,9 @@ function Login() {
         transition={{ duration: 0.5 }}
         className="max-w-md w-full"
       >
+        {/* Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          {/* Header */}
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
@@ -119,6 +130,7 @@ function Login() {
             </p>
           </div>
 
+          {/* Social Login */}
           <div className="space-y-3 mb-6">
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -145,6 +157,7 @@ function Login() {
             </motion.button>
           </div>
 
+          {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -156,7 +169,9 @@ function Login() {
             </div>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email
@@ -169,18 +184,25 @@ function Login() {
                   value={formData.email}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.email ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.email
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="your@email.com"
                 />
               </div>
               {errors.email && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
                   {errors.email}
                 </motion.p>
               )}
             </div>
 
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Mật khẩu
@@ -193,7 +215,9 @@ function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.password ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.password
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="••••••••"
                 />
@@ -206,12 +230,17 @@ function Login() {
                 </button>
               </div>
               {errors.password && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
                   {errors.password}
                 </motion.p>
               )}
             </div>
 
+            {/* Forgot Password */}
             <div className="text-right">
               <Link
                 to="/forgot-password"
@@ -221,6 +250,7 @@ function Login() {
               </Link>
             </div>
 
+            {/* Submit Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -245,9 +275,13 @@ function Login() {
             </motion.button>
           </form>
 
+          {/* Register Link */}
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
             Chưa có tài khoản?{' '}
-            <Link to="/register" className="font-semibold text-black dark:text-white hover:underline">
+            <Link
+              to="/register"
+              className="font-semibold text-black dark:text-white hover:underline"
+            >
               Đăng ký ngay
             </Link>
           </p>

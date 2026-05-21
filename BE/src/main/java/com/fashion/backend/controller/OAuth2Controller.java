@@ -8,7 +8,22 @@ import java.io.IOException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
-
+/**
+ * Task 1.7 — OAuth2 callback endpoints.
+ *
+ * Luồng phía client:
+ *  1. Redirect user đến:
+ *     https://accounts.google.com/o/oauth2/auth
+ *       ?client_id=YOUR_CLIENT_ID
+ *       &redirect_uri=http://localhost:8080/api/auth/oauth2/google/callback
+ *       &response_type=code
+ *       &scope=openid email profile
+ *
+ *  2. Google redirect về:
+ *     GET /api/auth/oauth2/google/callback?code=...
+ *
+ *  3. Server trả về { accessToken, refreshToken }
+ */
 @RestController
 @RequestMapping("/api/auth/oauth2")
 @RequiredArgsConstructor

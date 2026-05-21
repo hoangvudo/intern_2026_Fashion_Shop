@@ -1,59 +1,67 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiSun, FiMoon } from 'react-icons/fi'
-import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
-import { IoChevronDown } from 'react-icons/io5'
-import toast from 'react-hot-toast'
-import useAuthStore from '../store/authStore'
-import useCartStore from '../store/cartStore'
-import ProfileModal from './ProfileModal'
-import SearchModal from './SearchModal'
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiSearch,
+  FiShoppingCart,
+  FiUser,
+  FiMenu,
+  FiX,
+  FiSun,
+  FiMoon,
+} from "react-icons/fi";
+import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa";
+import { IoChevronDown } from "react-icons/io5";
+import toast from "react-hot-toast";
+import useAuthStore from "../store/authStore";
+import useCartStore from "../store/cartStore";
+import ProfileModal from "./ProfileModal";
+import SearchModal from "./SearchModal";
 
 function TopNav() {
-  const navigate = useNavigate()
-  const { isAuthenticated, logout, user } = useAuthStore()
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const [showProfileModal, setShowProfileModal] = useState(false)
-  const [showSearchModal, setShowSearchModal] = useState(false)
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const navigate = useNavigate();
+  const { isAuthenticated, logout, user } = useAuthStore();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [darkMode, setDarkMode] = useState(
-    localStorage.getItem('theme') === 'dark'
-  )
-  const [scrolled, setScrolled] = useState(false)
+    localStorage.getItem("theme") === "dark",
+  );
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
-  }, [darkMode])
+  }, [darkMode]);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = async () => {
-    setIsLoggingOut(true)
+    setIsLoggingOut(true);
     try {
-      logout()
-      toast.success('Đăng xuất thành công!')
-      setShowUserMenu(false)
-      navigate('/login')
+      logout();
+      toast.success("Đăng xuất thành công!");
+      setShowUserMenu(false);
+      navigate("/login");
     } catch (error) {
-      toast.error('Đăng xuất thất bại')
+      toast.error("Đăng xuất thất bại");
     } finally {
-      setIsLoggingOut(false)
+      setIsLoggingOut(false);
     }
-  }
+  };
 
   return (
     <>
@@ -110,7 +118,7 @@ function TopNav() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         className={`bg-white dark:bg-gray-800 sticky top-0 z-50 transition-shadow ${
-          scrolled ? 'shadow-md' : ''
+          scrolled ? "shadow-md" : ""
         }`}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -122,7 +130,9 @@ function TopNav() {
                 transition={{ duration: 0.5 }}
                 className="w-10 h-10 bg-black dark:bg-white rounded-sm flex items-center justify-center"
               >
-                <span className="text-white dark:text-black font-bold text-2xl">Z</span>
+                <span className="text-white dark:text-black font-bold text-2xl">
+                  Z
+                </span>
               </motion.div>
               <span className="font-bold text-xl text-black dark:text-white tracking-wider">
                 YRO
@@ -138,7 +148,7 @@ function TopNav() {
                 Trang chủ
               </Link>
               <Link
-                to="/stories"
+                to="/story"
                 className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
               >
                 Câu chuyện
@@ -200,7 +210,11 @@ function TopNav() {
                 >
                   <FiShoppingCart size={20} />
                 </motion.button>
-                  <span className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">{useCartStore(state => state.items.reduce((s,i)=>s+i.qty,0))}</span>
+                <span className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {useCartStore((state) =>
+                    state.items.reduce((s, i) => s + i.qty, 0),
+                  )}
+                </span>
               </Link>
 
               {/* User Menu */}
@@ -225,7 +239,10 @@ function TopNav() {
                       >
                         <button
                           className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full text-left"
-                          onClick={() => { setShowUserMenu(false); setShowProfileModal(true) }}
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            setShowProfileModal(true);
+                          }}
                         >
                           <FiUser size={18} />
                           <span className="text-sm">Tài khoản</span>
@@ -237,7 +254,7 @@ function TopNav() {
                           className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left disabled:opacity-50"
                         >
                           <span className="text-sm text-red-600">
-                            {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
+                            {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
                           </span>
                         </button>
                       </motion.div>
@@ -274,7 +291,7 @@ function TopNav() {
           {showMobileMenu && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
+              animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               className="lg:hidden border-t border-gray-200 dark:border-gray-700 overflow-hidden"
             >
@@ -305,10 +322,16 @@ function TopNav() {
           )}
         </AnimatePresence>
       </motion.header>
-      <ProfileModal open={showProfileModal} onClose={() => setShowProfileModal(false)} />
-      <SearchModal open={showSearchModal} onClose={() => setShowSearchModal(false)} />
+      <ProfileModal
+        open={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
+      <SearchModal
+        open={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
     </>
-  )
+  );
 }
 
-export default TopNav
+export default TopNav;

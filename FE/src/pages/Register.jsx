@@ -36,9 +36,13 @@ function Register() {
     const { name, value, type, checked } = e.target
     const nextValue = type === 'checkbox' ? checked : value
     setFormData((prev) => ({ ...prev, [name]: nextValue }))
+    
+    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
     }
+
+    // Check password strength
     if (name === 'password') {
       checkPasswordStrength(value)
     }
@@ -52,25 +56,30 @@ function Register() {
       number: /[0-9]/.test(password),
       special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     }
+    
     const score = Object.values(checks).filter(Boolean).length
     setPasswordStrength({ score, checks })
   }
 
   const validateForm = () => {
     const newErrors = {}
+    
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Họ tên không được để trống'
     } else if (formData.fullName.trim().length < 2) {
       newErrors.fullName = 'Họ tên phải có ít nhất 2 ký tự'
     }
+    
     if (!formData.email) {
       newErrors.email = 'Email không được để trống'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email không hợp lệ'
     }
+    
     if (formData.phone && !/^[0-9]{10,11}$/.test(formData.phone)) {
       newErrors.phone = 'Số điện thoại không hợp lệ (10-11 số)'
     }
+    
     if (!formData.password) {
       newErrors.password = 'Mật khẩu không được để trống'
     } else if (formData.password.length < 8) {
@@ -78,21 +87,26 @@ function Register() {
     } else if (passwordStrength.score < 3) {
       newErrors.password = 'Mật khẩu chưa đủ mạnh'
     }
+    
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu'
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp'
     }
+
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = 'Bạn phải đồng ý với điều khoản và điều kiện'
     }
+    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
     if (!validateForm()) return
+    
     setIsLoading(true)
     try {
       const userData = {
@@ -103,9 +117,11 @@ function Register() {
         confirmPassword: formData.confirmPassword,
         agreeToTerms: formData.agreeToTerms,
       }
+      
       await authService.register(userData)
+      
       toast.success('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.')
-      navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`)
+      navigate('/login')
     } catch (error) {
       toast.error(error.message || 'Đăng ký thất bại')
     } finally {
@@ -116,17 +132,16 @@ function Register() {
   const handleGoogleRegister = () => {
     window.location.href =
       'https://accounts.google.com/o/oauth2/v2/auth' +
-      '?client_id=779501654477-oemekgq0tenrh073hlra1sbngj739qgd.apps.googleusercontent.com' +
+      '?client_id=1026429745383-sl1pr3kvfhtvk7fan8627ig45m2v0etf.apps.googleusercontent.com' +
       '&redirect_uri=http://localhost:8080/api/auth/oauth2/google/callback' +
       '&response_type=code' +
       '&scope=openid email profile'
   }
 
   const handleFacebookRegister = () => {
-    // ✅ Dùng đúng client_id khớp với application.yaml
     window.location.href =
       'https://www.facebook.com/v18.0/dialog/oauth' +
-      '?client_id=975365101857178' +
+      '?client_id=1766654577638082' +
       '&redirect_uri=http://localhost:8080/api/auth/oauth2/facebook/callback' +
       '&response_type=code' +
       '&scope=public_profile,email'
@@ -154,7 +169,9 @@ function Register() {
         transition={{ duration: 0.5 }}
         className="max-w-md w-full"
       >
+        {/* Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          {/* Header */}
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
@@ -172,6 +189,7 @@ function Register() {
             </p>
           </div>
 
+          {/* Social Register */}
           <div className="space-y-3 mb-6">
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -198,6 +216,7 @@ function Register() {
             </motion.button>
           </div>
 
+          {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -209,10 +228,13 @@ function Register() {
             </div>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Họ và tên</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Họ và tên
+              </label>
               <div className="relative">
                 <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -221,19 +243,29 @@ function Register() {
                   value={formData.fullName}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.fullName
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="Nguyễn Văn A"
                 />
               </div>
               {errors.fullName && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">{errors.fullName}</motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
+                  {errors.fullName}
+                </motion.p>
               )}
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email
+              </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -242,19 +274,29 @@ function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.email ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.email
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="your@email.com"
                 />
               </div>
               {errors.email && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">{errors.email}</motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
+                  {errors.email}
+                </motion.p>
               )}
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Số điện thoại (tùy chọn)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Số điện thoại (tùy chọn)
+              </label>
               <div className="relative">
                 <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -263,19 +305,29 @@ function Register() {
                   value={formData.phone}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.phone ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.phone
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="0123456789"
                 />
               </div>
               {errors.phone && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">{errors.phone}</motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
+                  {errors.phone}
+                </motion.p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mật khẩu</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Mật khẩu
+              </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -284,15 +336,22 @@ function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.password ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.password
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="••••••••"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
                   {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
                 </button>
               </div>
-
+              
+              {/* Password Strength */}
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center gap-2 mb-2">
@@ -303,32 +362,48 @@ function Register() {
                         className={`h-full ${getStrengthColor()} transition-all`}
                       />
                     </div>
-                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{getStrengthText()}</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                      {getStrengthText()}
+                    </span>
                   </div>
+                  
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className={`flex items-center gap-1 ${passwordStrength.checks.length ? 'text-green-600' : 'text-gray-400'}`}>
-                      {passwordStrength.checks.length ? <FiCheck size={14} /> : <FiX size={14} />}<span>8+ ký tự</span>
+                      {passwordStrength.checks.length ? <FiCheck size={14} /> : <FiX size={14} />}
+                      <span>8+ ký tự</span>
                     </div>
                     <div className={`flex items-center gap-1 ${passwordStrength.checks.uppercase ? 'text-green-600' : 'text-gray-400'}`}>
-                      {passwordStrength.checks.uppercase ? <FiCheck size={14} /> : <FiX size={14} />}<span>Chữ hoa</span>
+                      {passwordStrength.checks.uppercase ? <FiCheck size={14} /> : <FiX size={14} />}
+                      <span>Chữ hoa</span>
                     </div>
                     <div className={`flex items-center gap-1 ${passwordStrength.checks.lowercase ? 'text-green-600' : 'text-gray-400'}`}>
-                      {passwordStrength.checks.lowercase ? <FiCheck size={14} /> : <FiX size={14} />}<span>Chữ thường</span>
+                      {passwordStrength.checks.lowercase ? <FiCheck size={14} /> : <FiX size={14} />}
+                      <span>Chữ thường</span>
                     </div>
                     <div className={`flex items-center gap-1 ${passwordStrength.checks.number ? 'text-green-600' : 'text-gray-400'}`}>
-                      {passwordStrength.checks.number ? <FiCheck size={14} /> : <FiX size={14} />}<span>Số</span>
+                      {passwordStrength.checks.number ? <FiCheck size={14} /> : <FiX size={14} />}
+                      <span>Số</span>
                     </div>
                   </div>
                 </div>
               )}
+              
               {errors.password && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">{errors.password}</motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
+                  {errors.password}
+                </motion.p>
               )}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Xác nhận mật khẩu</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Xác nhận mật khẩu
+              </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
@@ -337,16 +412,28 @@ function Register() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                    errors.confirmPassword
+                      ? 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
                   } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
                   placeholder="••••••••"
                 />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
                   {showConfirmPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">{errors.confirmPassword}</motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
+                  {errors.confirmPassword}
+                </motion.p>
               )}
             </div>
 
@@ -362,16 +449,27 @@ function Register() {
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400 leading-6">
                   Tôi đồng ý với{' '}
-                  <a href="#" className="font-medium text-black dark:text-white hover:underline">điều khoản sử dụng</a>{' '}
+                  <a href="#" className="font-medium text-black dark:text-white hover:underline">
+                    điều khoản sử dụng
+                  </a>{' '}
                   và{' '}
-                  <a href="#" className="font-medium text-black dark:text-white hover:underline">chính sách bảo mật</a>
+                  <a href="#" className="font-medium text-black dark:text-white hover:underline">
+                    chính sách bảo mật
+                  </a>
                 </span>
               </label>
               {errors.agreeToTerms && (
-                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">{errors.agreeToTerms}</motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-red-500 text-sm mt-1"
+                >
+                  {errors.agreeToTerms}
+                </motion.p>
               )}
             </div>
 
+            {/* Submit Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -388,14 +486,21 @@ function Register() {
                   Đang đăng ký...
                 </>
               ) : (
-                <>Đăng ký <FiArrowRight size={20} /></>
+                <>
+                  Đăng ký
+                  <FiArrowRight size={20} />
+                </>
               )}
             </motion.button>
           </form>
 
+          {/* Login Link */}
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
             Đã có tài khoản?{' '}
-            <Link to="/login" className="font-semibold text-black dark:text-white hover:underline">
+            <Link
+              to="/login"
+              className="font-semibold text-black dark:text-white hover:underline"
+            >
               Đăng nhập ngay
             </Link>
           </p>

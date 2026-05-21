@@ -21,6 +21,7 @@ spring:
           starttls:
             enable: true
 
+
 jwt:
   secret: fashionshop-super-secret-key-must-be-at-least-32-characters-long
   access-token-expiration: 900000
@@ -29,6 +30,7 @@ jwt:
 app:
   frontend-url: http://localhost:3000
 
+# ✅ Giữ nguyên block này cho @Value trong OAuth2Service
 # ✅ Giữ nguyên block này cho @Value trong OAuth2Service
 oauth2:
   google: 

@@ -27,3 +27,5 @@ FE.zip
 .env
 .env.local
 .env.production
+
+echo "BE/src/main/resources/application.yml" >> .gitignore
