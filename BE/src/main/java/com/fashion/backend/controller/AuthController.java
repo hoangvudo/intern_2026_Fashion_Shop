@@ -7,12 +7,14 @@ import com.fashion.backend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -44,7 +46,9 @@ public class AuthController {
     public ResponseEntity<?> verifyEmail(
             @RequestParam String token
     ) {
+        log.info("[Controller] POST /api/auth/verify received with token: {}", token);
         authService.verifyEmail(token);
+        log.info("[Controller] Email verified successfully");
         return ResponseEntity.ok("Xác thực email thành công");
     }
 

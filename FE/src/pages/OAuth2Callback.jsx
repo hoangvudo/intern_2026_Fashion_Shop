@@ -1,47 +1,38 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import useAuthStore from '../store/authStore'
 
 function OAuth2Callback() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { login } = useAuthStore()
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const params = new URLSearchParams(window.location.search)
-      const accessToken = params.get('accessToken')
-      const refreshToken = params.get('refreshToken')
+    const accessToken = searchParams.get('accessToken')
+    const refreshToken = searchParams.get('refreshToken')
 
-      if (!accessToken) {
-        navigate('/login')
-        return
-      }
-
-      try {
-        // Lấy user info từ API dùng accessToken
-        const userResponse = await axios.get('/api/auth/me', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        })
-        const user = userResponse.data
-
-        // Lưu vào store
-        login({ user, accessToken, refreshToken })
-        navigate('/')
-      } catch (error) {
-        console.error('OAuth2Callback error:', error)
-        navigate('/login')
-      }
+    if (accessToken && refreshToken) {
+      // Store tokens - authStore.login expects an object
+      login({ 
+        accessToken, 
+        refreshToken, 
+        user: null // User info will be fetched later if needed
+      })
+      toast.success('Đăng nhập thành công!')
+      navigate('/')
+    } else {
+      toast.error('Đăng nhập thất bại')
+      navigate('/login')
     }
-
-    handleCallback()
-  }, [])
+  }, [searchParams, login, navigate])
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <p>Đang đăng nhập...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">Đang xử lý đăng nhập...</p>
+      </div>
     </div>
   )
 }

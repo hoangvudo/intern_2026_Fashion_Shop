@@ -132,6 +132,14 @@ public class OAuth2Service {
         params.add("redirect_uri",  googleRedirectUri);
         params.add("grant_type",    "authorization_code");
 
+        // Log chi tiết request parameters
+        log.debug("[OAuth2] Google Token Request:");
+        log.debug("  - code: {}", code);
+        log.debug("  - client_id: {}", googleClientId);
+        log.debug("  - client_secret: {}***", googleClientSecret.substring(0, 10));
+        log.debug("  - redirect_uri: {}", googleRedirectUri);
+        log.debug("  - grant_type: authorization_code");
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -143,6 +151,7 @@ public class OAuth2Service {
                     restTemplate.postForEntity(GOOGLE_TOKEN_URL, entity, Map.class);
 
             Map<?, ?> body = response.getBody();
+            log.debug("[OAuth2] Google Token Response: status={}, body={}", response.getStatusCode(), body);
 
             if (body == null || !body.containsKey("access_token")) {
                 throw new RuntimeException(
@@ -153,7 +162,7 @@ public class OAuth2Service {
             return (String) body.get("access_token");
 
         } catch (Exception e) {
-            log.error("[OAuth2] Lỗi đổi code Google: {}", e.getMessage());
+            log.error("[OAuth2] Lỗi đổi code Google: {}", e.getMessage(), e);
             throw new RuntimeException("Lỗi xác thực Google: " + e.getMessage());
         }
     }

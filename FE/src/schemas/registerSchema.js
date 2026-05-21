@@ -40,5 +40,6 @@ export const registerSchema = yup.object().shape({
   
   agreeToTerms: yup
     .boolean()
+    .required('Bạn phải đồng ý với điều khoản và điều kiện')
     .oneOf([true], 'Bạn phải đồng ý với điều khoản và điều kiện')
 })

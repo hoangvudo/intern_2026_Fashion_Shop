@@ -7,6 +7,8 @@ import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 import ResetPasswordExpired from '../pages/ResetPasswordExpired'
 import OAuth2Callback from '../pages/OAuth2Callback'
+import Cart from '../pages/Cart'
+import ProductDetail from '../pages/ProductDetail'
 
 function AppRoutes() {
   return (
@@ -22,6 +24,8 @@ function AppRoutes() {
         element={<ResetPasswordExpired />}
       />
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="*" element={<Home />} />
     </Routes>
   );

@@ -1,3 +1,29 @@
-BE/target/
-*.class
+# ==========================================
+# 1. Cấu hình chung cho IDE & Hệ điều hành
+# ==========================================
 .idea/
+*.iml
+.vscode/
+.DS_Store
+FE.zip
+
+# ==========================================
+# 2. Cấu hình cho BACKEND (Java / Spring Boot / Maven)
+# ==========================================
+**/target/
+*.class
+**/logs/
+*.log
+
+# ==========================================
+# 3. Cấu hình cho FRONTEND (Node.js / Vite / React)
+# ==========================================
+**/node_modules/
+**/dist/
+**/dist-ssr/
+*.local
+
+# Biến môi trường (Chứa thông tin bảo mật, không nên đưa lên Git)
+.env
+.env.local
+.env.production

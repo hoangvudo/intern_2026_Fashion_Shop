@@ -10,6 +10,7 @@ import com.fashion.backend.repository.UserRepository;
 import com.fashion.backend.utils.JwtUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -68,6 +70,10 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
 
         userRepository.save(user);
+        
+        log.info("[Auth] User registered - email: {}, token: {}, tokenExpiredAt: {}", 
+                user.getEmail(), user.getEmailToken(), user.getTokenExpiredAt());
+        
         emailService.sendVerifyEmail(user);
     }
 
@@ -75,15 +81,26 @@ public class AuthService {
     // VERIFY EMAIL
     // =========================
     public void verifyEmail(String token) {
+        
+        log.info("[Auth] Attempting to verify email with token: {}", token);
 
         User user = userRepository
                 .findByEmailToken(token)
-                .orElseThrow(() ->
-                        new RuntimeException("Token không hợp lệ")
-                );
+                .orElseThrow(() -> {
+                    log.error("[Auth] Token not found in DB: {}", token);
+                    return new RuntimeException("Token không hợp lệ");
+                });
+
+        log.info("[Auth] User found: {}, tokenExpiredAt: {}", user.getEmail(), user.getTokenExpiredAt());
+
+        if (user.getTokenExpiredAt() == null) {
+            log.error("[Auth] Token expired at is null for user: {}", user.getEmail());
+            throw new RuntimeException("Token không hợp lệ");
+        }
 
         if (user.getTokenExpiredAt()
                 .isBefore(LocalDateTime.now())) {
+            log.error("[Auth] Token expired for user: {}", user.getEmail());
             throw new RuntimeException("Token đã hết hạn");
         }
 
@@ -91,6 +108,8 @@ public class AuthService {
         user.setEmailToken(null);
         user.setTokenExpiredAt(null);
         userRepository.save(user);
+        
+        log.info("[Auth] Email verified successfully for user: {}", user.getEmail());
     }
 
     // =========================

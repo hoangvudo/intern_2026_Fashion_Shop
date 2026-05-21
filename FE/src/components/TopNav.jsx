@@ -1,206 +1,314 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import useAuthStore from "../store/authStore";
-import logo from "../assets/logo.jpg";
+import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiSun, FiMoon } from 'react-icons/fi'
+import { FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa'
+import { IoChevronDown } from 'react-icons/io5'
+import toast from 'react-hot-toast'
+import useAuthStore from '../store/authStore'
+import useCartStore from '../store/cartStore'
+import ProfileModal from './ProfileModal'
+import SearchModal from './SearchModal'
 
 function TopNav() {
-  const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuthStore();
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate()
+  const { isAuthenticated, logout, user } = useAuthStore()
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem('theme') === 'dark'
+  )
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
+    setIsLoggingOut(true)
     try {
-      logout();
-      toast.success("Dang xuat thanh cong!");
-      setShowUserMenu(false);
-      navigate("/login");
+      logout()
+      toast.success('Đăng xuất thành công!')
+      setShowUserMenu(false)
+      navigate('/login')
     } catch (error) {
-      toast.error("Dang xuat that bai");
+      toast.error('Đăng xuất thất bại')
     } finally {
-      setIsLoggingOut(false);
+      setIsLoggingOut(false)
     }
-  };
+  }
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 border-b border-[#C3C6D6] bg-white/95 shadow-sm backdrop-blur">
-      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between gap-5 px-5 md:px-10">
-        <div className="flex min-w-0 items-center gap-8">
-          <Link to="/" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black ring-1 ring-[#041B3C]/10">
-              <img
-                src={logo}
-                alt="ZYRO logo"
-                className="h-full w-full object-cover"
-              />
-            </span>
-            <span className="hidden min-w-0 flex-col leading-none sm:flex">
-              <span className="font-[Manrope] text-2xl font-bold tracking-[0.22em] text-[#041B3C]">
-                ZYRO
-              </span>
-            </span>
-          </Link>
-          <nav className="hidden gap-6 lg:flex">
-            <Link
-              to="/new-arrivals"
-              className="border-b-2 border-[#003D9B] pb-1 font-['Hanken_Grotesk'] text-base font-bold text-[#003D9B]"
+    <>
+      {/* Top Bar with Social Icons */}
+      <div className="bg-black dark:bg-gray-900 text-white py-2 border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <motion.a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="hover:text-pink-400 transition-colors"
             >
-              New Arrivals
-            </Link>
-            <Link
-              to="/best-sellers"
-              className="font-['Hanken_Grotesk'] text-base text-[#434654] transition-colors hover:text-[#003D9B]"
+              <FaInstagram size={16} />
+            </motion.a>
+            <motion.a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="hover:text-blue-400 transition-colors"
             >
-              Best Sellers
-            </Link>
-            <Link
-              to="/categories"
-              className="font-['Hanken_Grotesk'] text-base text-[#434654] transition-colors hover:text-[#003D9B]"
+              <FaFacebookF size={16} />
+            </motion.a>
+            <motion.a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="hover:text-red-400 transition-colors"
             >
-              Categories
-            </Link>
-            <Link
-              to="/sale"
-              className="font-['Hanken_Grotesk'] text-base text-[#434654] transition-colors hover:text-[#003D9B]"
-            >
-              Sale
-            </Link>
-          </nav>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-full bg-[#F1F3FF] px-4 py-2 md:flex">
-            <span className="material-symbols-outlined text-[#434654]">
-              search
-            </span>
-            <input
-              className="w-44 border-none bg-transparent font-['Hanken_Grotesk'] text-sm text-[#041B3C] focus:ring-0 xl:w-64"
-              placeholder="Tim kiem san pham..."
-              type="text"
-            />
+              <FaYoutube size={16} />
+            </motion.a>
           </div>
-
-          <button className="rounded-full bg-transparent p-2 transition hover:bg-[#F1F3FF]">
-            <span className="material-symbols-outlined text-[#003D9B]">
-              shopping_cart
-            </span>
-          </button>
-
-          {isAuthenticated ? (
-            <div className="relative">
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                onBlur={() => setTimeout(() => setShowUserMenu(false), 200)}
-                className="rounded-full bg-transparent p-2 transition hover:bg-[#F1F3FF]"
-              >
-                <span className="material-symbols-outlined text-[#003D9B]">
-                  person
-                </span>
-              </button>
-
-              {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-[#C3C6D6] bg-white py-2 shadow-lg">
-                  <Link
-                    to="/profile"
-                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#F1F3FF]"
-                    onClick={() => setShowUserMenu(false)}
-                  >
-                    <span className="material-symbols-outlined text-xl text-[#434654]">
-                      account_circle
-                    </span>
-                    <span className="font-['Hanken_Grotesk'] text-base text-[#041B3C]">
-                      Tai khoan
-                    </span>
-                  </Link>
-
-                  <Link
-                    to="/orders"
-                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#F1F3FF]"
-                    onClick={() => setShowUserMenu(false)}
-                  >
-                    <span className="material-symbols-outlined text-xl text-[#434654]">
-                      shopping_bag
-                    </span>
-                    <span className="font-['Hanken_Grotesk'] text-base text-[#041B3C]">
-                      Don hang
-                    </span>
-                  </Link>
-
-                  <Link
-                    to="/settings"
-                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#F1F3FF]"
-                    onClick={() => setShowUserMenu(false)}
-                  >
-                    <span className="material-symbols-outlined text-xl text-[#434654]">
-                      settings
-                    </span>
-                    <span className="font-['Hanken_Grotesk'] text-base text-[#041B3C]">
-                      Cai dat
-                    </span>
-                  </Link>
-
-                  <div className="my-2 border-t border-[#C3C6D6]" />
-
-                  <button
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex w-full items-center gap-3 rounded-none bg-transparent px-4 py-3 text-left transition hover:bg-[#FFDAD6] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <svg
-                          className="h-5 w-5 animate-spin text-[#BA1A1A]"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        <span className="font-['Hanken_Grotesk'] text-base text-[#BA1A1A]">
-                          Dang dang xuat...
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-xl text-[#BA1A1A]">
-                          logout
-                        </span>
-                        <span className="font-['Hanken_Grotesk'] text-base text-[#BA1A1A]">
-                          Dang xuat
-                        </span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link
-              to="/login"
-              className="rounded-full p-2 transition hover:bg-[#F1F3FF]"
+          <div className="flex items-center gap-4">
+            <motion.button
+              onClick={() => setDarkMode(!darkMode)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="hover:text-yellow-400 transition-colors"
             >
-              <span className="material-symbols-outlined text-[#003D9B]">
-                person
-              </span>
-            </Link>
-          )}
+              {darkMode ? <FiSun size={16} /> : <FiMoon size={16} />}
+            </motion.button>
+          </div>
         </div>
       </div>
-    </header>
-  );
+
+      {/* Main Navigation */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`bg-white dark:bg-gray-800 sticky top-0 z-50 transition-shadow ${
+          scrolled ? 'shadow-md' : ''
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+                className="w-10 h-10 bg-black dark:bg-white rounded-sm flex items-center justify-center"
+              >
+                <span className="text-white dark:text-black font-bold text-2xl">Z</span>
+              </motion.div>
+              <span className="font-bold text-xl text-black dark:text-white tracking-wider">
+                YRO
+              </span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-8">
+              <Link
+                to="/"
+                className="text-sm font-medium text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors uppercase tracking-wide"
+              >
+                Trang chủ
+              </Link>
+              <Link
+                to="/stories"
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
+              >
+                Câu chuyện
+              </Link>
+              <div className="relative group">
+                <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1">
+                  Thiết kế
+                  <IoChevronDown className="group-hover:rotate-180 transition-transform" />
+                </button>
+              </div>
+              <div className="relative group">
+                <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1">
+                  Bộ sưu tập
+                  <IoChevronDown className="group-hover:rotate-180 transition-transform" />
+                </button>
+              </div>
+              <div className="relative group">
+                <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1">
+                  Affiliate
+                  <IoChevronDown className="group-hover:rotate-180 transition-transform" />
+                </button>
+              </div>
+              <Link
+                to="/contact"
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
+              >
+                Chạm lần hai
+              </Link>
+              <Link
+                to="/blog"
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
+              >
+                Tạp chí
+              </Link>
+              <Link
+                to="/about"
+                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
+              >
+                Liên hệ
+              </Link>
+            </nav>
+
+            {/* Right Icons */}
+            <div className="flex items-center gap-4">
+              <motion.button
+                onClick={() => setShowSearchModal(true)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
+              >
+                <FiSearch size={20} />
+              </motion.button>
+
+              <Link to="/cart" className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  <FiShoppingCart size={20} />
+                </motion.button>
+                  <span className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">{useCartStore(state => state.items.reduce((s,i)=>s+i.qty,0))}</span>
+              </Link>
+
+              {/* User Menu */}
+              {isAuthenticated ? (
+                <div className="relative">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    <FiUser size={20} />
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {showUserMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 overflow-hidden"
+                      >
+                        <button
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full text-left"
+                          onClick={() => { setShowUserMenu(false); setShowProfileModal(true) }}
+                        >
+                          <FiUser size={18} />
+                          <span className="text-sm">Tài khoản</span>
+                        </button>
+
+                        <button
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left disabled:opacity-50"
+                        >
+                          <span className="text-sm text-red-600">
+                            {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
+                          </span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link to="/login">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
+                  >
+                    <FiUser size={20} />
+                  </motion.button>
+                </Link>
+              )}
+
+              {/* Mobile Menu Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="lg:hidden text-gray-700 dark:text-gray-300"
+              >
+                {showMobileMenu ? <FiX size={24} /> : <FiMenu size={24} />}
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="lg:hidden border-t border-gray-200 dark:border-gray-700 overflow-hidden"
+            >
+              <nav className="px-4 py-4 space-y-3">
+                <Link
+                  to="/"
+                  className="block text-sm font-medium text-black dark:text-white uppercase"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Trang chủ
+                </Link>
+                <Link
+                  to="/stories"
+                  className="block text-sm font-medium text-gray-600 dark:text-gray-300 uppercase"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Câu chuyện
+                </Link>
+                <Link
+                  to="/contact"
+                  className="block text-sm font-medium text-gray-600 dark:text-gray-300 uppercase"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Liên hệ
+                </Link>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+      <ProfileModal open={showProfileModal} onClose={() => setShowProfileModal(false)} />
+      <SearchModal open={showSearchModal} onClose={() => setShowSearchModal(false)} />
+    </>
+  )
 }
 
-export default TopNav;
+export default TopNav

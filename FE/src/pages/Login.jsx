@@ -1,34 +1,58 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
+import { motion } from 'framer-motion'
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
+import { FcGoogle } from 'react-icons/fc'
+import { FaFacebook } from 'react-icons/fa'
 import toast from 'react-hot-toast'
 import useAuthStore from '../store/authStore'
 import authService from '../services/authService'
-import { loginSchema } from '../schemas/loginSchema'
 
 function Login() {
   const navigate = useNavigate()
-  const { login } = useAuthStore()
+  const { login: storeLogin } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(loginSchema)
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
   })
+  const [errors, setErrors] = useState({})
 
-  const onSubmit = async (data) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+    if (!formData.email) {
+      newErrors.email = 'Email không được để trống'
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email không hợp lệ'
+    }
+    if (!formData.password) {
+      newErrors.password = 'Mật khẩu không được để trống'
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!validateForm()) return
     setIsLoading(true)
     try {
-      const response = await authService.login(data.email, data.password)
-      login({ 
-        user: response.user, 
-        accessToken: response.accessToken, 
-        refreshToken: response.refreshToken 
+      const response = await authService.login(formData.email, formData.password)
+      storeLogin({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        user: response.user,
       })
       toast.success('Đăng nhập thành công!')
       navigate('/')
@@ -39,194 +63,197 @@ function Login() {
     }
   }
 
-const handleGoogleLogin = () => {
-  window.location.href =
-    "https://accounts.google.com/o/oauth2/v2/auth" +
-    "?client_id=779501654477-mm9vj298v1071gdgq42dr2nauaajnt20.apps.googleusercontent.com" +
-    "&redirect_uri=http://localhost:8080/api/auth/oauth2/google/callback" +
-    "&response_type=code" +
-    "&scope=openid%20email%20profile"
-}
+  const handleGoogleLogin = () => {
+    window.location.href =
+      'https://accounts.google.com/o/oauth2/v2/auth' +
+      '?client_id=779501654477-oemekgq0tenrh073hlra1sbngj739qgd.apps.googleusercontent.com' +
+      '&redirect_uri=http://localhost:8080/api/auth/oauth2/google/callback' +
+      '&response_type=code' +
+      '&scope=openid email profile'
+  }
 
-const handleFacebookLogin = () => {
-  window.location.href =
-    "https://www.facebook.com/v18.0/dialog/oauth" +
-    "?client_id=975365101857178" +
-    "&redirect_uri=http://localhost:8080/api/auth/oauth2/facebook/callback" +
-    "&response_type=code" +
-    "&scope=public_profile"
-}
+  const handleFacebookLogin = () => {
+    // ✅ Dùng đúng client_id khớp với application.yaml
+    window.location.href =
+      'https://www.facebook.com/v18.0/dialog/oauth' +
+      '?client_id=975365101857178' +
+      '&redirect_uri=http://localhost:8080/api/auth/oauth2/facebook/callback' +
+      '&response_type=code' +
+      '&scope=public_profile,email'
+  }
 
   return (
-    <main className="flex-grow flex items-center justify-center pt-16 px-gutter">
-      <div className="max-w-[480px] w-full mt-lg mb-xl">
-        {/* Login Card */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-lg md:p-xl shadow-sm">
-          {/* Brand Header */}
-          <div className="text-center mb-lg">
-            <h2 className="font-headline-lg text-headline-lg text-on-surface mb-xs">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black py-12 px-4">
+      <Link to="/">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="fixed top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
+        >
+          <FiArrowLeft size={20} />
+          <span className="font-medium">Trang chủ</span>
+        </motion.button>
+      </Link>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-md w-full"
+      >
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="text-center mb-8">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring' }}
+              className="inline-block w-16 h-16 bg-black dark:bg-white rounded-2xl flex items-center justify-center mb-4 mx-auto"
+            >
+              <span className="text-white dark:text-black font-bold text-3xl">Z</span>
+            </motion.div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Chào mừng trở lại
-            </h2>
-            <p className="font-body-md text-on-surface-variant">
-              Đăng nhập vào tài khoản LuxeCommerce của bạn
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Đăng nhập để tiếp tục mua sắm
             </p>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-sm">
-            {/* Email Field */}
-            <div className="space-y-base">
-              <label className="font-label-bold text-label-bold text-on-surface" htmlFor="email">
-                Email
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none text-outline">
-                  <span className="material-symbols-outlined text-[20px]">mail</span>
-                </div>
-                <input
-                  {...register('email')}
-                  className={`block w-full h-[48px] pl-lg pr-sm bg-surface-container-low border rounded-lg font-body-md focus:ring-2 focus:ring-primary transition-all ${
-                    errors.email ? 'border-error' : 'border-outline-variant focus:border-primary'
-                  }`}
-                  id="email"
-                  placeholder="example@luxe.com"
-                  type="email"
-                />
-              </div>
-              {errors.email && (
-                <p className="font-body-sm text-error mt-xs">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-base">
-              <div className="flex justify-between items-center">
-                <label className="font-label-bold text-label-bold text-on-surface" htmlFor="password">
-                  Mật khẩu
-                </label>
-                <Link
-                  to="/forgot-password"
-                  className="font-body-sm text-body-sm text-primary hover:underline transition-all"
-                >
-                  Quên mật khẩu?
-                </Link>
-              </div>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none text-outline">
-                  <span className="material-symbols-outlined text-[20px]">lock</span>
-                </div>
-                <input
-                  {...register('password')}
-                  className={`block w-full h-[48px] pl-lg pr-lg bg-surface-container-low border rounded-lg font-body-md focus:ring-2 focus:ring-primary transition-all ${
-                    errors.password ? 'border-error' : 'border-outline-variant focus:border-primary'
-                  }`}
-                  id="password"
-                  placeholder="••••••••"
-                  type={showPassword ? 'text' : 'password'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-sm top-1/2 -translate-y-1/2 bg-surface-container-low text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg"
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
-                </button>
-              </div>
-              {errors.password && (
-                <p className="font-body-sm text-error mt-xs">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* Primary CTA */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-[48px] bg-primary text-on-primary font-headline-md text-headline-md rounded-lg flex items-center justify-center gap-xs hover:opacity-90 active:scale-[0.98] transition-all mt-md disabled:opacity-50 disabled:cursor-not-allowed"
+          <div className="space-y-3 mb-6">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              {isLoading && (
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    fill="currentColor"
-                  />
-                </svg>
-              )}
-              <span>{isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}</span>
-            </button>
-          </form>
+              <FcGoogle size={24} />
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Đăng nhập với Google
+              </span>
+            </motion.button>
 
-          {/* Social Divider */}
-          <div className="relative my-lg">
-            <div aria-hidden="true" className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-outline-variant" />
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleFacebookLogin}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <FaFacebook size={24} className="text-blue-600" />
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Đăng nhập với Facebook
+              </span>
+            </motion.button>
+          </div>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
             </div>
-            <div className="relative flex justify-center text-body-sm font-body-sm">
-              <span className="px-sm bg-surface-container-lowest text-on-surface-variant">
-                Hoặc đăng nhập với
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white dark:bg-gray-800 text-gray-500">
+                Hoặc đăng nhập với email
               </span>
             </div>
           </div>
 
-          {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-sm">
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="flex items-center justify-center gap-xs h-[48px] border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95"
-            >
-              <img
-                alt="Google Logo"
-                className="w-5 h-5"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSKW8pg_zYTmb0edwJLC6tE2MjZ9HNG08BhBPzsnSv9TcR5k-pnZRF0_39sYl1Tv_wst5UjoCx8VQVgAm9rJDh3DVTyAY4s2h3aojLjaXTKcDJ6e7qfeSXtrvK9Br0t_G2g6XETTTBn3WJ5cWvfr3d34wO-xAQJCuxwPSsloT4YGBbl_X0ZHzbnlARW9ClQsTjiBQEZyogRFEJCFjLgIV4P12F0fmWQu1vU8YSDCPLeqnN8NXT2berPeAvuK5FE4mKC6Nowrq-GHQ"
-              />
-              <span className="font-label-bold text-label-bold">Google</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleFacebookLogin}
-              className="flex items-center justify-center gap-xs h-[48px] border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95"
-            >
-              <svg className="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-              <span className="font-label-bold text-label-bold">Facebook</span>
-            </button>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
+                    errors.email ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
+                  placeholder="your@email.com"
+                />
+              </div>
+              {errors.email && (
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">
+                  {errors.email}
+                </motion.p>
+              )}
+            </div>
 
-          {/* Footer Links */}
-          <div className="mt-lg text-center font-body-sm text-body-sm">
-            <p className="text-on-surface-variant">
-              Bạn chưa có tài khoản?{' '}
-              <Link to="/register" className="text-primary font-label-bold hover:underline">
-                Đăng ký ngay
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Mật khẩu
+              </label>
+              <div className="relative">
+                <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all ${
+                    errors.password ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                </button>
+              </div>
+              {errors.password && (
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-red-500 text-sm mt-1">
+                  {errors.password}
+                </motion.p>
+              )}
+            </div>
+
+            <div className="text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+              >
+                Quên mật khẩu?
               </Link>
-            </p>
-          </div>
+            </div>
 
-          {/* Security Message */}
-          <div className="mt-xl flex items-center justify-center gap-xs opacity-60">
-            <span className="material-symbols-outlined text-[16px]">verified_user</span>
-            <span className="font-body-sm text-[12px]">Bảo mật bởi reCAPTCHA</span>
-          </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-black dark:bg-white text-white dark:text-black py-3 rounded-xl font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Đang đăng nhập...
+                </>
+              ) : (
+                <>
+                  Đăng nhập
+                  <FiArrowRight size={20} />
+                </>
+              )}
+            </motion.button>
+          </form>
+
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
+            Chưa có tài khoản?{' '}
+            <Link to="/register" className="font-semibold text-black dark:text-white hover:underline">
+              Đăng ký ngay
+            </Link>
+          </p>
         </div>
-      </div>
-    </main>
+      </motion.div>
+    </div>
   )
 }
 

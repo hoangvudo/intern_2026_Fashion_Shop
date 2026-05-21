@@ -3,11 +3,13 @@ package com.fashion.backend.service;
 import com.fashion.backend.entity.User;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -22,6 +24,8 @@ public class EmailService {
     public void sendVerifyEmail(User user) {
         try {
             String verifyLink = frontendUrl + "/verify-email?token=" + user.getEmailToken();
+            
+            log.info("[Email] Sending verify email to: {} with token: {}", user.getEmail(), user.getEmailToken());
 
             String body = """
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:24px">
@@ -40,7 +44,9 @@ public class EmailService {
                 """.formatted(user.getFullName(), verifyLink);
 
             sendHtml(user.getEmail(), "[Fashion Shop] Xác nhận tài khoản", body);
+            log.info("[Email] Verify email sent successfully to: {}", user.getEmail());
         } catch (Exception e) {
+            log.error("[Email] Failed to send verify email: {}", e.getMessage(), e);
             throw new RuntimeException("Không gửi được email");
         }
     }
