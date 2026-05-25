@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/fashion_shop
+    username: root
+    password: 123456
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: vanbenha123@gmail.com
+    password: kebe jcks whag txqb
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: fashionshop-super-secret-key-must-be-at-least-32-characters-long
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+app:
+  frontend-url: http://localhost:3000
+  admin:
+    enabled: true
+    email: admin@zyro.com
+    password: Admin@123
+    full-name: ZYRO Admin
+    phone: "0900000001"
+
+# ✅ Giữ nguyên block này cho @Value trong OAuth2Service
+# ✅ Giữ nguyên block này cho @Value trong OAuth2Service
+oauth2:
+  google:
+    client-id: 779501654477-oemekgq0tenrh073hlra1sbngj739qgd.apps.googleusercontent.com
+    client-secret: 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
+    redirect-uri: http://localhost:8080/api/auth/oauth2/google/callback
+  facebook:
+    client-id: 975365101857178
+    client-secret: 52968267c720630ba8041cc189ae7747
+    redirect-uri: http://localhost:8080/api/auth/oauth2/facebook/callback
+
+spring.application.name: backend
