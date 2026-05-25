@@ -16,7 +16,7 @@ function FeaturedCategories() {
         <h2 className="font-[Manrope] text-[28px] font-semibold leading-9 text-[#041B3C]">
           Danh Muc Noi Bat
         </h2>
-        <Link to="/categories" className="font-['Hanken_Grotesk'] text-base text-[#003D9B]">
+        <Link to="/categories" className="font-sans text-base text-[#003D9B]">
           Xem tat ca
         </Link>
       </div>

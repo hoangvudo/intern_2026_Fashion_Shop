@@ -35,14 +35,14 @@ function NewArrivals() {
               />
             </div>
             <div className="flex flex-col justify-center">
-              <p className="font-['Hanken_Grotesk'] text-xs font-bold text-[#851800]">NEW</p>
+              <p className="font-sans text-xs font-bold text-[#851800]">NEW</p>
               <h3 className="mt-2 font-[Manrope] text-3xl font-bold text-[#041B3C]">
                 Khan Choang Cashmere
               </h3>
-              <p className="mt-3 max-w-[520px] font-['Hanken_Grotesk'] text-base leading-7 text-[#434654]">
+              <p className="mt-3 max-w-[520px] font-sans text-base leading-7 text-[#434654]">
                 Chat lieu mem, am va nhe cho nhung ban phoi mua lanh cua ZYRO.
               </p>
-              <p className="mt-5 font-['Hanken_Grotesk'] text-[22px] font-bold text-[#003D9B]">
+              <p className="mt-5 font-sans text-[22px] font-bold text-[#003D9B]">
                 550,000d
               </p>
             </div>
@@ -56,9 +56,9 @@ function NewArrivals() {
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#041B3C]/90 to-transparent p-8 text-white">
-            <p className="font-['Hanken_Grotesk'] text-base">Suu tap gioi han</p>
+            <p className="font-sans text-base">Suu tap gioi han</p>
             <h3 className="mt-2 font-[Manrope] text-[28px] font-semibold leading-9">Modern Nomad 2024</h3>
-            <button className="mt-4 border-b border-white bg-transparent p-0 font-['Hanken_Grotesk'] text-base text-white">
+            <button className="mt-4 border-b border-white bg-transparent p-0 font-sans text-base text-white">
               Xem bo suu tap
             </button>
           </div>
@@ -70,7 +70,7 @@ function NewArrivals() {
               <h3 className="font-[Manrope] text-4xl font-bold leading-[44px] text-[#041B3C]">
                 Uu dai doc quyen
               </h3>
-              <p className="mt-3 max-w-[620px] font-['Hanken_Grotesk'] text-lg leading-7 text-[#041B3C]/80">
+              <p className="mt-3 max-w-[620px] font-sans text-lg leading-7 text-[#041B3C]/80">
                 Giam them 10% cho don hang dau tien khi dang ky thanh vien ZYRO.
               </p>
               <form onSubmit={handleSubscribe} className="mt-8 flex max-w-[520px] flex-col gap-4 sm:flex-row">
@@ -79,10 +79,10 @@ function NewArrivals() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="Nhap email cua ban"
-                  className="min-h-14 flex-1 rounded-lg border border-[#C3C6D6] bg-white px-5 font-['Hanken_Grotesk'] text-base text-[#041B3C] outline-none focus:border-[#003D9B]"
+                  className="min-h-14 flex-1 rounded-lg border border-[#C3C6D6] bg-white px-5 font-sans text-base text-[#041B3C] outline-none focus:border-[#003D9B]"
                   required
                 />
-                <button className="rounded-lg bg-[#003D9B] px-8 py-4 font-['Hanken_Grotesk'] text-base text-white">
+                <button className="rounded-lg bg-[#003D9B] px-8 py-4 font-sans text-base text-white">
                   Dang ky ngay
                 </button>
               </form>

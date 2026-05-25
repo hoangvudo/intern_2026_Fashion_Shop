@@ -43,16 +43,16 @@ function FeaturedProducts() {
             <div className="aspect-[4/5] overflow-hidden rounded-lg bg-[#E8EDFF]">
               <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
             </div>
-            <p className="mt-4 font-['Hanken_Grotesk'] text-sm text-[#434654]">
+            <p className="mt-4 font-sans text-sm text-[#434654]">
               {product.category}
             </p>
             <h3 className="mt-1 min-h-[56px] font-[Manrope] text-xl font-semibold leading-7 text-[#041B3C]">
               {product.name}
             </h3>
-            <p className="mt-2 font-['Hanken_Grotesk'] text-[22px] font-bold leading-7 text-[#003D9B]">
+            <p className="mt-2 font-sans text-[22px] font-bold leading-7 text-[#003D9B]">
               {formatPrice(product.price)}
             </p>
-            <button className="mt-6 w-full rounded-lg border border-[#003D9B] bg-transparent px-4 py-2 font-['Hanken_Grotesk'] text-base text-[#003D9B] transition hover:bg-[#003D9B] hover:text-white">
+            <button className="mt-6 w-full rounded-lg border border-[#003D9B] bg-transparent px-4 py-2 font-sans text-base text-[#003D9B] transition hover:bg-[#003D9B] hover:text-white">
               Xem chi tiet
             </button>
           </article>

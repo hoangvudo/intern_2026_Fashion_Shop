@@ -10,6 +10,10 @@
   import Cart from "../pages/Cart";
   import ProductDetail from "../pages/ProductDetail";
   import Story from "../pages/Story";
+  import Design from "../pages/Design";
+  import ContactPage from "../pages/Contact";
+
+  
 
   function AppRoutes() {
     return (
@@ -27,8 +31,10 @@
         <Route path="/oauth2/callback" element={<OAuth2Callback />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/design" element={<Design />} />
         <Route path="/story" element={<Story />} />
         <Route path="/stories" element={<Story />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<Home />} />
       </Routes>
     );

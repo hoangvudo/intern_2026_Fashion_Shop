@@ -79,7 +79,7 @@
       <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
         <TopNav />
 
-        <main className="pt-20">
+        <main>
           <motion.section
             initial="hidden"
             animate="visible"

@@ -154,29 +154,54 @@ function TopNav() {
                 Câu chuyện
               </Link>
               <div className="relative group">
-                <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1">
+                <Link
+                  to="/design"
+                  className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1"
+                >
                   Thiết kế
-                  <IoChevronDown className="group-hover:rotate-180 transition-transform" />
-                </button>
+                </Link>
               </div>
               <div className="relative group">
                 <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1">
                   Bộ sưu tập
                   <IoChevronDown className="group-hover:rotate-180 transition-transform" />
                 </button>
+                <div className="absolute left-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all">
+                  <div className="py-2">
+                    <Link
+                      to="/collections/bts-xuan"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      BST Xuân
+                    </Link>
+                    <Link
+                      to="/collections/bts-ha"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      BST Hạ
+                    </Link>
+                    <Link
+                      to="/collections/bts-thu"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      BST Thu
+                    </Link>
+                    <Link
+                      to="/collections/bts-dong"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      BST Đông
+                    </Link>
+                    <Link
+                      to="/collections/dur-tiec"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Dự tiệc
+                    </Link>
+                  </div>
+                </div>
               </div>
-              <div className="relative group">
-                <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide flex items-center gap-1">
-                  Affiliate
-                  <IoChevronDown className="group-hover:rotate-180 transition-transform" />
-                </button>
-              </div>
-              <Link
-                to="/contact"
-                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
-              >
-                Chạm lần hai
-              </Link>
+              
               <Link
                 to="/blog"
                 className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
@@ -184,7 +209,7 @@ function TopNav() {
                 Tạp chí
               </Link>
               <Link
-                to="/about"
+                to="/contact"
                 className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors uppercase tracking-wide"
               >
                 Liên hệ
@@ -311,12 +336,57 @@ function TopNav() {
                   Câu chuyện
                 </Link>
                 <Link
+                  to="/design"
+                  className="block text-sm font-medium text-gray-600 dark:text-gray-300 uppercase"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Thiết kế
+                </Link>
+                <Link
                   to="/contact"
                   className="block text-sm font-medium text-gray-600 dark:text-gray-300 uppercase"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   Liên hệ
                 </Link>
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="mt-2 mb-1 text-xs text-gray-500 uppercase tracking-wide">Bộ sưu tập</p>
+                  <Link
+                    to="/collections/bts-xuan"
+                    className="block text-sm font-medium text-gray-600 dark:text-gray-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    BTS Xuân
+                  </Link>
+                  <Link
+                    to="/collections/bts-ha"
+                    className="block text-sm font-medium text-gray-600 dark:text-gray-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    BTS Hạ
+                  </Link>
+                  <Link
+                    to="/collections/bts-thu"
+                    className="block text-sm font-medium text-gray-600 dark:text-gray-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    BTS Thu
+                  </Link>
+                  <Link
+                    to="/collections/bts-dong"
+                    className="block text-sm font-medium text-gray-600 dark:text-gray-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    BTS Đông
+                  </Link>
+                  <Link
+                    to="/collections/dur-tiec"
+                    className="block text-sm font-medium text-gray-600 dark:text-gray-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    Dự tiệc
+                  </Link>
+                </div>
               </nav>
             </motion.div>
           )}

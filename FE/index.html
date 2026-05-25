@@ -2,7 +2,8 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/jpeg" href="/src/assets/logo.jpg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/src/assets/logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zero Fashion</title>
     
@@ -10,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -88,15 +89,22 @@
               "sidebar-width": "280px"
             },
             fontFamily: {
-              "label-bold": ["Hanken Grotesk"],
-              "body-sm": ["Hanken Grotesk"],
-              "body-lg": ["Hanken Grotesk"],
-              "headline-lg": ["Manrope"],
-              "display": ["Manrope"],
-              "price-lg": ["Hanken Grotesk"],
-              "headline-md": ["Manrope"],
-              "body-md": ["Hanken Grotesk"],
-              "headline-lg-mobile": ["Manrope"]
+              sans: ["Manrope", "sans-serif"],
+              serif: ["Manrope", "sans-serif"],
+              display: ["Manrope", "sans-serif"],
+              "playfairDisplay": ["Manrope", "sans-serif"],
+              "label-bold": ["Manrope", "sans-serif"],
+              "label-md": ["Manrope", "sans-serif"],
+              "label-sm": ["Manrope", "sans-serif"],
+              "label-caps": ["Manrope", "sans-serif"],
+              "body-sm": ["Manrope", "sans-serif"],
+              "body-md": ["Manrope", "sans-serif"],
+              "body-lg": ["Manrope", "sans-serif"],
+              "headline-lg": ["Manrope", "sans-serif"],
+              "headline-md": ["Manrope", "sans-serif"],
+              "headline-lg-mobile": ["Manrope", "sans-serif"],
+              "display-xl": ["Manrope", "sans-serif"],
+              "price-lg": ["Manrope", "sans-serif"]
             },
             fontSize: {
               "label-bold": ["14px", { lineHeight: "20px", fontWeight: "600" }],
@@ -130,7 +138,7 @@
       body {
         background-color: #f9f9ff;
         color: #041b3c;
-        font-family: 'Hanken Grotesk', sans-serif;
+        font-family: 'Manrope', sans-serif;
       }
       
       /* Smooth scrolling */

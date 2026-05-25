@@ -44,10 +44,10 @@ function HeroSlider() {
           <h1 className="font-[Manrope] text-5xl font-bold leading-tight md:text-6xl">
             {slide.title}
           </h1>
-          <p className="mt-5 max-w-[560px] font-['Hanken_Grotesk'] text-lg leading-8 text-white/85">
+          <p className="mt-5 max-w-[560px] font-sans text-lg leading-8 text-white/85">
             {slide.description}
           </p>
-          <button className="mt-9 rounded-lg bg-[#0052CC] px-9 py-4 font-['Hanken_Grotesk'] text-base font-bold text-white transition hover:bg-[#003D9B]">
+          <button className="mt-9 rounded-lg bg-[#0052CC] px-9 py-4 font-sans text-base font-bold text-white transition hover:bg-[#003D9B]">
             Mua ngay
           </button>
         </div>

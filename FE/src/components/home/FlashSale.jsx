@@ -75,10 +75,10 @@ function FlashSale() {
             </h2>
             <div className="flex w-fit items-center gap-2 rounded-lg bg-[#B02300] px-4 py-2 text-[#FFC6B9]">
               <span className="material-symbols-outlined text-base">schedule</span>
-              <span className="font-['Hanken_Grotesk'] text-base">Ket thuc sau: {time}</span>
+              <span className="font-sans text-base">Ket thuc sau: {time}</span>
             </div>
           </div>
-          <button className="flex w-fit items-center gap-2 bg-transparent p-0 font-['Hanken_Grotesk'] text-base text-[#003D9B]">
+          <button className="flex w-fit items-center gap-2 bg-transparent p-0 font-sans text-base text-[#003D9B]">
             Xem toan bo
             <span className="material-symbols-outlined text-base">arrow_forward</span>
           </button>
@@ -89,28 +89,28 @@ function FlashSale() {
             <article key={product.name} className="rounded-xl border border-[#C3C6D6] bg-white p-4 text-left">
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-[#E8EDFF]">
                 <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-                <span className="absolute right-2 top-2 rounded bg-[#BA1A1A] px-2 py-1 font-['Hanken_Grotesk'] text-xs text-white">
+                <span className="absolute right-2 top-2 rounded bg-[#BA1A1A] px-2 py-1 font-sans text-xs text-white">
                   -{product.discount}%
                 </span>
               </div>
-              <p className="mt-4 font-['Hanken_Grotesk'] text-sm text-[#434654]">{product.category}</p>
+              <p className="mt-4 font-sans text-sm text-[#434654]">{product.category}</p>
               <h3 className="mt-1 min-h-[56px] font-[Manrope] text-xl font-semibold leading-7 text-[#041B3C]">
                 {product.name}
               </h3>
               <div className="mt-2 flex flex-wrap items-baseline gap-2">
-                <span className="font-['Hanken_Grotesk'] text-[22px] font-bold text-[#003D9B]">
+                <span className="font-sans text-[22px] font-bold text-[#003D9B]">
                   {formatPrice(product.price)}
                 </span>
-                <span className="font-['Hanken_Grotesk'] text-sm text-[#434654] line-through">
+                <span className="font-sans text-sm text-[#434654] line-through">
                   {formatPrice(product.oldPrice)}
                 </span>
               </div>
-              <div className="mt-3 flex items-center gap-1 font-['Hanken_Grotesk'] text-xs text-[#434654]">
+              <div className="mt-3 flex items-center gap-1 font-sans text-xs text-[#434654]">
                 <span className="material-symbols-outlined text-sm text-[#851800]">star</span>
                 <span className="text-[#041B3C]">{product.rating.toFixed(1)}</span>
                 <span>({product.reviews})</span>
               </div>
-              <button className="mt-5 w-full rounded-lg bg-[#0052CC] px-4 py-2 font-['Hanken_Grotesk'] text-base text-white transition hover:bg-[#003D9B]">
+              <button className="mt-5 w-full rounded-lg bg-[#0052CC] px-4 py-2 font-sans text-base text-white transition hover:bg-[#003D9B]">
                 Them vao gio
               </button>
             </article>
