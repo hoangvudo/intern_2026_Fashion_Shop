@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#faf5ff"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#grad4)" />
+  <rect x="140" y="160" width="920" height="480" rx="40" fill="#ffffff" opacity="0.12" />
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#111827" font-size="48" font-family="Arial, Helvetica, sans-serif">
+    Custom-fit Tailoring
+  </text>
+</svg>
