@@ -1,5 +1,5 @@
 const GOOGLE_CLIENT_ID =
-  '779501654477-oemekgq0tenrh073hlra1sbngj739qgd.apps.googleusercontent.com'
+  '779501654477-f87uq2sl46hv6da4lc6s53db5uclvahc.apps.googleusercontent.com'
 const FACEBOOK_CLIENT_ID = '975365101857178'
 const API_ORIGIN = 'http://localhost:8080'
 
