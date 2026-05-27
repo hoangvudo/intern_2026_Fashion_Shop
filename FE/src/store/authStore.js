@@ -13,30 +13,36 @@ const useAuthStore = create(
         set({ user, accessToken, refreshToken, isAuthenticated: true })
       },
 
-      logout: () => {
-        const refreshToken = get().refreshToken
-        if (refreshToken) {
-          import('../services/authService').then(module => {
-            module.default.logout(refreshToken).catch(console.error)
-          })
-        }
+      logout: async () => {
+        const { refreshToken, accessToken } = get()
+        // Clear state trước
         set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+        // Gọi API logout với token đã lưu, dùng axios trực tiếp (không qua interceptor)
+        if (refreshToken) {
+          try {
+            const { default: axios } = await import('axios')
+            await axios.post('/api/auth/logout',
+              { refreshToken },
+              { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
+            )
+          } catch {
+            // Bỏ qua — state đã clear, không cần xử lý
+          }
+        }
       },
 
-      // ✅ Thêm hàm này: dùng refreshToken để lấy accessToken mới
       initializeAuth: async () => {
         const { refreshToken, isAuthenticated } = get()
+        // Không có token hoặc chưa đăng nhập → bỏ qua, không clear
         if (!refreshToken || !isAuthenticated) return
 
         try {
-          const { default: authService } = await import('../services/authService')
-          const response = await authService.refreshToken(refreshToken)
-           set({ 
-             accessToken: response.accessToken,
-             user: response.user 
-           })
+          const { default: axios } = await import('axios')
+          const response = await axios.post('/api/auth/refresh', { refreshToken })
+          const { accessToken, refreshToken: newRefreshToken, user } = response.data
+          set({ accessToken, refreshToken: newRefreshToken, user, isAuthenticated: true })
         } catch {
-          // refreshToken hết hạn → logout
+          // Refresh thất bại → clear state
           set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
         }
       },

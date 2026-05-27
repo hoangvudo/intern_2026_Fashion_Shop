@@ -1,39 +1,40 @@
 import { useState, useEffect, useCallback } from 'react'
+import productService from '../services/productService'
+import toast from 'react-hot-toast'
 
-export const useCountdown = (initialSeconds = 60) => {
-  const [seconds, setSeconds] = useState(0)
-  const [isActive, setIsActive] = useState(false)
+export function useAdminProducts() {
+  const [products, setProducts]     = useState([])
+  const [total, setTotal]           = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [loading, setLoading]       = useState(false)
+  const [filters, setFilters]       = useState({
+    keyword: '', categoryId: '', brandId: '',
+    isActive: '', sortBy: 'newest', page: 0, size: 10,
+  })
 
-  useEffect(() => {
-    let interval = null
-
-    if (isActive && seconds > 0) {
-      interval = setInterval(() => {
-        setSeconds((seconds) => seconds - 1)
-      }, 1000)
-    } else if (seconds === 0) {
-      setIsActive(false)
+  const fetchProducts = useCallback(async (f = filters) => {
+    setLoading(true)
+    try {
+      const params = Object.fromEntries(
+        Object.entries(f).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+      )
+      const data = await productService.adminList(params)
+      setProducts(data.content)
+      setTotal(data.totalElements)
+      setTotalPages(data.totalPages)
+    } catch {
+      toast.error('Không tải được danh sách sản phẩm')
+    } finally {
+      setLoading(false)
     }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive, seconds])
-
-  const start = useCallback((customSeconds = initialSeconds) => {
-    setSeconds(customSeconds)
-    setIsActive(true)
-  }, [initialSeconds])
-
-  const reset = useCallback(() => {
-    setSeconds(0)
-    setIsActive(false)
   }, [])
 
-  return {
-    seconds,
-    isActive,
-    start,
-    reset
-  }
+  useEffect(() => { fetchProducts(filters) }, [filters])
+
+  const updateFilter = (key, value) =>
+    setFilters(prev => ({ ...prev, [key]: value, page: key === 'page' ? value : 0 }))
+
+  const refresh = () => fetchProducts(filters)
+
+  return { products, total, totalPages, loading, filters, updateFilter, refresh }
 }

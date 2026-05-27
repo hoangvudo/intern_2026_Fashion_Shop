@@ -12,8 +12,9 @@ import ProductDetail from '../pages/ProductDetail'
 import Story from '../pages/Story'
 import Design from '../pages/Design'
 import ContactPage from '../pages/Contact'
-import AdminLayout from '../components/admin/AdminLayout'
 import AdminDashboard from '../pages/admin/AdminDashboard'
+import AdminProducts from '../pages/admin/AdminProducts'
+import AdminCategories from '../pages/admin/AdminCategories'
 import AdminPlaceholder from '../pages/admin/AdminPlaceholder'
 import AdminRoute from './AdminRoute'
 
@@ -26,10 +27,7 @@ function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route
-        path="/reset-password-expired"
-        element={<ResetPasswordExpired />}
-      />
+      <Route path="/reset-password-expired" element={<ResetPasswordExpired />} />
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/product/:id" element={<ProductDetail />} />
@@ -38,59 +36,26 @@ function AppRoutes() {
       <Route path="/stories" element={<Story />} />
       <Route path="/contact" element={<ContactPage />} />
 
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminLayout />
-          </AdminRoute>
-        }
-      >
+      {/* Admin — AdminRoute tự render AdminLayout + Outlet */}
+      <Route path="/admin" element={<AdminRoute />}>
         <Route index element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="categories" element={<AdminCategories />} />
         <Route
           path="orders"
-          element={
-            <AdminPlaceholder
-              title="Quản lý đơn hàng"
-              description="Trang quản lý đơn hàng đang được phát triển."
-            />
-          }
-        />
-        <Route
-          path="products"
-          element={
-            <AdminPlaceholder
-              title="Quản lý sản phẩm"
-              description="Trang quản lý sản phẩm đang được phát triển."
-            />
-          }
+          element={<AdminPlaceholder title="Quản lý đơn hàng" description="Trang quản lý đơn hàng đang được phát triển." />}
         />
         <Route
           path="customers"
-          element={
-            <AdminPlaceholder
-              title="Quản lý khách hàng"
-              description="Trang quản lý khách hàng đang được phát triển."
-            />
-          }
+          element={<AdminPlaceholder title="Quản lý khách hàng" description="Trang quản lý khách hàng đang được phát triển." />}
         />
         <Route
           path="reports"
-          element={
-            <AdminPlaceholder
-              title="Báo cáo"
-              description="Trang báo cáo đang được phát triển."
-            />
-          }
+          element={<AdminPlaceholder title="Báo cáo" description="Trang báo cáo đang được phát triển." />}
         />
         <Route
           path="settings"
-          element={
-            <AdminPlaceholder
-              title="Cài đặt"
-              description="Trang cài đặt đang được phát triển."
-            />
-          }
+          element={<AdminPlaceholder title="Cài đặt" description="Trang cài đặt đang được phát triển." />}
         />
       </Route>
 

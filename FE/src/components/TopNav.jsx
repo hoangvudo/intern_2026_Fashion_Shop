@@ -53,7 +53,7 @@ function TopNav() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      logout();
+      await logout();
       toast.success("Đăng xuất thành công!");
       setShowUserMenu(false);
       navigate("/login");
