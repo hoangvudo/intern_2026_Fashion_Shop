@@ -27,9 +27,9 @@ export function useAdminProducts() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [filters])
 
-  useEffect(() => { fetchProducts(filters) }, [filters])
+  useEffect(() => { fetchProducts() }, [fetchProducts])
 
   const updateFilter = (key, value) =>
     setFilters(prev => ({ ...prev, [key]: value, page: key === 'page' ? value : 0 }))

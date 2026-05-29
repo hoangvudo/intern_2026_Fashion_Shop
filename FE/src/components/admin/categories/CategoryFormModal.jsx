@@ -4,6 +4,14 @@ import { FiX, FiImage, FiTag } from 'react-icons/fi'
 import categoryService from '../../../services/categoryService'
 import toast from 'react-hot-toast'
 
+const emptyForm = {
+  name: '',
+  slug: '',
+  description: '',
+  imageUrl: '',
+  isActive: true
+}
+
 export default function CategoryFormModal({
   open,
   onClose,
@@ -14,14 +22,6 @@ export default function CategoryFormModal({
   const isEdit = Boolean(category?.id)
 
   const [saving, setSaving] = useState(false)
-
-  const emptyForm = {
-    name: '',
-    slug: '',
-    description: '',
-    imageUrl: '',
-    isActive: true
-  }
 
   const [form, setForm] = useState(emptyForm)
 

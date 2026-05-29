@@ -18,6 +18,13 @@ const COLORS = [
   { name:'Nâu', hex:'#744210' },
 ]
 
+const EMPTY_FORM = {
+  name: '', slug: '', description: '', price: '', salePrice: '',
+  categoryId: '', brandId: '', thumbnailUrl: '',
+  isActive: true, isFeatured: false, isNewArrival: false,
+  variants: [],
+}
+
 function VariantRow({ variant, index, onUpdate, onRemove }) {
   const [colorOpen, setColorOpen] = useState(false)
   const colorRef = useRef(null)
@@ -105,14 +112,7 @@ export default function ProductFormModal({ open, onClose, product, categories, b
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState('basic') // basic | variants | images
 
-  const emptyForm = {
-    name: '', slug: '', description: '', price: '', salePrice: '',
-    categoryId: '', brandId: '', thumbnailUrl: '',
-    isActive: true, isFeatured: false, isNewArrival: false,
-    variants: [],
-  }
-
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   useEffect(() => {
     if (product) {
@@ -131,7 +131,7 @@ export default function ProductFormModal({ open, onClose, product, categories, b
         variants: product.variants || [],
       })
     } else {
-      setForm(emptyForm)
+      setForm(EMPTY_FORM)
     }
     setTab('basic')
   }, [product, open])
@@ -173,7 +173,12 @@ export default function ProductFormModal({ open, onClose, product, categories, b
       onSaved()
       onClose()
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')
+      console.error('Save product error:', err?.response?.data || err)
+      const message = err?.response?.data?.message
+        || err?.response?.data?.error
+        || (err?.response?.status === 400 ? 'Không lưu được sản phẩm. Vui lòng kiểm tra quyền admin và dữ liệu nhập.' : null)
+        || 'Có lỗi xảy ra khi lưu sản phẩm'
+      toast.error(message)
     } finally {
       setSaving(false)
     }
@@ -352,10 +357,10 @@ export default function ProductFormModal({ open, onClose, product, categories, b
                     {/* Flags */}
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { key: 'isActive',     label: 'Đang bán',     color: 'green' },
-                        { key: 'isFeatured',   label: 'Nổi bật',      color: 'amber' },
-                        { key: 'isNewArrival', label: 'Hàng mới',     color: 'blue'  },
-                      ].map(({ key, label, color }) => (
+                        { key: 'isActive',     label: 'Đang bán' },
+                        { key: 'isFeatured',   label: 'Nổi bật' },
+                        { key: 'isNewArrival', label: 'Hàng mới' },
+                      ].map(({ key, label }) => (
                         <label key={key} className="flex cursor-pointer items-center gap-3 border border-[#D1C4B9] px-4 py-3 hover:bg-[#F0EEE9]">
                           <input
                             type="checkbox"

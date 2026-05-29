@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useAuthStore from '../store/authStore'
 import AdminLayout from '../components/admin/AdminLayout'

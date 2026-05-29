@@ -13,7 +13,7 @@ public class StaticResourceConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve file từ thư mục uploads qua URL /api/uploads/**
+        // thêm dòng này vào
         registry.addResourceHandler("/api/uploads/**")
                 .addResourceLocations("file:" + uploadDir + "/");
     }

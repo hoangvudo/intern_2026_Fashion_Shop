@@ -68,8 +68,8 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Upload ảnh - cho phép admin
+                        .requestMatchers("/api/uploads/**").permitAll()  //
                         .requestMatchers("/api/upload/**").authenticated()
-
                         .anyRequest().permitAll()
                 )
 

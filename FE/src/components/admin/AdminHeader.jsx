@@ -8,7 +8,7 @@ function AdminHeader({ onMenuClick }) {
 
   // Greet theo giờ
   const hour = new Date().getHours()
-  const greetPrefix =
+  const _greetPrefix =
     hour < 12 ? 'Chào buổi sáng' :
     hour < 18 ? 'Chào buổi chiều' :
     'Chào buổi tối'

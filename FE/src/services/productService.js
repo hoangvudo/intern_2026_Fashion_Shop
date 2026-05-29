@@ -66,6 +66,11 @@ const productService = {
     return res.data
   },
 
+getStats: async () => {
+  const res = await axios.get('/admin/stats')
+  return res.data
+},
+
   // Dùng cho dropdown trong AdminProducts
   getCategories: async () => {
     const res = await axios.get('/categories/all')

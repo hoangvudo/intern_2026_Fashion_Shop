@@ -22,6 +22,7 @@ public class AdminDashboardService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductRepository productRepository; // thêm dòng này
 
     public DashboardStatsDto getStats() {
         LocalDateTime now = LocalDateTime.now();
@@ -29,14 +30,10 @@ public class AdminDashboardService {
         LocalDateTime startOfLastMonth = startOfMonth.minusMonths(1);
         LocalDateTime endOfLastMonth = startOfMonth.minusSeconds(1);
 
-        // ✅ FIX: dùng COALESCE trong query nên không cần null check ở đây,
-        //        nhưng vẫn bảo vệ phòng khi driver trả về null
-        BigDecimal thisMonthRevenue = orderRepository
-                .sumRevenueByDateRange(startOfMonth, now);
+        BigDecimal thisMonthRevenue = orderRepository.sumRevenueByDateRange(startOfMonth, now);
         if (thisMonthRevenue == null) thisMonthRevenue = BigDecimal.ZERO;
 
-        BigDecimal lastMonthRevenue = orderRepository
-                .sumRevenueByDateRange(startOfLastMonth, endOfLastMonth);
+        BigDecimal lastMonthRevenue = orderRepository.sumRevenueByDateRange(startOfLastMonth, endOfLastMonth);
         if (lastMonthRevenue == null) lastMonthRevenue = BigDecimal.ZERO;
 
         BigDecimal growthPercent = BigDecimal.ZERO;
@@ -51,6 +48,9 @@ public class AdminDashboardService {
         Long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
         Long newCustomers = userRepository.countByCreatedAtAfter(startOfMonth);
 
+        BigDecimal inventoryValue = productVariantRepository.calculateInventoryValue();
+        if (inventoryValue == null) inventoryValue = BigDecimal.ZERO;
+
         return DashboardStatsDto.builder()
                 .totalRevenue(thisMonthRevenue)
                 .revenueGrowthPercent(growthPercent)
@@ -59,6 +59,9 @@ public class AdminDashboardService {
                 .newCustomersThisMonth(newCustomers != null ? newCustomers : 0L)
                 .totalCustomers(userRepository.count())
                 .lowStockCount(productVariantRepository.countByStockLessThan(5))
+                .totalProducts(productRepository.count())
+                .inventoryValue(inventoryValue)
+                .totalProductViews(0L)
                 .build();
     }
 
