@@ -36,7 +36,10 @@ public class AdminController {
     ) {
         return ResponseEntity.ok(dashboardService.getRevenue(period));
     }
-
+    @GetMapping("/product-stats")
+    public ResponseEntity<DashboardStatsDto> getProductStats() {
+        return ResponseEntity.ok(dashboardService.getStats());
+    }
     // GET /api/admin/best-sellers
     @GetMapping("/best-sellers")
     public ResponseEntity<List<BestSellerDto>> getBestSellers() {
