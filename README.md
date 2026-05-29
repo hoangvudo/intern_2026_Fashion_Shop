@@ -1,0 +1,1 @@
+# intern_2026_Fashion_Shop
