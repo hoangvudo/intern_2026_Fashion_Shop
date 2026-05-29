@@ -156,6 +156,21 @@ public class ProductService {
                     .orElseThrow(() -> new NotFoundException("Brand không tồn tại"));
             p.setBrand(brand);
         }
+
+        // ← thêm đoạn này
+        if (req.getImageUrls() != null) {
+            p.getImages().clear();
+            for (int i = 0; i < req.getImageUrls().size(); i++) {
+                String url = req.getImageUrls().get(i);
+                if (url == null || url.isBlank()) continue;
+                ProductImage img = new ProductImage();
+                img.setProduct(p);
+                img.setImageUrl(url);
+                img.setDisplayOrder(i);
+                img.setIsPrimary(url.equals(req.getThumbnailUrl()));
+                p.getImages().add(img);
+            }
+        }
     }
 
     private void saveVariants(Product product, List<ProductRequest.VariantRequest> variantReqs) {

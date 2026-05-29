@@ -17,11 +17,12 @@ public class ProductRequest {
     private Boolean isActive = true;
     private Boolean isFeatured = false;
     private Boolean isNewArrival = false;
+    private List<String> imageUrls;  // ← thêm dòng này
     private List<VariantRequest> variants;
 
     @Data
     public static class VariantRequest {
-        private Long id;          // null = tạo mới, có id = cập nhật
+        private Long id;
         private String size;
         private String color;
         private String colorHex;
