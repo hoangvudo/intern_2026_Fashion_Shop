@@ -17,8 +17,19 @@ public class ProductRequest {
     private Boolean isActive = true;
     private Boolean isFeatured = false;
     private Boolean isNewArrival = false;
-    private List<String> imageUrls;  // ← thêm dòng này
+    private List<String> imageUrls;  // For backward compatibility
+    private List<ImageRequest> images;  // ← NEW: Support color-specific images
     private List<VariantRequest> variants;
+
+    // ───────────────── IMAGE REQUEST ─────────────────
+    @Data
+    public static class ImageRequest {
+        private Long id;
+        private String imageUrl;
+        private String color;  // Map to specific color (optional)
+        private Integer displayOrder;
+        private Boolean isPrimary;
+    }
 
     @Data
     public static class VariantRequest {

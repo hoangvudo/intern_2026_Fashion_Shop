@@ -18,6 +18,10 @@ public class ProductImage {
     @Column(nullable = false)
     private String imageUrl;
 
+    // Support color-specific images
+    @Column(columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    private String color;
+
     private Integer displayOrder = 0;
     private Boolean isPrimary = false;
 }

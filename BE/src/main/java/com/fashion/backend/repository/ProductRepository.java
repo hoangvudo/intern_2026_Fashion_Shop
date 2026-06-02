@@ -164,4 +164,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
           AND p.category.id = :categoryId
         """)
     Object[] findPriceRange(@Param("categoryId") Long categoryId);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  NEW: Get product detail (for public view - only active products)
+    //  Loads variants and images with eager loading to avoid N+1
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @Query("""
+        SELECT p FROM Product p
+        LEFT JOIN FETCH p.variants
+        LEFT JOIN FETCH p.images
+        WHERE p.id = :id AND p.isActive = true
+        """)
+    Optional<Product> findByIdWithDetails(@Param("id") Long id);
 }

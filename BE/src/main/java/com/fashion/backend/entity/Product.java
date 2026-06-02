@@ -42,6 +42,7 @@
         private Double avgRating = 0.0;
         private Integer reviewCount = 0;
         private Integer soldCount = 0;
+        private Integer viewCount = 0;
         private Boolean isActive = true;
         private Boolean isFeatured = false;
         private Boolean isNewArrival = false;

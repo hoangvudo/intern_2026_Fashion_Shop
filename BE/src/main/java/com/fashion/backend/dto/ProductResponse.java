@@ -26,6 +26,7 @@ public class ProductResponse {
     private Double avgRating;
     private Integer reviewCount;
     private Integer soldCount;
+    private Integer viewCount;
     private Boolean isActive;
     private Boolean isFeatured;
     private Boolean isNewArrival;
@@ -56,6 +57,7 @@ public class ProductResponse {
         r.setAvgRating(p.getAvgRating());
         r.setReviewCount(p.getReviewCount());
         r.setSoldCount(p.getSoldCount());
+        r.setViewCount(p.getViewCount());
         r.setIsActive(p.getIsActive());
         r.setIsFeatured(p.getIsFeatured());
         r.setIsNewArrival(p.getIsNewArrival());

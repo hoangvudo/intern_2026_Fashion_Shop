@@ -2,6 +2,7 @@ package com.fashion.backend.controller;
 
 import com.fashion.backend.dto.ProductRequest;
 import com.fashion.backend.dto.ProductResponse;
+import com.fashion.backend.dto.ProductDetailResponse;
 import com.fashion.backend.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -72,6 +74,17 @@ public class ProductController {
 
         return ResponseEntity.ok(
                 productService.getById(id)
+        );
+    }
+
+    // ───────────────── DETAIL (GROUPED BY COLOR) ─────────────────
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ProductDetailResponse> getDetail(
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(
+                productService.getDetailById(id)
         );
     }
 
@@ -165,6 +178,41 @@ public class ProductController {
 
         return ResponseEntity.ok(
                 productService.toggleActive(id)
+        );
+    }
+
+    // ───────────────── IMAGE MANAGEMENT ─────────────────
+
+    @PostMapping("/{id}/images")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> addImages(
+            @PathVariable Long id,
+            @RequestBody List<ProductRequest.ImageRequest> images
+    ) {
+        return ResponseEntity.ok(
+                productService.addImages(id, images)
+        );
+    }
+
+    @DeleteMapping("/{id}/images/{imageId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Void> deleteImage(
+            @PathVariable Long id,
+            @PathVariable Long imageId
+    ) {
+        productService.deleteImage(id, imageId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/images/{imageId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> updateImage(
+            @PathVariable Long id,
+            @PathVariable Long imageId,
+            @RequestBody ProductRequest.ImageRequest imageReq
+    ) {
+        return ResponseEntity.ok(
+                productService.updateImage(id, imageId, imageReq)
         );
     }
 }

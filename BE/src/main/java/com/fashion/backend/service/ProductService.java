@@ -2,6 +2,7 @@ package com.fashion.backend.service;
 
 import com.fashion.backend.dto.ProductRequest;
 import com.fashion.backend.dto.ProductResponse;
+import com.fashion.backend.dto.ProductDetailResponse;
 import com.fashion.backend.entity.*;
 import com.fashion.backend.exception.NotFoundException;
 import com.fashion.backend.repository.*;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Async;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
@@ -25,6 +27,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final ProductVariantRepository variantRepository;
+    private final ProductImageRepository productImageRepository;
 
     // ── LIST / SEARCH ─────────────────────────────────────────────
     public Page<ProductResponse> search(
@@ -69,6 +72,33 @@ public class ProductService {
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id));
         return ProductResponse.from(p);
+    }
+
+    // ── GET DETAIL WITH VARIANTS GROUPED BY COLOR ──────────────
+    public ProductDetailResponse getDetailById(Long id) {
+        Product p = productRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id));
+        
+        // Async increment view count
+        incrementViewCount(id);
+        
+        return ProductDetailResponse.from(p);
+    }
+
+    // ── INCREMENT VIEW COUNT (ASYNC) ───────────────────────────
+    @Async
+    @Transactional
+    public void incrementViewCount(Long productId) {
+        try {
+            Product p = productRepository.findById(productId).orElse(null);
+            if (p != null) {
+                p.setViewCount((p.getViewCount() != null ? p.getViewCount() : 0) + 1);
+                productRepository.save(p);
+            }
+        } catch (Exception e) {
+            // Log nhưng không throw exception để không ảnh hưởng đến API response
+            System.err.println("Error incrementing view count: " + e.getMessage());
+        }
     }
 
     // ── CREATE ────────────────────────────────────────────────────
@@ -135,6 +165,74 @@ public class ProductService {
         return ProductResponse.from(productRepository.save(p));
     }
 
+    // ── IMAGE MANAGEMENT ──────────────────────────────────────────
+    @Transactional
+    public ProductResponse addImages(Long productId, List<ProductRequest.ImageRequest> images) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + productId));
+        
+        if (images == null || images.isEmpty()) {
+            return ProductResponse.from(p);
+        }
+
+        for (ProductRequest.ImageRequest imgReq : images) {
+            if (imgReq.getImageUrl() == null || imgReq.getImageUrl().isBlank()) continue;
+            
+            ProductImage img = new ProductImage();
+            img.setProduct(p);
+            img.setImageUrl(imgReq.getImageUrl());
+            img.setColor(imgReq.getColor());
+            img.setDisplayOrder(imgReq.getDisplayOrder() != null ? imgReq.getDisplayOrder() : 0);
+            img.setIsPrimary(imgReq.getIsPrimary() != null ? imgReq.getIsPrimary() : false);
+            p.getImages().add(img);
+        }
+        
+        p.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(p);
+        return ProductResponse.from(p);
+    }
+
+    @Transactional
+    public void deleteImage(Long productId, Long imageId) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + productId));
+        
+        ProductImage img = productImageRepository.findByIdAndProductId(imageId, productId)
+                .orElseThrow(() -> new NotFoundException("Ảnh không tồn tại: " + imageId));
+        
+        p.getImages().remove(img);
+        productImageRepository.delete(img);
+        p.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(p);
+    }
+
+    @Transactional
+    public ProductResponse updateImage(Long productId, Long imageId, ProductRequest.ImageRequest imageReq) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + productId));
+        
+        ProductImage img = productImageRepository.findByIdAndProductId(imageId, productId)
+                .orElseThrow(() -> new NotFoundException("Ảnh không tồn tại: " + imageId));
+        
+        if (imageReq.getImageUrl() != null && !imageReq.getImageUrl().isBlank()) {
+            img.setImageUrl(imageReq.getImageUrl());
+        }
+        if (imageReq.getColor() != null) {
+            img.setColor(imageReq.getColor());
+        }
+        if (imageReq.getDisplayOrder() != null) {
+            img.setDisplayOrder(imageReq.getDisplayOrder());
+        }
+        if (imageReq.getIsPrimary() != null) {
+            img.setIsPrimary(imageReq.getIsPrimary());
+        }
+        
+        productImageRepository.save(img);
+        p.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(p);
+        return ProductResponse.from(p);
+    }
+
     // ── HELPERS ───────────────────────────────────────────────────
     private void applyRequest(Product p, ProductRequest req) {
         p.setName(req.getName());
@@ -157,15 +255,32 @@ public class ProductService {
             p.setBrand(brand);
         }
 
-        // ← thêm đoạn này
-        if (req.getImageUrls() != null) {
-            p.getImages().clear();
+        // ── HANDLE IMAGES ──
+        // Priority: new images format > old imageUrls format
+        p.getImages().clear();
+        
+        if (req.getImages() != null && !req.getImages().isEmpty()) {
+            // New format: images with color mapping
+            for (ProductRequest.ImageRequest imgReq : req.getImages()) {
+                if (imgReq.getImageUrl() == null || imgReq.getImageUrl().isBlank()) continue;
+                
+                ProductImage img = new ProductImage();
+                img.setProduct(p);
+                img.setImageUrl(imgReq.getImageUrl());
+                img.setColor(imgReq.getColor());  // Color-specific image
+                img.setDisplayOrder(imgReq.getDisplayOrder() != null ? imgReq.getDisplayOrder() : 0);
+                img.setIsPrimary(imgReq.getIsPrimary() != null ? imgReq.getIsPrimary() : false);
+                p.getImages().add(img);
+            }
+        } else if (req.getImageUrls() != null && !req.getImageUrls().isEmpty()) {
+            // Old format: backward compatibility
             for (int i = 0; i < req.getImageUrls().size(); i++) {
                 String url = req.getImageUrls().get(i);
                 if (url == null || url.isBlank()) continue;
                 ProductImage img = new ProductImage();
                 img.setProduct(p);
                 img.setImageUrl(url);
+                img.setColor(null);  // No color mapping
                 img.setDisplayOrder(i);
                 img.setIsPrimary(url.equals(req.getThumbnailUrl()));
                 p.getImages().add(img);
