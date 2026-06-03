@@ -36,7 +36,7 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;
-
+    @Column(length = 2000)
     private String thumbnailUrl;
     private Integer totalStock = 0;
     private Double avgRating = 0.0;
