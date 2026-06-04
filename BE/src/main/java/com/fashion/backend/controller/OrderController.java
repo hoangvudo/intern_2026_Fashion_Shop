@@ -128,9 +128,16 @@ public class OrderController {
      * [VNPAY] RETURN URL – redirect sau khi thanh toán
      * GET /api/orders/vnpay/return
      * Auth: không cần
+     * BE cập nhật DB rồi redirect về FE kèm toàn bộ params
      * ───────────────────────────────────────────────────────── */
     @GetMapping("/vnpay/return")
-    public ResponseEntity<Map<String, Object>> vnPayReturn(HttpServletRequest request) {
-        return ResponseEntity.ok(vnPayService.handleReturn(request));
+    public void vnPayReturn(HttpServletRequest request,
+                            jakarta.servlet.http.HttpServletResponse response)
+            throws java.io.IOException {
+        vnPayService.handleReturn(request); // cập nhật DB
+
+        // Forward nguyên xi query string từ VNPay — không encode lại tránh sai chữ ký
+        String rawQuery = request.getQueryString();
+        response.sendRedirect("http://localhost:3000/vnpay/result?" + rawQuery);
     }
 }

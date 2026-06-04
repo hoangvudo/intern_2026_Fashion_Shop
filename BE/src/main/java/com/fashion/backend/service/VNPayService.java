@@ -52,7 +52,7 @@ public class VNPayService {
             throw new BadRequestException("Đơn hàng đã được thanh toán");
         }
 
-       String clientIp = VNPayUtil.getClientIp(request);
+        String clientIp = VNPayUtil.getClientIp(request);
 
         // VNPay yêu cầu amount * 100 (đơn vị: đồng × 100)
         long amount = order.getTotalAmount().multiply(BigDecimal.valueOf(100)).longValue();
@@ -68,7 +68,7 @@ public class VNPayService {
         params.put("vnp_OrderType",  "other");
         params.put("vnp_Locale",     vnPayConfig.getLocale());
         params.put("vnp_ReturnUrl",  vnPayConfig.getReturnUrl());
-       params.put("vnp_IpAddr",     clientIp);
+        params.put("vnp_IpAddr",     clientIp);
         params.put("vnp_CreateDate", VNPayUtil.getNow());
         params.put("vnp_ExpireDate", getExpireDate());
 
@@ -95,10 +95,10 @@ public class VNPayService {
 
         // 1. Validate IP whitelist
         String clientIp = VNPayUtil.getClientIp(request);
-       if (!VNPAY_IP_WHITELIST.contains(clientIp)) {
-           log.warn("[VNPay IPN] Rejected IP: {}", clientIp);
-           return Map.of("RspCode", "99", "Message", "Invalid IP");
-       }
+        if (!VNPAY_IP_WHITELIST.contains(clientIp)) {
+            log.warn("[VNPay IPN] Rejected IP: {}", clientIp);
+            return Map.of("RspCode", "99", "Message", "Invalid IP");
+        }
 
         // 2. Parse params
         Map<String, String> params = VNPayUtil.extractParams(request);
@@ -147,22 +147,38 @@ public class VNPayService {
 
     /* ════════════════════════════════════════════════════════
      * Return URL (redirect sau khi user thanh toán xong)
-     * Không cập nhật DB ở đây — đã xử lý qua IPN
+     * Cũng cập nhật DB ở đây để hỗ trợ dev local (IPN không
+     * gọi được localhost). Idempotent — an toàn khi cả IPN
+     * lẫn Return URL đều chạy trên production.
      * ════════════════════════════════════════════════════════ */
+    @Transactional
     public Map<String, Object> handleReturn(HttpServletRequest request) {
         Map<String, String> params = VNPayUtil.extractParams(request);
         boolean validSignature = VNPayUtil.verifySignature(params, vnPayConfig.getHashSecret());
         String responseCode = params.get("vnp_ResponseCode");
-        String txnRef = params.get("vnp_TxnRef");
+        String txnRef       = params.get("vnp_TxnRef");
 
         boolean success = validSignature && "00".equals(responseCode);
+
+        // Cập nhật DB (idempotent: chỉ update nếu chưa PAID)
+        if (txnRef != null) {
+            orderRepository.findByOrderCode(txnRef).ifPresent(order -> {
+                if (!"PAID".equals(order.getPaymentStatus())) {
+                    order.setPaymentStatus(success ? "PAID" : "FAILED");
+                    orderRepository.save(order);
+                    log.info("[VNPay Return] Updated order {} → paymentStatus={}",
+                            txnRef, success ? "PAID" : "FAILED");
+                }
+            });
+        }
+
         log.info("[VNPay Return] txnRef={} | success={} | code={}", txnRef, success, responseCode);
 
         return Map.of(
-                "success",       success,
-                "orderCode",     txnRef != null ? txnRef : "",
-                "responseCode",  responseCode != null ? responseCode : "",
-                "message",       success ? "Thanh toán thành công" : "Thanh toán thất bại hoặc bị huỷ"
+                "success",      success,
+                "orderCode",    txnRef != null ? txnRef : "",
+                "responseCode", responseCode != null ? responseCode : "",
+                "message",      success ? "Thanh toán thành công" : "Thanh toán thất bại hoặc bị huỷ"
         );
     }
 
