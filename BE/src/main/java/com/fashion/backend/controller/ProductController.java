@@ -1,0 +1,218 @@
+package com.fashion.backend.controller;
+
+import com.fashion.backend.dto.ProductRequest;
+import com.fashion.backend.dto.ProductResponse;
+import com.fashion.backend.dto.ProductDetailResponse;
+import com.fashion.backend.service.ProductService;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+
+import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/products")
+@RequiredArgsConstructor
+public class ProductController {
+
+    private final ProductService productService;
+
+    // ───────────────── PUBLIC ─────────────────
+
+    @GetMapping
+    public ResponseEntity<Page<ProductResponse>> search(
+
+            @RequestParam(required = false) String keyword,
+
+            @RequestParam(required = false) Long categoryId,
+
+            @RequestParam(required = false) Long brandId,
+
+            @RequestParam(required = false) BigDecimal minPrice,
+
+            @RequestParam(required = false) BigDecimal maxPrice,
+
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+
+            @RequestParam(defaultValue = "0") int page,
+
+            @RequestParam(defaultValue = "12") int size
+    ) {
+
+        if ("newest".equals(sortBy)) {
+            sortBy = "createdAt";
+        }
+
+        return ResponseEntity.ok(
+                productService.search(
+                        keyword,
+                        categoryId,
+                        brandId,
+                        minPrice,
+                        maxPrice,
+                        sortBy,
+                        page,
+                        size
+                )
+        );
+    }
+
+    // ───────────────── DETAIL ─────────────────
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponse> getById(
+            @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+                productService.getById(id)
+        );
+    }
+
+    // ───────────────── DETAIL (GROUPED BY COLOR) ─────────────────
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ProductDetailResponse> getDetail(
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(
+                productService.getDetailById(id)
+        );
+    }
+
+    // ───────────────── ADMIN ─────────────────
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Page<ProductResponse>> adminSearch(
+
+            @RequestParam(required = false) String keyword,
+
+            @RequestParam(required = false) Long categoryId,
+
+            @RequestParam(required = false) Long brandId,
+
+            @RequestParam(required = false) Boolean isActive,
+
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+
+            @RequestParam(defaultValue = "0") int page,
+
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        if ("newest".equals(sortBy)) {
+            sortBy = "createdAt";
+        }
+
+        return ResponseEntity.ok(
+                productService.adminSearch(
+                        keyword,
+                        categoryId,
+                        brandId,
+                        isActive,
+                        sortBy,
+                        page,
+                        size
+                )
+        );
+    }
+
+    // ───────────────── CREATE ─────────────────
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> create(
+            @RequestBody ProductRequest req
+    ) {
+
+        return ResponseEntity.ok(
+                productService.create(req)
+        );
+    }
+
+    // ───────────────── UPDATE ─────────────────
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> update(
+
+            @PathVariable Long id,
+
+            @RequestBody ProductRequest req
+    ) {
+
+        return ResponseEntity.ok(
+                productService.update(id, req)
+        );
+    }
+
+    // ───────────────── DELETE ─────────────────
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id
+    ) {
+
+        productService.delete(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // ───────────────── TOGGLE ACTIVE ─────────────────
+
+    @PatchMapping("/{id}/toggle-active")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> toggleActive(
+            @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+                productService.toggleActive(id)
+        );
+    }
+
+    // ───────────────── IMAGE MANAGEMENT ─────────────────
+
+    @PostMapping("/{id}/images")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> addImages(
+            @PathVariable Long id,
+            @RequestBody List<ProductRequest.ImageRequest> images
+    ) {
+        return ResponseEntity.ok(
+                productService.addImages(id, images)
+        );
+    }
+
+    @DeleteMapping("/{id}/images/{imageId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Void> deleteImage(
+            @PathVariable Long id,
+            @PathVariable Long imageId
+    ) {
+        productService.deleteImage(id, imageId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/images/{imageId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ProductResponse> updateImage(
+            @PathVariable Long id,
+            @PathVariable Long imageId,
+            @RequestBody ProductRequest.ImageRequest imageReq
+    ) {
+        return ResponseEntity.ok(
+                productService.updateImage(id, imageId, imageReq)
+        );
+    }
+}
