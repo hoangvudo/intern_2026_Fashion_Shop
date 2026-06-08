@@ -1,5 +1,5 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 const useAuthStore = create(
   persist(
@@ -10,21 +10,31 @@ const useAuthStore = create(
       isAuthenticated: false,
 
       login: ({ user, accessToken, refreshToken }) => {
-        set({ user, accessToken, refreshToken, isAuthenticated: true })
+        set({ user, accessToken, refreshToken, isAuthenticated: true });
       },
 
       logout: async () => {
-        const { refreshToken, accessToken } = get()
+        const { refreshToken, accessToken } = get();
         // Clear state trước
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
         // Gọi API logout với token đã lưu, dùng axios trực tiếp (không qua interceptor)
         if (refreshToken) {
           try {
-            const { default: axios } = await import('axios')
-            await axios.post('/api/auth/logout',
+            const { default: axios } = await import("axios");
+            await axios.post(
+              "/api/auth/logout",
               { refreshToken },
-              { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
-            )
+              {
+                headers: accessToken
+                  ? { Authorization: `Bearer ${accessToken}` }
+                  : {},
+              },
+            );
           } catch {
             // Bỏ qua — state đã clear, không cần xử lý
           }
@@ -32,18 +42,34 @@ const useAuthStore = create(
       },
 
       initializeAuth: async () => {
-        const { refreshToken, isAuthenticated } = get()
+        const { refreshToken, isAuthenticated } = get();
         // Không có token hoặc chưa đăng nhập → bỏ qua, không clear
-        if (!refreshToken || !isAuthenticated) return
+        if (!refreshToken || !isAuthenticated) return;
 
         try {
-          const { default: axios } = await import('axios')
-          const response = await axios.post('/api/auth/refresh', { refreshToken })
-          const { accessToken, refreshToken: newRefreshToken, user } = response.data
-          set({ accessToken, refreshToken: newRefreshToken, user, isAuthenticated: true })
+          const { default: axios } = await import("axios");
+          const response = await axios.post("/api/auth/refresh", {
+            refreshToken,
+          });
+          const {
+            accessToken,
+            refreshToken: newRefreshToken,
+            user,
+          } = response.data;
+          set({
+            accessToken,
+            refreshToken: newRefreshToken,
+            user,
+            isAuthenticated: true,
+          });
         } catch {
           // Refresh thất bại → clear state
-          set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+          });
         }
       },
 
@@ -51,18 +77,18 @@ const useAuthStore = create(
       updateUser: (user) => set({ user }),
       getUser: () => get().user,
       getAccessToken: () => get().accessToken,
-      getRefreshToken: () => get().refreshToken
+      getRefreshToken: () => get().refreshToken,
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated
-      })
-    }
-  )
-)
+        isAuthenticated: state.isAuthenticated,
+      }),
+    },
+  ),
+);
 
-export default useAuthStore
+export default useAuthStore;

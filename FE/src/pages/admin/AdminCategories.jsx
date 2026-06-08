@@ -51,10 +51,11 @@ export default function AdminCategories() {
     }
   }
 
+  // ✅ FIX: dùng toggleActive thay vì gửi toàn bộ object
   const handleToggleActive = async (c) => {
     setToggling(c.id)
     try {
-      await categoryService.update(c.id, { ...c, isActive: !c.isActive })
+      await categoryService.toggleActive(c.id)
       toast.success(c.isActive ? 'Đã ẩn danh mục' : 'Đã hiện danh mục')
       refresh()
     } catch {
@@ -65,7 +66,7 @@ export default function AdminCategories() {
   }
 
   const filtered = categories.filter(c =>
-    c.name.toLowerCase().includes(keyword.toLowerCase())
+    c.name?.toLowerCase().includes(keyword.toLowerCase())
   )
 
   return (
@@ -77,6 +78,7 @@ export default function AdminCategories() {
           <h1 className="font-beVietnamPro text-2xl font-semibold text-[#1B1C19]">Quản lý danh mục</h1>
           <p className="mt-1 font-beVietnamPro text-sm text-[#6F583D]">
             Tổng cộng <span className="font-semibold">{categories.length}</span> danh mục
+            {' '}({categories.filter(c => c.isActive).length} đang hiển thị)
           </p>
         </div>
         <button
@@ -154,7 +156,8 @@ export default function AdminCategories() {
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-12 shrink-0 overflow-hidden border border-[#E8E0D8] bg-[#F5F3EE]">
                           {c.imageUrl
-                            ? <img src={c.imageUrl} alt={c.name} className="h-full w-full object-cover" />
+                            ? <img src={c.imageUrl} alt={c.name} className="h-full w-full object-cover"
+                                onError={e => { e.target.style.display='none' }} />
                             : <FiTag className="m-auto h-5 w-5 text-[#D1C4B9] mt-3.5" />
                           }
                         </div>
@@ -187,7 +190,6 @@ export default function AdminCategories() {
                     {/* Thao tác */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
-                        {/* Toggle */}
                         <button
                           onClick={() => handleToggleActive(c)}
                           disabled={toggling === c.id}
@@ -200,7 +202,6 @@ export default function AdminCategories() {
                           }
                         </button>
 
-                        {/* Edit */}
                         <button
                           onClick={() => openEdit(c)}
                           title="Chỉnh sửa"
@@ -209,7 +210,6 @@ export default function AdminCategories() {
                           <FiEdit2 className="h-4 w-4" />
                         </button>
 
-                        {/* Delete */}
                         <button
                           onClick={() => openDelete(c)}
                           title="Xoá"

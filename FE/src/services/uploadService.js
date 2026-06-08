@@ -6,10 +6,10 @@ const uploadService = {
     formData.append('file', file)
     const res = await axios.post('/upload/image', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined, // ✅ xóa Content-Type để axios tự set multipart/form-data
       },
     })
-    return res.data // { url, fileName }
+    return res.data
   },
 
   uploadImages: async (files) => {

@@ -1,34 +1,3 @@
-// Fallback data khi API chưa ready
-const FALLBACK = [
-  {
-    title: 'Tổng doanh thu',
-    value: '—',
-    badge: { text: '+0%', variant: 'neutral' },
-    icon: 'revenue',
-  },
-  {
-    title: 'Đơn hàng mới',
-    value: '—',
-    subtitle: 'Đang chờ xử lý: —',
-    badge: { text: 'Hôm nay', variant: 'neutral' },
-    icon: 'orders',
-  },
-  {
-    title: 'Khách hàng mới',
-    value: '—',
-    subtitle: 'Tổng số: —',
-    badge: { text: '+0%', variant: 'neutral' },
-    icon: 'customers',
-  },
-  {
-    title: 'Sắp hết hàng',
-    value: '—',
-    subtitle: 'Cần nhập thêm ngay',
-    badge: { text: 'Cảnh báo', variant: 'warning' },
-    icon: 'stock',
-  },
-]
-
 const badgeStyles = {
   success: 'bg-[#E8F5E9] text-[#2E7D32]',
   neutral: 'bg-[#EAE8E3] text-[#4E453D]',
@@ -73,36 +42,38 @@ function TrendUpIcon() {
   )
 }
 
-// ✅ THÊM: nhận props stats từ API
 function StatCards({ stats, loading }) {
+  // FIX: map đúng field từ DashboardStatsDto BE trả về
+  const growth = stats?.revenueGrowthPercent ?? stats?.revenueGrowth ?? 0
+
   const cards = stats ? [
     {
       title: 'Tổng doanh thu',
       value: fmt(stats.totalRevenue),
       badge: {
-        text: stats.revenueGrowth != null
-          ? `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth}%`
-          : '+0%',
-        variant: (stats.revenueGrowth ?? 0) >= 0 ? 'success' : 'warning',
+        text: `${growth >= 0 ? '+' : ''}${Number(growth).toFixed(1)}%`,
+        variant: Number(growth) >= 0 ? 'success' : 'warning',
       },
       sparkline: true,
       icon: 'revenue',
     },
     {
       title: 'Đơn hàng mới',
-      value: stats.newOrders ?? '—',
+      // FIX: BE trả về newOrdersToday không phải newOrders
+      value: stats.newOrdersToday ?? stats.newOrders ?? '—',
       subtitle: `Đang chờ xử lý: ${stats.pendingOrders ?? '—'}`,
       badge: { text: 'Hôm nay', variant: 'neutral' },
       icon: 'orders',
     },
     {
       title: 'Khách hàng mới',
-      value: stats.newCustomers ?? '—',
+      // FIX: BE trả về newCustomersThisMonth không phải newCustomers
+      value: stats.newCustomersThisMonth ?? stats.newCustomers ?? '—',
       subtitle: `Tổng số: ${stats.totalCustomers?.toLocaleString('vi-VN') ?? '—'}`,
       badge: {
         text: stats.customerGrowth != null
           ? `${stats.customerGrowth >= 0 ? '+' : ''}${stats.customerGrowth}%`
-          : '+0%',
+          : 'Tháng này',
         variant: (stats.customerGrowth ?? 0) >= 0 ? 'success' : 'warning',
       },
       icon: 'customers',
@@ -114,22 +85,22 @@ function StatCards({ stats, loading }) {
       badge: { text: 'Cảnh báo', variant: 'warning' },
       icon: 'stock',
     },
-  ] : FALLBACK
+  ] : [
+    { title: 'Tổng doanh thu',  value: '—', badge: { text: '+0%',     variant: 'neutral' }, icon: 'revenue'   },
+    { title: 'Đơn hàng mới',    value: '—', badge: { text: 'Hôm nay', variant: 'neutral' }, icon: 'orders'    },
+    { title: 'Khách hàng mới',  value: '—', badge: { text: '+0%',     variant: 'neutral' }, icon: 'customers' },
+    { title: 'Sắp hết hàng',    value: '—', badge: { text: 'Cảnh báo',variant: 'warning' }, icon: 'stock'     },
+  ]
 
   return (
     <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
       {cards.map((stat) => (
-        <div
-          key={stat.title}
-          className="flex flex-col gap-1 border border-[#D1C4B9] bg-white p-6"
-        >
+        <div key={stat.title} className="flex flex-col gap-1 border border-[#D1C4B9] bg-white p-6">
           <div className="flex items-start justify-between">
             <div className="flex border border-[#D1C4B9] bg-[#F0EEE9] p-2">
               {icons[stat.icon]}
             </div>
-            <div
-              className={`flex items-center gap-1 px-2 py-1 font-beVietnamPro text-xs font-semibold tracking-[0.05em] ${badgeStyles[stat.badge.variant]}`}
-            >
+            <div className={`flex items-center gap-1 px-2 py-1 font-beVietnamPro text-xs font-semibold tracking-[0.05em] ${badgeStyles[stat.badge.variant]}`}>
               {stat.badge.text}
               {stat.badge.variant === 'success' && stat.badge.text.startsWith('+') && <TrendUpIcon />}
             </div>

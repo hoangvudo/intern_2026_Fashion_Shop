@@ -1,48 +1,60 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import StatCards from './StatCards'
 import RevenueChart from './RevenueChart'
 import BestSellers from './BestSellers'
 import RecentOrdersTable from './RecentOrdersTable'
+import LowStockWidget from './LowStockWidget'
 import useAuthStore from '../../../store/authStore'
 import axios from '../../../utils/axios'
+
+const POLL_INTERVAL = 30_000 // 30s realtime polling
 
 function DashboardContent() {
   const user = useAuthStore((s) => s.user)
   const displayName = user?.fullName || user?.name || 'Admin'
 
-  // ✅ THÊM: fetch dữ liệu thật từ API admin
-  const [stats, setStats]             = useState(null)
-  const [revenue, setRevenue]         = useState([])
+  const [stats, setStats]           = useState(null)
+  const [revenue, setRevenue]       = useState([])
   const [bestSellers, setBestSellers] = useState([])
   const [recentOrders, setRecentOrders] = useState([])
-  const [period, setPeriod]           = useState('month')
-  const [loading, setLoading]         = useState(true)
+  const [lowStock, setLowStock]     = useState([])
+  const [period, setPeriod]         = useState('month')
+  const [loading, setLoading]       = useState(true)
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true)
-      try {
-        const [statsRes, revenueRes, bsRes, ordersRes] = await Promise.allSettled([
-          axios.get('/admin/stats'),
-          axios.get(`/admin/revenue?period=${period}`),
-          axios.get('/admin/best-sellers'),
-          axios.get('/admin/orders/recent'),
-        ])
+  const fetchAll = useCallback(async (showLoader = false) => {
+    if (showLoader) setLoading(true)
+    try {
+      const [statsRes, revenueRes, bsRes, ordersRes, lsRes] = await Promise.allSettled([
+        axios.get('/admin/stats'),
+        axios.get(`/admin/revenue?period=${period}`),
+        axios.get('/admin/best-sellers'),
+        axios.get('/admin/orders/recent'),
+        axios.get('/admin/low-stock'),
+      ])
 
-        if (statsRes.status === 'fulfilled')    setStats(statsRes.value.data)
-        if (revenueRes.status === 'fulfilled')  setRevenue(revenueRes.value.data)
-        if (bsRes.status === 'fulfilled')       setBestSellers(bsRes.value.data)
-        if (ordersRes.status === 'fulfilled')   setRecentOrders(ordersRes.value.data)
-      } catch (err) {
-        console.error('Dashboard fetch error:', err)
-      } finally {
-        setLoading(false)
-      }
+      if (statsRes.status   === 'fulfilled') setStats(statsRes.value.data)
+      if (revenueRes.status === 'fulfilled') setRevenue(revenueRes.value.data)
+      if (bsRes.status      === 'fulfilled') setBestSellers(bsRes.value.data)
+      if (ordersRes.status  === 'fulfilled') setRecentOrders(ordersRes.value.data)
+      if (lsRes.status      === 'fulfilled') setLowStock(lsRes.value.data)
+    } catch (err) {
+      console.error('Dashboard fetch error:', err)
+    } finally {
+      if (showLoader) setLoading(false)
     }
-    fetchAll()
   }, [period])
 
-  // Greet theo giờ
+  // First load
+  useEffect(() => {
+    fetchAll(true)
+  }, [fetchAll])
+
+  // Realtime poll (silent, no loader)
+  useEffect(() => {
+    const timer = setInterval(() => fetchAll(false), POLL_INTERVAL)
+    return () => clearInterval(timer)
+  }, [fetchAll])
+
   const hour = new Date().getHours()
   const greeting =
     hour < 12 ? 'Chào buổi sáng' :
@@ -66,6 +78,9 @@ function DashboardContent() {
         <RevenueChart data={revenue} period={period} onPeriodChange={setPeriod} loading={loading} />
         <BestSellers data={bestSellers} loading={loading} />
       </div>
+
+      {/* Low stock full width below */}
+      <LowStockWidget data={lowStock} loading={loading} />
 
       <RecentOrdersTable data={recentOrders} loading={loading} />
     </div>
