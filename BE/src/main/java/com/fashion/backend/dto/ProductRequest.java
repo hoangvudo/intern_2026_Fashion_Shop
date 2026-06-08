@@ -14,6 +14,7 @@ public class ProductRequest {
     private Long categoryId;
     private Long brandId;
     private String thumbnailUrl;
+    private String imageUrl2;
     private Boolean isActive = true;
     private Boolean isFeatured = false;
     private Boolean isNewArrival = false;

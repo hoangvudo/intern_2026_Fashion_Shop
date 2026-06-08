@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Table(name = "brands")
 @Data
 public class Brand {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,6 +21,7 @@ public class Brand {
 
     private String description;
     private String logoUrl;
+    private String bannerUrl;
     private Boolean isActive = true;
     private LocalDateTime createdAt = LocalDateTime.now();
 }

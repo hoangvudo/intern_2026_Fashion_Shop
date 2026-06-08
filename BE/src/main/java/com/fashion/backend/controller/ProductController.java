@@ -2,6 +2,7 @@ package com.fashion.backend.controller;
 
 import com.fashion.backend.dto.ProductRequest;
 import com.fashion.backend.dto.ProductResponse;
+import com.fashion.backend.repository.ProductVariantRepository;
 import com.fashion.backend.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductVariantRepository productVariantRepository;
 
     // ───────────────── PUBLIC ─────────────────
 
@@ -73,6 +75,35 @@ public class ProductController {
         return ResponseEntity.ok(
                 productService.getById(id)
         );
+    }
+
+
+    // ───────────────── STOCK CHECK (PUBLIC) ─────────────────
+
+    /**
+     * GET /api/products/{id}/stock?size=M&color=Đen
+     * Trả về stock realtime của 1 variant cụ thể
+     */
+    @GetMapping("/{id}/stock")
+    public ResponseEntity<java.util.Map<String, Object>> getStock(
+            @PathVariable Long id,
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) String color
+    ) {
+        java.util.Map<String, Object> result = new java.util.LinkedHashMap<>();
+        productVariantRepository
+                .findByProductIdAndSizeAndColor(id, size, color)
+                .ifPresentOrElse(v -> {
+                    result.put("stock", v.getStock());
+                    result.put("available", v.getStock() > 0);
+                }, () -> {
+                    // Fallback: tổng stock tất cả variants của sản phẩm
+                    int total = productVariantRepository.findByProductId(id)
+                            .stream().mapToInt(v -> v.getStock() != null ? v.getStock() : 0).sum();
+                    result.put("stock", total);
+                    result.put("available", total > 0);
+                });
+        return ResponseEntity.ok(result);
     }
 
     // ───────────────── ADMIN ─────────────────

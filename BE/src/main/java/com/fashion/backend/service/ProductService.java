@@ -21,12 +21,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
-    private final BrandRepository brandRepository;
+    private final ProductRepository     productRepository;
+    private final CategoryRepository    categoryRepository;
+    private final BrandRepository       brandRepository;
     private final ProductVariantRepository variantRepository;
 
-    // ── LIST / SEARCH ─────────────────────────────────────────────
+    // ── PUBLIC SEARCH ────────────────────────────────────────────
+    // @Transactional(readOnly=true) giữ session mở để LAZY load an toàn
+    // Nhưng với JOIN FETCH trong query -> không cần LAZY load nữa
+    @Transactional(readOnly = true)
     public Page<ProductResponse> search(
             String keyword, Long categoryId, Long brandId,
             BigDecimal minPrice, BigDecimal maxPrice,
@@ -45,7 +48,8 @@ public class ProductService {
         return products.map(ProductResponse::from);
     }
 
-    // Admin: lấy tất cả kể cả inactive
+    // ── ADMIN SEARCH ─────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public Page<ProductResponse> adminSearch(
             String keyword, Long categoryId, Long brandId,
             Boolean isActive, String sortBy, int page, int size) {
@@ -58,20 +62,21 @@ public class ProductService {
         };
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        // Dùng lại search nhưng không lọc isActive ở query
         Page<Product> products = productRepository.adminSearchProducts(
                 keyword, categoryId, brandId, isActive, pageable);
         return products.map(ProductResponse::from);
     }
 
-    // ── GET ONE ───────────────────────────────────────────────────
+    // ── GET ONE ──────────────────────────────────────────────────
+    // Dùng findByIdWithRelations để load đủ category, brand, variants trong 1 query
+    @Transactional(readOnly = true)
     public ProductResponse getById(Long id) {
-        Product p = productRepository.findById(id)
+        Product p = productRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id));
         return ProductResponse.from(p);
     }
 
-    // ── CREATE ────────────────────────────────────────────────────
+    // ── CREATE ───────────────────────────────────────────────────
     @Transactional
     public ProductResponse create(ProductRequest req) {
         Product p = new Product();
@@ -79,45 +84,60 @@ public class ProductService {
         p.setCreatedAt(LocalDateTime.now());
         p.setUpdatedAt(LocalDateTime.now());
 
-        // Slug
         String slug = (req.getSlug() != null && !req.getSlug().isBlank())
                 ? req.getSlug() : slugify(req.getName());
-        slug = ensureUniqueSlug(slug, null);
-        p.setSlug(slug);
+        p.setSlug(ensureUniqueSlug(slug, null));
 
         Product saved = productRepository.save(p);
 
-        // Variants
         if (req.getVariants() != null) {
             saveVariants(saved, req.getVariants());
         }
+
+        // Tính totalStock sau khi variants đã được persist
         updateTotalStock(saved);
-        return ProductResponse.from(productRepository.save(saved));
+        productRepository.save(saved);
+
+        // Re-fetch với đầy đủ relations để trả về response chính xác
+        return ProductResponse.from(
+                productRepository.findByIdWithRelations(saved.getId())
+                        .orElseThrow(() -> new NotFoundException("Lỗi khi tạo sản phẩm"))
+        );
     }
 
-    // ── UPDATE ────────────────────────────────────────────────────
+    // ── UPDATE ───────────────────────────────────────────────────
     @Transactional
     public ProductResponse update(Long id, ProductRequest req) {
-        Product p = productRepository.findById(id)
+        // Load với relations để tránh LAZY issue khi applyRequest đọc category cũ
+        Product p = productRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id));
 
         applyRequest(p, req);
         p.setUpdatedAt(LocalDateTime.now());
 
         if (req.getSlug() != null && !req.getSlug().isBlank()) {
-            String slug = ensureUniqueSlug(req.getSlug(), id);
-            p.setSlug(slug);
+            p.setSlug(ensureUniqueSlug(req.getSlug(), id));
         }
 
         // Sync variants
         if (req.getVariants() != null) {
             syncVariants(p, req.getVariants());
         }
+
+        productRepository.save(p);
+
+        // Tính lại totalStock sau khi variants persist
         updateTotalStock(p);
-        return ProductResponse.from(productRepository.save(p));
+        productRepository.save(p);
+
+        // Re-fetch fresh từ DB để trả về data chính xác 100%
+        return ProductResponse.from(
+                productRepository.findByIdWithRelations(id)
+                        .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id))
+        );
     }
 
-    // ── DELETE ────────────────────────────────────────────────────
+    // ── DELETE ───────────────────────────────────────────────────
     @Transactional
     public void delete(Long id) {
         if (!productRepository.existsById(id))
@@ -125,41 +145,55 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    // ── TOGGLE ACTIVE ─────────────────────────────────────────────
+    // ── TOGGLE ACTIVE ────────────────────────────────────────────
     @Transactional
     public ProductResponse toggleActive(Long id) {
-        Product p = productRepository.findById(id)
+        Product p = productRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id));
         p.setIsActive(!p.getIsActive());
         p.setUpdatedAt(LocalDateTime.now());
-        return ProductResponse.from(productRepository.save(p));
+        productRepository.save(p);
+
+        // Re-fetch để trả về trạng thái mới nhất
+        return ProductResponse.from(
+                productRepository.findByIdWithRelations(id)
+                        .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id))
+        );
     }
 
-    // ── HELPERS ───────────────────────────────────────────────────
+    // ── HELPERS ──────────────────────────────────────────────────
     private void applyRequest(Product p, ProductRequest req) {
         p.setName(req.getName());
         p.setDescription(req.getDescription());
         p.setPrice(req.getPrice());
         p.setSalePrice(req.getSalePrice());
         p.setThumbnailUrl(req.getThumbnailUrl());
-        p.setIsActive(req.getIsActive() != null ? req.getIsActive() : true);
-        p.setIsFeatured(req.getIsFeatured() != null ? req.getIsFeatured() : false);
+        p.setImageUrl2(req.getImageUrl2());
+        p.setIsActive(req.getIsActive()     != null ? req.getIsActive()     : true);
+        p.setIsFeatured(req.getIsFeatured() != null ? req.getIsFeatured()   : false);
         p.setIsNewArrival(req.getIsNewArrival() != null ? req.getIsNewArrival() : false);
 
+        // Luôn update category — kể cả khi null (user muốn xóa category)
         if (req.getCategoryId() != null) {
             Category cat = categoryRepository.findById(req.getCategoryId())
-                    .orElseThrow(() -> new NotFoundException("Category không tồn tại"));
+                    .orElseThrow(() -> new NotFoundException("Category không tồn tại: " + req.getCategoryId()));
             p.setCategory(cat);
+        } else {
+            p.setCategory(null); // Cho phép xóa category
         }
+
+        // Luôn update brand — kể cả khi null
         if (req.getBrandId() != null) {
             Brand brand = brandRepository.findById(req.getBrandId())
-                    .orElseThrow(() -> new NotFoundException("Brand không tồn tại"));
+                    .orElseThrow(() -> new NotFoundException("Brand không tồn tại: " + req.getBrandId()));
             p.setBrand(brand);
+        } else {
+            p.setBrand(null); // Cho phép xóa brand
         }
     }
 
-    private void saveVariants(Product product, List<ProductRequest.VariantRequest> variantReqs) {
-        for (ProductRequest.VariantRequest vr : variantReqs) {
+    private void saveVariants(Product product, List<ProductRequest.VariantRequest> reqs) {
+        for (ProductRequest.VariantRequest vr : reqs) {
             ProductVariant v = new ProductVariant();
             v.setProduct(product);
             v.setSize(vr.getSize());
@@ -171,18 +205,19 @@ public class ProductService {
         }
     }
 
-    private void syncVariants(Product product, List<ProductRequest.VariantRequest> variantReqs) {
+    private void syncVariants(Product product, List<ProductRequest.VariantRequest> reqs) {
         List<ProductVariant> existing = variantRepository.findByProductId(product.getId());
-        Set<Long> keepIds = variantReqs.stream()
-                .filter(v -> v.getId() != null).map(ProductRequest.VariantRequest::getId)
+        Set<Long> keepIds = reqs.stream()
+                .filter(v -> v.getId() != null)
+                .map(ProductRequest.VariantRequest::getId)
                 .collect(Collectors.toSet());
 
-        // Xoá variant không còn trong request
+        // Xóa variant không còn trong request
         existing.stream()
                 .filter(v -> !keepIds.contains(v.getId()))
                 .forEach(variantRepository::delete);
 
-        for (ProductRequest.VariantRequest vr : variantReqs) {
+        for (ProductRequest.VariantRequest vr : reqs) {
             ProductVariant v;
             if (vr.getId() != null) {
                 v = variantRepository.findById(vr.getId()).orElse(new ProductVariant());
@@ -200,18 +235,24 @@ public class ProductService {
     }
 
     private void updateTotalStock(Product p) {
-        List<ProductVariant> variants = variantRepository.findByProductId(p.getId());
-        int total = variants.stream().mapToInt(v -> v.getStock() != null ? v.getStock() : 0).sum();
+        int total = variantRepository.findByProductId(p.getId())
+                .stream()
+                .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
+                .sum();
         p.setTotalStock(total);
     }
 
     private String slugify(String input) {
         if (input == null) return "san-pham-" + System.currentTimeMillis();
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
-        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(normalized).replaceAll("").toLowerCase()
-                .replaceAll("đ", "d").replaceAll("[^a-z0-9\\s-]", "")
-                .replaceAll("[\\s]+", "-").trim();
+        String result = Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
+                .matcher(normalized).replaceAll("")
+                .toLowerCase()
+                .replace("đ", "d")
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("[\\s]+", "-")
+                .trim();
+        return result.isEmpty() ? "san-pham-" + System.currentTimeMillis() : result;
     }
 
     private String ensureUniqueSlug(String slug, Long excludeId) {

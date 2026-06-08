@@ -64,8 +64,15 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET,
                                 "/api/categories",
-                                "/api/products/**"
+                                "/api/products/**",
+                                "/api/articles",
+                                "/api/articles/featured",
+                                "/api/articles/recent",
+                                "/api/articles/slug/**"
                         ).permitAll()
+
+                        // Tăng lượt xem bài viết - public
+                        .requestMatchers(HttpMethod.POST, "/api/articles/*/view").permitAll()
 
                         // Upload ảnh - cho phép admin
                         .requestMatchers("/api/upload/**").authenticated()

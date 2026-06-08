@@ -49,6 +49,15 @@ public class GlobalException {
                 .body(Map.of("message", ex.getMessage()));
     }
 
+    // ─── Business logic conflict (409) ───────────────────────
+    // Dùng cho các trường hợp như: xóa brand còn sản phẩm
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleConflict(IllegalStateException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("message", ex.getMessage()));
+    }
+
     // ─── General runtime errors (400) ────────────────────────
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleRuntime(RuntimeException ex) {

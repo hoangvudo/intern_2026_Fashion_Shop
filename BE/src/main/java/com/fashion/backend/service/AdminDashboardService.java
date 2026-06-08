@@ -144,4 +144,26 @@ public class AdminDashboardService {
             return Collections.emptyList();
         }
     }
+
+    public List<java.util.Map<String, Object>> getLowStockProducts() {
+        try {
+            return productVariantRepository.findLowStockVariants(5)
+                    .stream()
+                    .map(v -> {
+                        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                        m.put("variantId", v.getId());
+                        m.put("productId", v.getProduct() != null ? v.getProduct().getId() : null);
+                        m.put("productName", v.getProduct() != null ? v.getProduct().getName() : "—");
+                        m.put("productImage", v.getProduct() != null ? v.getProduct().getThumbnailUrl() : null);
+                        m.put("size", v.getSize());
+                        m.put("color", v.getColor());
+                        m.put("stock", v.getStock());
+                        return m;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        } catch (Exception e) {
+            return java.util.Collections.emptyList();
+        }
+    }
+
 }

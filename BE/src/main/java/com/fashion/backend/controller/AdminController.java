@@ -40,6 +40,12 @@ public class AdminController {
         return ResponseEntity.ok(dashboardService.getBestSellers());
     }
 
+
+    @GetMapping("/low-stock")
+    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getLowStock() {
+        return ResponseEntity.ok(dashboardService.getLowStockProducts());
+    }
+
     @GetMapping("/orders/recent")
     public ResponseEntity<List<RecentOrderDto>> getRecentOrders() {
         return ResponseEntity.ok(dashboardService.getRecentOrders());
