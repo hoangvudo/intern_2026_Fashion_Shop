@@ -63,7 +63,25 @@ public class ProductService {
                 keyword, categoryId, brandId, isActive, pageable);
         return products.map(ProductResponse::from);
     }
+    // ── GET STOCK ─────────────────────────────────────────────────
+    public int getStock(Long id, String size, String color) {
+        Product p = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Sản phẩm không tồn tại: " + id));
 
+        List<ProductVariant> variants = variantRepository.findByProductId(id);
+
+        if (variants.isEmpty()) {
+            return p.getTotalStock() != null ? p.getTotalStock() : 0;
+        }
+
+        return variants.stream()
+                .filter(v ->
+                        (size == null || size.equals(v.getSize())) &&
+                                (color == null || color.equals(v.getColor()))
+                )
+                .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
+                .sum();
+    }
     // ── GET ONE ───────────────────────────────────────────────────
     public ProductResponse getById(Long id) {
         Product p = productRepository.findById(id)

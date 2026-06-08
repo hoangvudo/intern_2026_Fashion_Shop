@@ -1,125 +1,125 @@
-package com.fashion.backend.config;
+        package com.fashion.backend.config;
 
-import com.fashion.backend.security.JwtFilter;
-import lombok.RequiredArgsConstructor;
+        import com.fashion.backend.security.JwtFilter;
+        import lombok.RequiredArgsConstructor;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+        import org.springframework.context.annotation.Bean;
+        import org.springframework.context.annotation.Configuration;
 
-import org.springframework.http.HttpMethod;
+        import org.springframework.http.HttpMethod;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+        import org.springframework.security.authentication.AuthenticationManager;
+        import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+        import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+        import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
-import org.springframework.security.config.http.SessionCreationPolicy;
+        import org.springframework.security.config.http.SessionCreationPolicy;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+        import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+        import org.springframework.security.crypto.password.PasswordEncoder;
 
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+        import org.springframework.security.web.SecurityFilterChain;
+        import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
+        import org.springframework.web.cors.CorsConfiguration;
+        import org.springframework.web.cors.CorsConfigurationSource;
 
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+        import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+        import org.springframework.http.HttpMethod;
+        import java.util.List;
 
-import java.util.List;
+        @Configuration
+        @EnableMethodSecurity
+        @RequiredArgsConstructor
+        public class SecurityConfig {
 
-@Configuration
-@EnableMethodSecurity
-@RequiredArgsConstructor
-public class SecurityConfig {
+        private final JwtFilter jwtFilter;
 
-    private final JwtFilter jwtFilter;
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http)
+                throws Exception {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+                http
 
-        http
+                        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                        .csrf(csrf -> csrf.disable())
 
-                .csrf(csrf -> csrf.disable())
+                        .sessionManagement(session ->
+                                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        )
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        .authorizeHttpRequests(auth -> auth
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(
+                                        "/api/auth/**"
+                                ).permitAll()
 
-                .authorizeHttpRequests(auth -> auth
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/categories",
+                                        "/api/products/**",
+                                        "/api/products/*/reviews"
+                                ).permitAll()
 
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
+                                // Upload ảnh - cho phép admin
+                                .requestMatchers("/api/upload/**").authenticated()
 
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/categories",
-                                "/api/products/**",
-                                "/api/products/*/reviews"
-                        ).permitAll()
+                                .anyRequest().permitAll()
+                        )
 
-                        // Upload ảnh - cho phép admin
-                        .requestMatchers("/api/upload/**").authenticated()
+                        .addFilterBefore(
+                                jwtFilter,
+                                UsernamePasswordAuthenticationFilter.class
+                        );
 
-                        .anyRequest().permitAll()
-                )
+                return http.build();
+        }
 
-                .addFilterBefore(
-                        jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-        return http.build();
-    }
+                CorsConfiguration configuration = new CorsConfiguration();
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+                configuration.setAllowedOrigins(List.of(
+                        "http://localhost:3000",
+                        "http://127.0.0.1:3000",
+                        "http://localhost:5173"
+                ));
 
-        CorsConfiguration configuration = new CorsConfiguration();
+                // ✅ FIX: Thêm PATCH vào allowedMethods
+                configuration.setAllowedMethods(List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                ));
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://127.0.0.1:3000",
-                "http://localhost:5173"
-        ));
+                configuration.setAllowedHeaders(List.of("*"));
 
-        // ✅ FIX: Thêm PATCH vào allowedMethods
-        configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
-        ));
+                configuration.setAllowCredentials(true);
 
-        configuration.setAllowedHeaders(List.of("*"));
+                UrlBasedCorsConfigurationSource source =
+                        new UrlBasedCorsConfigurationSource();
 
-        configuration.setAllowCredentials(true);
+                source.registerCorsConfiguration("/**", configuration);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+                return source;
+        }
 
-        source.registerCorsConfiguration("/**", configuration);
+        @Bean
+        public AuthenticationManager authenticationManager(
+                AuthenticationConfiguration config
+        ) throws Exception {
 
-        return source;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
-    ) throws Exception {
-
-        return config.getAuthenticationManager();
-    }
-}
+                return config.getAuthenticationManager();
+        }
+        }
