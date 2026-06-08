@@ -1,39 +1,35 @@
-        package com.fashion.backend.config;
+package com.fashion.backend.config;
 
-        import com.fashion.backend.security.JwtFilter;
-        import lombok.RequiredArgsConstructor;
+import com.fashion.backend.security.JwtFilter;
+import lombok.RequiredArgsConstructor;
 
-        import org.springframework.context.annotation.Bean;
-        import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-        import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpMethod;
 
-        import org.springframework.security.authentication.AuthenticationManager;
-        import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
-        import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-        import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-        import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-        import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-        import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.List;
 
-        import org.springframework.security.web.SecurityFilterChain;
-        import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-        import org.springframework.web.cors.CorsConfiguration;
-        import org.springframework.web.cors.CorsConfigurationSource;
-
-        import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-        import org.springframework.http.HttpMethod;
-        import java.util.List;
-
-        @Configuration
-        @EnableMethodSecurity
-        @RequiredArgsConstructor
-        public class SecurityConfig {
+@Configuration
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
 
         private final JwtFilter jwtFilter;
 
@@ -47,7 +43,6 @@
                 throws Exception {
 
                 http
-
                         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                         .csrf(csrf -> csrf.disable())
@@ -57,31 +52,41 @@
                         )
 
                         .authorizeHttpRequests(auth -> auth
+
+                                // Preflight request
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                                // Auth API
                                 .requestMatchers(
                                         "/api/auth/**"
                                 ).permitAll()
 
+                                // Public GET APIs
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/categories",
                                         "/api/products/**",
-                                        "/api/products/*/reviews"
+                                        "/api/products/*/reviews",
+                                        "/api/articles",
+                                        "/api/articles/featured",
+                                        "/api/articles/recent",
+                                        "/api/articles/slug/**"
                                 ).permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/categories",
-                                "/api/products/**",
-                                "/api/articles",
-                                "/api/articles/featured",
-                                "/api/articles/recent",
-                                "/api/articles/slug/**"
-                        ).permitAll()
 
-                        // Tăng lượt xem bài viết - public
-                        .requestMatchers(HttpMethod.POST, "/api/articles/*/view").permitAll()
+                                // Tăng lượt xem bài viết
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/articles/*/view"
+                                ).permitAll()
 
-                                // Upload ảnh - cho phép admin
-                                .requestMatchers("/api/upload/**").authenticated()
+                                // Gửi liên hệ từ khách hàng
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/contacts"
+                                ).permitAll()
 
+                                // Upload ảnh
+                                .requestMatchers("/api/upload/**")
+                                .authenticated()
+
+                                // Các API còn lại
                                 .anyRequest().permitAll()
                         )
 
@@ -104,7 +109,6 @@
                         "http://localhost:5173"
                 ));
 
-                // ✅ FIX: Thêm PATCH vào allowedMethods
                 configuration.setAllowedMethods(List.of(
                         "GET",
                         "POST",
@@ -133,4 +137,4 @@
 
                 return config.getAuthenticationManager();
         }
-        }
+}
