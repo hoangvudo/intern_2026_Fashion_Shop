@@ -1,23 +1,53 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import useAuthStore from '../store/authStore'
+import { Navigate, useLocation } from 'react-router-dom'
 import AdminLayout from '../components/admin/AdminLayout'
+import useAuthStore from '../store/authStore'
+
+function getUserRoles(user) {
+  const roles = []
+
+  if (user?.role) roles.push(user.role)
+  if (Array.isArray(user?.roles)) roles.push(...user.roles)
+  if (Array.isArray(user?.authorities)) roles.push(...user.authorities)
+
+  return roles
+    .map((role) => {
+      if (typeof role === 'string') return role
+      return role?.authority || role?.name || role?.role || ''
+    })
+    .map((role) => role.toUpperCase())
+}
+
+function isAdminUser(user) {
+  return getUserRoles(user).some((role) => role === 'ADMIN' || role === 'ROLE_ADMIN')
+}
 
 function AdminRoute() {
   const location = useLocation()
-  const { isAuthenticated, user } = useAuthStore()
-  const [checking, setChecking] = useState(true)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const user = useAuthStore((state) => state.user)
+  const initializeAuth = useAuthStore((state) => state.initializeAuth)
+  const [checkingAuth, setCheckingAuth] = useState(true)
 
-  // ✅ THÊM: chờ initializeAuth() xong trước khi redirect
   useEffect(() => {
-    const init = async () => {
-      await useAuthStore.getState().initializeAuth()
-      setChecking(false)
-    }
-    init()
-  }, [])
+    let cancelled = false
 
-  if (checking) {
+    async function checkAuth() {
+      try {
+        await initializeAuth()
+      } finally {
+        if (!cancelled) setCheckingAuth(false)
+      }
+    }
+
+    checkAuth()
+
+    return () => {
+      cancelled = true
+    }
+  }, [initializeAuth])
+
+  if (checkingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F5F3EE]">
         <div className="flex flex-col items-center gap-4">
@@ -32,8 +62,7 @@ function AdminRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  const role = user?.role?.toUpperCase?.() ?? ''
-  if (role !== 'ADMIN') {
+  if (!isAdminUser(user)) {
     return <Navigate to="/" replace />
   }
 

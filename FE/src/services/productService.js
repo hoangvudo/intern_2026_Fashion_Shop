@@ -10,7 +10,6 @@ const productService = {
     return res.data;
   },
 
-  // Lấy sản phẩm mới (isNewArrival = true)
   getNewArrivals: async (size = 6) => {
     const res = await axios.get(API, {
       params: { isNewArrival: true, size, sortBy: "createdAt" },
@@ -18,7 +17,6 @@ const productService = {
     return res.data;
   },
 
-  // Lấy sản phẩm nổi bật (isFeatured = true)
   getFeatured: async (size = 8) => {
     const res = await axios.get(API, {
       params: { isFeatured: true, size, sortBy: "popular" },
@@ -26,7 +24,6 @@ const productService = {
     return res.data;
   },
 
-  // Lấy sản phẩm theo danh mục
   getByCategory: async (categoryId, size = 8) => {
     const res = await axios.get(API, {
       params: { categoryId, size, sortBy: "createdAt" },
@@ -34,13 +31,11 @@ const productService = {
     return res.data;
   },
 
-  // Lấy chi tiết sản phẩm theo id
   getById: async (id) => {
     const res = await axios.get(`${API}/${id}`);
     return res.data;
   },
 
-  // ── ADMIN ────────────────────────────────────────
   adminList: async (params = {}) => {
     const res = await axios.get(`${API}/admin`, { params });
     return res.data;
@@ -71,7 +66,11 @@ const productService = {
     return res.data;
   },
 
-  // Dùng cho dropdown trong AdminProducts
+  getStats: async () => {
+    const res = await axios.get('/admin/product-stats')
+    return res.data
+  },
+
   getCategories: async () => {
     const res = await axios.get("/categories/all");
     return res.data;

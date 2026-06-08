@@ -11,6 +11,10 @@ const uploadService = {
     })
     return res.data
   },
+
+  uploadImages: async (files) => {
+    return Promise.all(Array.from(files).map((file) => uploadService.uploadImage(file)))
+  },
 }
 
 export default uploadService

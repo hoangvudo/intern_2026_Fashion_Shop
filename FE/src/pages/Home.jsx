@@ -215,7 +215,7 @@ function Home() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="border-y border-[#DDC0B8] py-16 text-center">
               <p className="font-playfairDisplay text-3xl leading-tight tracking-[-0.02em] text-[#231916] sm:text-4xl">
-                "Trang phục không chỉ là vải vóc, đó là ngôn ngữ của sự tự tin."
+                &quot;Trang phục không chỉ là vải vóc, đó là ngôn ngữ của sự tự tin.&quot;
               </p>
               <p className="mt-8 text-sm uppercase tracking-[0.12em] text-[#695D4B]">
                 — Ms Hương, Nhà sáng lập ZYRO

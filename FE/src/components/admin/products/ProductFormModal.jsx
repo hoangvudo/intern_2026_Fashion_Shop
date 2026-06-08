@@ -5,6 +5,7 @@ import {
   FiTag, FiPackage, FiDollarSign, FiImage, FiList
 } from 'react-icons/fi'
 import productService from '../../../services/productService'
+import uploadService from '../../../services/uploadService'
 import toast from 'react-hot-toast'
 
 const SIZES  = ['XS','S','M','L','XL','2XL','3XL','Free']
@@ -17,6 +18,24 @@ const COLORS = [
   { name:'Tím', hex:'#805ad5' }, { name:'Be/Kem', hex:'#e8d5b7' },
   { name:'Nâu', hex:'#744210' },
 ]
+
+const EMPTY_FORM = {
+  name: '', slug: '', description: '', price: '', salePrice: '',
+  categoryId: '', brandId: '', thumbnailUrl: '',
+  isActive: true, isFeatured: false, isNewArrival: false,
+  variants: [], imageUrls: [],
+}
+
+function normalizeImageUrls(product) {
+  const urls = [
+    ...(product?.imageUrls || []),
+    ...(product?.images || []).map((img) => (
+      typeof img === 'string' ? img : img?.url || img?.imageUrl
+    )),
+  ]
+
+  return [...new Set(urls.filter(Boolean))]
+}
 
 function VariantRow({ variant, index, onUpdate, onRemove }) {
   const [colorOpen, setColorOpen] = useState(false)
@@ -103,16 +122,11 @@ function VariantRow({ variant, index, onUpdate, onRemove }) {
 export default function ProductFormModal({ open, onClose, product, categories, brands, onSaved }) {
   const isEdit = Boolean(product?.id)
   const [saving, setSaving] = useState(false)
+  const [uploadingImages, setUploadingImages] = useState(false)
   const [tab, setTab] = useState('basic') // basic | variants | images
+  const fileInputRef = useRef(null)
 
-  const emptyForm = {
-    name: '', slug: '', description: '', price: '', salePrice: '',
-    categoryId: '', brandId: '', thumbnailUrl: '',
-    isActive: true, isFeatured: false, isNewArrival: false,
-    variants: [],
-  }
-
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   useEffect(() => {
     if (product) {
@@ -129,9 +143,10 @@ export default function ProductFormModal({ open, onClose, product, categories, b
         isFeatured: product.isFeatured ?? false,
         isNewArrival: product.isNewArrival ?? false,
         variants: product.variants || [],
+        imageUrls: normalizeImageUrls(product),
       })
     } else {
-      setForm(emptyForm)
+      setForm(EMPTY_FORM)
     }
     setTab('basic')
   }, [product, open])
@@ -148,6 +163,59 @@ export default function ProductFormModal({ open, onClose, product, categories, b
   const removeVariant = (idx) =>
     setForm(f => ({ ...f, variants: f.variants.filter((_, i) => i !== idx) }))
 
+  const addImageUrls = (urls) =>
+    setForm(f => {
+      const imageUrls = [...new Set([...(f.imageUrls || []), ...urls].filter(Boolean))]
+      return {
+        ...f,
+        imageUrls,
+        thumbnailUrl: f.thumbnailUrl || imageUrls[0] || '',
+      }
+    })
+
+  const removeImageUrl = (url) =>
+    setForm(f => {
+      const imageUrls = (f.imageUrls || []).filter(item => item !== url)
+      return {
+        ...f,
+        imageUrls,
+        thumbnailUrl: f.thumbnailUrl === url ? imageUrls[0] || '' : f.thumbnailUrl,
+      }
+    })
+
+  const setPrimaryImage = (url) =>
+    setForm(f => ({
+      ...f,
+      thumbnailUrl: url,
+      imageUrls: [...new Set([...(f.imageUrls || []), url].filter(Boolean))],
+    }))
+
+  const handleImageUpload = async (event) => {
+    const input = event.target
+    const files = Array.from(input.files || [])
+    if (!files.length) return
+
+    setUploadingImages(true)
+    try {
+      const results = await Promise.allSettled(files.map(file => uploadService.uploadImage(file)))
+      const urls = results
+        .filter(result => result.status === 'fulfilled' && result.value?.url)
+        .map(result => result.value.url)
+      const failedCount = results.length - urls.length
+
+      if (urls.length) {
+        addImageUrls(urls)
+        toast.success(`Đã upload ${urls.length} ảnh`)
+      }
+      if (failedCount > 0) {
+        toast.error(`${failedCount} ảnh upload thất bại`)
+      }
+    } finally {
+      setUploadingImages(false)
+      input.value = ''
+    }
+  }
+
   // ── submit ───────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -162,6 +230,7 @@ export default function ProductFormModal({ open, onClose, product, categories, b
         salePrice: form.salePrice ? Number(form.salePrice) : null,
         categoryId: form.categoryId ? Number(form.categoryId) : null,
         brandId: form.brandId ? Number(form.brandId) : null,
+        imageUrls: (form.imageUrls || []).map(url => url.trim()).filter(Boolean),
       }
       if (isEdit) {
         await productService.update(product.id, payload)
@@ -173,7 +242,12 @@ export default function ProductFormModal({ open, onClose, product, categories, b
       onSaved()
       onClose()
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')
+      console.error('Save product error:', err?.response?.data || err)
+      const message = err?.response?.data?.message
+        || err?.response?.data?.error
+        || (err?.response?.status === 400 ? 'Không lưu được sản phẩm. Vui lòng kiểm tra quyền admin và dữ liệu nhập.' : null)
+        || 'Có lỗi xảy ra khi lưu sản phẩm'
+      toast.error(message)
     } finally {
       setSaving(false)
     }
@@ -352,10 +426,10 @@ export default function ProductFormModal({ open, onClose, product, categories, b
                     {/* Flags */}
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { key: 'isActive',     label: 'Đang bán',     color: 'green' },
-                        { key: 'isFeatured',   label: 'Nổi bật',      color: 'amber' },
-                        { key: 'isNewArrival', label: 'Hàng mới',     color: 'blue'  },
-                      ].map(({ key, label, color }) => (
+                        { key: 'isActive',     label: 'Đang bán' },
+                        { key: 'isFeatured',   label: 'Nổi bật' },
+                        { key: 'isNewArrival', label: 'Hàng mới' },
+                      ].map(({ key, label }) => (
                         <label key={key} className="flex cursor-pointer items-center gap-3 border border-[#D1C4B9] px-4 py-3 hover:bg-[#F0EEE9]">
                           <input
                             type="checkbox"
@@ -436,11 +510,69 @@ export default function ProductFormModal({ open, onClose, product, categories, b
                       </div>
                     )}
 
-                    <div className="flex flex-col items-center gap-3 border-2 border-dashed border-[#D1C4B9] py-10">
-                      <FiUpload className="h-8 w-8 text-[#D1C4B9]" />
-                      <p className="font-beVietnamPro text-sm text-[#9E8E7E]">Upload nhiều ảnh</p>
-                      <p className="font-beVietnamPro text-xs text-[#C5B9AE]">Tính năng upload file sẽ tích hợp qua Cloudinary hoặc S3</p>
-                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImages}
+                      className="flex w-full flex-col items-center gap-3 border-2 border-dashed border-[#D1C4B9] py-10 hover:border-[#6F583D] hover:bg-[#FAFAF8] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {uploadingImages ? (
+                        <span className="h-8 w-8 animate-spin rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D]" />
+                      ) : (
+                        <FiUpload className="h-8 w-8 text-[#D1C4B9]" />
+                      )}
+                      <p className="font-beVietnamPro text-sm text-[#9E8E7E]">
+                        {uploadingImages ? 'Đang upload ảnh...' : 'Chọn ảnh từ máy'}
+                      </p>
+                      <p className="font-beVietnamPro text-xs text-[#C5B9AE]">
+                        Có thể chọn nhiều file ảnh cùng lúc, tối đa 5MB mỗi ảnh
+                      </p>
+                    </button>
+
+                    {(form.imageUrls || []).length > 0 && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {form.imageUrls.map((url) => (
+                          <div key={url} className="group relative overflow-hidden border border-[#D1C4B9] bg-[#FAFAF8]">
+                            <img
+                              src={url}
+                              alt="product"
+                              className="h-36 w-full object-cover"
+                              onError={e => { e.target.style.display = 'none' }}
+                            />
+                            {form.thumbnailUrl === url && (
+                              <span className="absolute left-2 top-2 bg-[#6F583D] px-2 py-1 font-beVietnamPro text-[11px] text-white">
+                                Đại diện
+                              </span>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-black/55 p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                              <button
+                                type="button"
+                                onClick={() => setPrimaryImage(url)}
+                                className="flex-1 bg-white px-2 py-1.5 font-beVietnamPro text-xs text-[#1B1C19] hover:bg-[#F0EEE9]"
+                              >
+                                Đặt đại diện
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeImageUrl(url)}
+                                className="flex h-8 w-8 items-center justify-center bg-white text-red-500 hover:bg-red-50"
+                                aria-label="Xóa ảnh"
+                              >
+                                <FiTrash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -451,7 +583,7 @@ export default function ProductFormModal({ open, onClose, product, categories, b
                   className="border border-[#D1C4B9] px-6 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
                   Huỷ
                 </button>
-                <button type="submit" disabled={saving}
+                <button type="submit" disabled={saving || uploadingImages}
                   className="flex items-center gap-2 bg-[#1B1C19] px-8 py-2.5 font-beVietnamPro text-sm text-white hover:bg-[#333] disabled:opacity-50">
                   {saving ? (
                     <><span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Đang lưu...</>

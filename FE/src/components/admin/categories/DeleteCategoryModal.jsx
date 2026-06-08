@@ -25,7 +25,7 @@ export default function DeleteCategoryModal({ open, category, onConfirm, onCance
               <div>
                 <h3 className="font-beVietnamPro text-lg font-semibold text-[#1B1C19]">Xoá danh mục?</h3>
                 <p className="mt-1.5 font-beVietnamPro text-sm text-[#6F583D]">
-                  Bạn sắp xoá danh mục <span className="font-semibold">"{category?.name}"</span>.
+                  Bạn sắp xoá danh mục <span className="font-semibold">&quot;{category?.name}&quot;</span>.
                   Hành động này không thể hoàn tác.
                 </p>
               </div>

@@ -22,7 +22,7 @@ export default function DeleteConfirmModal({ open, product, onConfirm, onCancel,
               </div>
               <h3 className="mb-2 font-beVietnamPro text-lg font-semibold text-[#1B1C19]">Xoá sản phẩm?</h3>
               <p className="font-beVietnamPro text-sm leading-6 text-[#4E453D]">
-                Bạn sắp xoá <span className="font-semibold text-[#1B1C19]">"{product?.name}"</span>.
+                Bạn sắp xoá <span className="font-semibold text-[#1B1C19]">&quot;{product?.name}&quot;</span>.
                 Hành động này không thể hoàn tác và sẽ xoá toàn bộ dữ liệu liên quan.
               </p>
             </div>
