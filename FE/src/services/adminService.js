@@ -14,6 +14,9 @@ export const updateOrderStatus = (id, status) =>
 export const getAdminCustomers = (params = {}) =>
   api.get('/admin/customers', { params }).then(r => r.data)
 
+export const getVipStats = () =>
+  api.get('/admin/customers/vip-stats').then(r => r.data)
+
 export const getAdminCustomerDetail = (id) =>
   api.get(`/admin/customers/${id}`).then(r => r.data)
 
