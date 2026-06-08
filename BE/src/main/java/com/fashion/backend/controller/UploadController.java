@@ -26,31 +26,27 @@ public class UploadController {
     private String baseUrl;
 
     @PostMapping("/image")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("isAuthenticated()")  // ✅ FIX: cho phép mọi user đã login
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "File không được rỗng"));
         }
 
-        // Kiểm tra loại file
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             return ResponseEntity.badRequest().body(Map.of("message", "Chỉ chấp nhận file ảnh"));
         }
 
-        // Giới hạn 5MB
         if (file.getSize() > 5 * 1024 * 1024) {
             return ResponseEntity.badRequest().body(Map.of("message", "File không được vượt quá 5MB"));
         }
 
         try {
-            // Tạo thư mục nếu chưa có
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Tạo tên file unique
             String originalFilename = file.getOriginalFilename();
             String extension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
@@ -58,11 +54,9 @@ public class UploadController {
             }
             String fileName = UUID.randomUUID() + extension;
 
-            // Lưu file
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath);
 
-            // Trả về URL
             String fileUrl = baseUrl + "/api/uploads/" + fileName;
             return ResponseEntity.ok(Map.of(
                     "url", fileUrl,

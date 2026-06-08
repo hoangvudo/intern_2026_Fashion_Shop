@@ -1,7 +1,9 @@
 package com.fashion.backend.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,11 +11,14 @@ import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderResponse {
 
     private Long id;
     private String orderCode;
     private String status;
+    private String paymentMethod;
     private String paymentStatus;
 
     /* ── Giao hàng ─────────────────────────── */
@@ -23,27 +28,27 @@ public class OrderResponse {
     private String shippingMethod;
     private BigDecimal shippingFee;
 
-    /* ── Thanh toán ─────────────────────────── */
-    private String paymentMethod;
-
-    /* ── Giá ────────────────────────────────── */
+    /* ── Tiền ──────────────────────────────── */
     private BigDecimal subtotal;
     private String couponCode;
     private BigDecimal discountPercent;
     private BigDecimal discountAmount;
     private BigDecimal totalAmount;
 
-    /* ── Sản phẩm ───────────────────────────── */
-    private List<ItemDto> items;
-
-    /* ── Ghi chú & thời gian ────────────────── */
+    /* ── Khác ──────────────────────────────── */
     private String note;
+    private List<ItemDto> items;
     private LocalDateTime createdAt;
-    private String estimatedDelivery;   // chuỗi ngày dự kiến giao
+    private String estimatedDelivery;
 
-    /* ─────────────────────────────────────── */
+    /* ── Hoàn tiền (nếu có) ────────────────── */
+    private Boolean refundRequested;
+    private String refundStatus;
+
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ItemDto {
         private Long productId;
         private String productName;
