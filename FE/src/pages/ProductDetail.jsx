@@ -192,6 +192,7 @@ export default function ProductDetail() {
   const [reviewTotalPages, setReviewTotalPages] = useState(0);
   const [reviewPage, setReviewPage] = useState(0);
   const [reviewSortBy, setReviewSortBy] = useState("newest");
+  const [reviewRatingFilter, setReviewRatingFilter] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
@@ -231,13 +232,14 @@ export default function ProductDetail() {
   }, [id]);
 
   // ── Fetch reviews ─────────────────────────────────────────
-  const fetchReviews = useCallback(async (productId, page, sortBy) => {
+  const fetchReviews = useCallback(async (productId, page, sortBy, rating) => {
     setReviewLoading(true);
     try {
       const data = await reviewService.getByProduct(productId, {
         page,
         size: 5,
         sortBy,
+        rating: rating || undefined,
       });
       setReviews(data.content ?? []);
       setReviewTotal(data.totalElements ?? 0);
@@ -250,8 +252,10 @@ export default function ProductDetail() {
   }, []);
 
   useEffect(() => {
-    if (product?.id) fetchReviews(product.id, reviewPage, reviewSortBy);
-  }, [product?.id, reviewPage, reviewSortBy, fetchReviews]);
+    if (product?.id) {
+      fetchReviews(product.id, reviewPage, reviewSortBy, reviewRatingFilter);
+    }
+  }, [product?.id, reviewPage, reviewSortBy, reviewRatingFilter, fetchReviews]);
 
   useEffect(() => {
     if (!product?.id) return;
@@ -355,7 +359,7 @@ export default function ProductDetail() {
       setReviewComment("");
       setReviewImages([]);
       setReviewPage(0);
-      fetchReviews(product.id, 0, reviewSortBy);
+      fetchReviews(product.id, 0, reviewSortBy, reviewRatingFilter);
     } catch (err) {
       const msg = err.response?.data?.message || "Gửi đánh giá thất bại";
       toast.error(msg);
@@ -369,7 +373,7 @@ export default function ProductDetail() {
     try {
       await reviewService.delete(reviewId);
       toast.success("Đã xoá đánh giá");
-      fetchReviews(product.id, reviewPage, reviewSortBy);
+      fetchReviews(product.id, reviewPage, reviewSortBy, reviewRatingFilter);
     } catch {
       toast.error("Xoá thất bại");
     }
@@ -770,8 +774,7 @@ export default function ProductDetail() {
                 )}
               </motion.div>
             )}
-
-            {/* ── Tab: Đánh giá ── */}
+            // ── Tab: Đánh giá ──
             {tab === "reviews" && (
               <motion.div
                 key="reviews"
@@ -789,22 +792,66 @@ export default function ProductDetail() {
                   />
                 )}
 
-                {/* Sort */}
+                {/* Filter & Sort */}
                 {reviewTotal > 0 && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="text-gray-500">Sắp xếp:</span>
-                    <select
-                      value={reviewSortBy}
-                      onChange={(e) => {
-                        setReviewSortBy(e.target.value);
-                        setReviewPage(0);
-                      }}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-[#9B3F1E]"
-                    >
-                      <option value="newest">Mới nhất</option>
-                      <option value="rating_desc">Sao cao nhất</option>
-                      <option value="rating_asc">Sao thấp nhất</option>
-                    </select>
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium text-gray-500">
+                        Lọc theo:
+                      </span>
+                      <button
+                        onClick={() => {
+                          setReviewRatingFilter(null);
+                          setReviewPage(0);
+                        }}
+                        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                          !reviewRatingFilter
+                            ? "bg-[#1B1C19] text-white"
+                            : "bg-white text-[#4E453D] border border-[#D1C4B9] hover:bg-[#F0EEE9]"
+                        }`}
+                      >
+                        Tất cả
+                      </button>
+                      {[5, 4, 3, 2, 1].map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => {
+                            setReviewRatingFilter(s);
+                            setReviewPage(0);
+                          }}
+                          className={`flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                            reviewRatingFilter === s
+                              ? "bg-[#1B1C19] text-white"
+                              : "bg-white text-[#4E453D] border border-[#D1C4B9] hover:bg-[#F0EEE9]"
+                          }`}
+                        >
+                          {s}{" "}
+                          <FaStar
+                            className={
+                              reviewRatingFilter === s
+                                ? "text-amber-300"
+                                : "text-amber-400"
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-gray-500">Sắp xếp:</span>
+                      <select
+                        value={reviewSortBy}
+                        onChange={(e) => {
+                          setReviewSortBy(e.target.value);
+                          setReviewPage(0);
+                        }}
+                        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-[#9B3F1E]"
+                      >
+                        <option value="newest">Mới nhất</option>
+                        <option value="rating_desc">Sao cao nhất</option>
+                        <option value="rating_asc">Sao thấp nhất</option>
+                      </select>
+                    </div>
                   </div>
                 )}
 

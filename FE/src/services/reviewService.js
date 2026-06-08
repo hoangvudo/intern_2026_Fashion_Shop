@@ -22,6 +22,10 @@ const reviewService = {
     const res = await axios.get("/reviews/me", { params });
     return res.data;
   },
+  adminGetAll: async (params = {}) => {
+    const res = await axios.get("/admin/reviews", { params });
+    return res.data;
+  },
   adminGetByProduct: async (productId, params = {}) => {
     const res = await axios.get(`/admin/products/${productId}/reviews`, {
       params,
