@@ -73,8 +73,50 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId")
     Long countByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.user.id = :userId AND o.status = 'COMPLETED'")
+    @Query(value = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE user_id = :userId AND status IN ('CONFIRMED', 'SHIPPING', 'COMPLETED')", nativeQuery = true)
     BigDecimal sumTotalSpentByUserId(@Param("userId") Long userId);
+
+    @Query(value = """
+        SELECT MONTH(o.created_at) as month,
+               SUM(o.total_amount) as revenue
+        FROM orders o
+        WHERE o.status = 'COMPLETED'
+          AND YEAR(o.created_at) = :year
+        GROUP BY MONTH(o.created_at)
+        ORDER BY month ASC
+        """, nativeQuery = true)
+    List<Object[]> findMonthlyRevenue(@Param("year") int year);
+
+    @Query(value = """
+        SELECT c.name,
+               CASE WHEN total.cnt > 0 
+                    THEN COUNT(oi.id) * 100.0 / total.cnt
+                    ELSE 0 
+               END as percentage
+        FROM order_items oi
+        JOIN products p ON p.id = oi.product_id
+        JOIN categories c ON c.id = p.category_id
+        JOIN orders o ON o.id = oi.order_id
+        CROSS JOIN (
+            SELECT COUNT(oi2.id) as cnt 
+            FROM order_items oi2 
+            JOIN orders o2 ON o2.id = oi2.order_id 
+            WHERE o2.status = 'COMPLETED'
+        ) total
+        WHERE o.status = 'COMPLETED'
+        GROUP BY c.name, total.cnt
+        ORDER BY percentage DESC
+        """, nativeQuery = true)
+    List<Object[]> findCategorySalesDistribution();
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = 'COMPLETED'")
+    Long countCompletedOrders();
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = 'COMPLETED' AND o.createdAt >= :since")
+    Long countCompletedOrdersSince(@Param("since") LocalDateTime since);
+
+    @Query(value = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'COMPLETED'", nativeQuery = true)
+    BigDecimal sumAllTotalRevenue();
 
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.product " +
             "WHERE o.user.id = :userId ORDER BY o.createdAt DESC")

@@ -7,15 +7,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    // Lấy review của sản phẩm (chỉ visible)
-    Page<Review> findByProductIdAndIsVisibleTrue(Long productId, Pageable pageable);
+    // Lấy review của sản phẩm (chỉ visible) có lọc rating
+    @Query("SELECT r FROM Review r WHERE r.product.id = :productId AND r.isVisible = true AND (:rating IS NULL OR r.rating = :rating)")
+    Page<Review> findByProductIdAndIsVisibleTrueWithFilter(@Param("productId") Long productId, @Param("rating") Integer rating, Pageable pageable);
 
-    // Lấy tất cả review của sản phẩm (admin)
-    Page<Review> findByProductId(Long productId, Pageable pageable);
+    // Lấy tất cả review (admin) có lọc rating
+    @Query("SELECT r FROM Review r WHERE (:rating IS NULL OR r.rating = :rating)")
+    Page<Review> adminFindAll(@Param("rating") Integer rating, Pageable pageable);
+
+    // Lấy tất cả review của sản phẩm (admin) có lọc rating
+    @Query("SELECT r FROM Review r WHERE r.product.id = :productId AND (:rating IS NULL OR r.rating = :rating)")
+    Page<Review> adminFindByProductId(@Param("productId") Long productId, @Param("rating") Integer rating, Pageable pageable);
 
     // Kiểm tra user đã review cho đơn hàng + sản phẩm này chưa
     boolean existsByProductIdAndUserIdAndOrderId(Long productId, Long userId, Long orderId);
@@ -35,4 +42,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // Tìm review theo id + user (để check ownership khi sửa/xoá)
     Optional<Review> findByIdAndUserId(Long id, Long userId);
+
+    @Query("SELECT r FROM Review r ORDER BY r.createdAt DESC")
+    List<Review> findTopRecentReviews(Pageable pageable);
+
+    @Query("SELECT AVG(r.rating) FROM Review r")
+    Double getGlobalAverageRating();
 }

@@ -27,7 +27,7 @@ public class ReviewService {
     private final UserRepository   userRepository;
 
     // ── PUBLIC: lấy review của sản phẩm ──────────────────────────
-    public Page<ReviewResponse> getByProduct(Long productId, int page, int size, String sortBy) {
+    public Page<ReviewResponse> getByProduct(Long productId, Integer rating, int page, int size, String sortBy) {
         Sort sort = switch (sortBy == null ? "newest" : sortBy) {
             case "rating_desc" -> Sort.by("rating").descending();
             case "rating_asc"  -> Sort.by("rating").ascending();
@@ -35,7 +35,7 @@ public class ReviewService {
         };
         Pageable pageable = PageRequest.of(page, size, sort);
         return reviewRepository
-                .findByProductIdAndIsVisibleTrue(productId, pageable)
+                .findByProductIdAndIsVisibleTrueWithFilter(productId, rating, pageable)
                 .map(ReviewResponse::from);
     }
 
@@ -127,9 +127,16 @@ public class ReviewService {
     }
 
     // ── ADMIN: lấy tất cả review (kể cả ẩn) ──────────────────────
-    public Page<ReviewResponse> adminGetByProduct(Long productId, int page, int size) {
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> adminGetAll(Integer rating, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return reviewRepository.findByProductId(productId, pageable).map(ReviewResponse::from);
+        return reviewRepository.adminFindAll(rating, pageable).map(ReviewResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> adminGetByProduct(Long productId, Integer rating, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return reviewRepository.adminFindByProductId(productId, rating, pageable).map(ReviewResponse::from);
     }
 
     // ── ADMIN: ẩn / hiện review ───────────────────────────────────

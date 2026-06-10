@@ -1,6 +1,15 @@
 package com.fashion.backend.controller;
 
-import com.fashion.backend.dto.*;
+import com.fashion.backend.dto.AdminOrderDto;
+import com.fashion.backend.dto.AdminUserDto;
+import com.fashion.backend.dto.BestSellerDto;
+import com.fashion.backend.dto.DashboardStatsDto;
+import com.fashion.backend.dto.PaymentSettingsDto;
+import com.fashion.backend.dto.RecentOrderDto;
+import com.fashion.backend.dto.ReportDataDto;
+import com.fashion.backend.dto.RevenueDataDto;
+import com.fashion.backend.dto.VipStatsDto;
+import com.fashion.backend.service.AdminSettingsService;
 import com.fashion.backend.service.AdminDashboardService;
 import com.fashion.backend.service.AdminOrderService;
 import com.fashion.backend.service.AdminUserService;
@@ -22,6 +31,7 @@ public class AdminController {
     private final AdminDashboardService dashboardService;
     private final AdminOrderService adminOrderService;
     private final AdminUserService adminUserService;
+    private final AdminSettingsService adminSettingsService;
 
     // ── Dashboard ────────────────────────────────────────────
     @GetMapping("/stats")
@@ -35,15 +45,14 @@ public class AdminController {
         return ResponseEntity.ok(dashboardService.getRevenue(period));
     }
 
+    @GetMapping("/reports")
+    public ResponseEntity<ReportDataDto> getReportData() {
+        return ResponseEntity.ok(dashboardService.getReportData());
+    }
+
     @GetMapping("/best-sellers")
     public ResponseEntity<List<BestSellerDto>> getBestSellers() {
         return ResponseEntity.ok(dashboardService.getBestSellers());
-    }
-
-
-    @GetMapping("/low-stock")
-    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getLowStock() {
-        return ResponseEntity.ok(dashboardService.getLowStockProducts());
     }
 
     @GetMapping("/orders/recent")
@@ -78,9 +87,15 @@ public class AdminController {
     @GetMapping("/customers")
     public ResponseEntity<Page<AdminUserDto>> getCustomers(
             @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "ALL") String tier,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(adminUserService.getUsers(keyword, page, size));
+        return ResponseEntity.ok(adminUserService.getUsers(keyword, tier, page, size));
+    }
+
+    @GetMapping("/customers/vip-stats")
+    public ResponseEntity<VipStatsDto> getVipStats() {
+        return ResponseEntity.ok(adminUserService.getVipStats());
     }
 
     @GetMapping("/customers/{id}")
@@ -91,5 +106,23 @@ public class AdminController {
     @PatchMapping("/customers/{id}/toggle-active")
     public ResponseEntity<AdminUserDto> toggleCustomerActive(@PathVariable Long id) {
         return ResponseEntity.ok(adminUserService.toggleActive(id));
+    }
+
+    @GetMapping("/staff")
+    public ResponseEntity<Page<AdminUserDto>> getStaff(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(adminUserService.getStaffs(keyword, page, size));
+    }
+
+    @PatchMapping("/staff/{id}/toggle-active")
+    public ResponseEntity<AdminUserDto> toggleStaffActive(@PathVariable Long id) {
+        return ResponseEntity.ok(adminUserService.toggleActive(id));
+    }
+
+    @GetMapping("/settings/payment")
+    public ResponseEntity<PaymentSettingsDto> getPaymentSettings() {
+        return ResponseEntity.ok(adminSettingsService.getPaymentSettings());
     }
 }

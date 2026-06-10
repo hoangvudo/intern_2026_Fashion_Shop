@@ -17,4 +17,5 @@ public class AdminUserDto {
     private LocalDateTime createdAt;
     private Long totalOrders;
     private java.math.BigDecimal totalSpent;
+    private String vipTier;
 }
