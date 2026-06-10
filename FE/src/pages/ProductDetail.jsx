@@ -774,7 +774,7 @@ export default function ProductDetail() {
                 )}
               </motion.div>
             )}
-            // ── Tab: Đánh giá ──
+            {/* ── Tab: Đánh giá ── */}
             {tab === "reviews" && (
               <motion.div
                 key="reviews"
