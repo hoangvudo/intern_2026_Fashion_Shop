@@ -49,7 +49,7 @@ function AreaChartSVG({ data, loading }) {
 
   if (loading) return (
     <div className="flex h-56 items-center justify-center">
-      <span className="h-8 w-8 rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D] animate-spin" />
+      <span className="h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D] animate-spin" />
     </div>
   )
 
@@ -275,7 +275,7 @@ export default function AdminReports() {
           { label: 'Doanh thu TB/ngày',          value: fmtFull(Math.round(avgRevenue)), sub: 'Theo kỳ chọn',                        color: 'text-blue-700'  },
           { label: 'Ngày đỉnh',                  value: peakDay?.date?.slice(5) || '—',  sub: peakDay ? fmtFull(peakDay.revenue) : 'Chưa có dữ liệu', color: 'text-amber-700' },
         ].map((c, i) => (
-          <div key={i} className="border border-[#D1C4B9] bg-white p-5">
+          <div key={i} className="rounded-2xl border border-[#D1C4B9] bg-white p-5 shadow-sm">
             <p className="font-beVietnamPro text-xs text-[#9E8E7E]">{c.label}</p>
             <p className={`mt-2 font-beVietnamPro text-xl font-bold ${c.color}`}>{c.value}</p>
             <p className="mt-1 font-beVietnamPro text-xs text-[#C5B9AE]">{c.sub}</p>

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   FiGrid, FiShoppingBag, FiPackage, FiTag,
-  FiUsers, FiBarChart2, FiSettings, FiLogOut, FiX, FiStar, FiRotateCcw, FiMessageSquare
+  FiUsers, FiBarChart2, FiSettings, FiLogOut, FiX, FiStar, FiRotateCcw, FiMessageSquare, FiBookOpen
 } from 'react-icons/fi'
 import useAuthStore from '../../store/authStore'
 import toast from 'react-hot-toast'
@@ -15,6 +15,7 @@ const navItems = [
   { to: '/admin/reviews', label: 'Đánh giá', icon: FiStar },
   { to: '/admin/customers', label: 'Khách hàng', icon: FiUsers },
   { to: '/admin/contacts', label: 'Liên hệ', icon: FiMessageSquare },
+  { to: '/admin/articles', label: 'Tạp chí', icon: FiBookOpen },
   { to: '/admin/reports', label: 'Báo cáo', icon: FiBarChart2 },
   { to: '/admin/settings', label: 'Cài đặt', icon: FiSettings },
 ]

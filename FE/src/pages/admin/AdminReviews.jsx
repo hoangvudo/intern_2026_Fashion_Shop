@@ -100,7 +100,7 @@ export default function AdminReviews() {
             </select>
           </div>
           <button onClick={refresh}
-            className="flex items-center gap-2 border border-[#D1C4B9] px-4 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9] transition-colors">
+            className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9] transition-colors">
             <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Làm mới
           </button>
@@ -108,7 +108,7 @@ export default function AdminReviews() {
       </div>
 
       {/* Table */}
-      <div className="border border-[#D1C4B9] bg-white overflow-x-auto">
+      <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
         <table className="w-full min-w-[1000px]">
           <thead>
             <tr className="border-b border-[#D1C4B9] bg-[#F5F3EE]">
@@ -263,7 +263,7 @@ export default function AdminReviews() {
           <button
             onClick={() => updateParam("page", params.page - 1)}
             disabled={params.page === 0}
-            className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
+            className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
           >
             <FiChevronLeft className="h-4 w-4" />
           </button>
@@ -271,7 +271,7 @@ export default function AdminReviews() {
             <button
               key={i}
               onClick={() => updateParam("page", i)}
-              className={`h-9 w-9 font-beVietnamPro text-sm transition-colors ${
+              className={`h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 font-beVietnamPro text-sm transition-colors ${
                 params.page === i
                   ? "bg-[#1B1C19] text-white"
                   : "border border-[#D1C4B9] hover:bg-[#F0EEE9]"
@@ -283,7 +283,7 @@ export default function AdminReviews() {
           <button
             onClick={() => updateParam("page", params.page + 1)}
             disabled={params.page === totalPages - 1}
-            className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
+            className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
           >
             <FiChevronRight className="h-4 w-4" />
           </button>

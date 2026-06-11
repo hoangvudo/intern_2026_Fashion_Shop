@@ -85,7 +85,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
                 {order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '—'}
               </p>
             </div>
-            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]">
+            <button onClick={onClose} className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]">
               <FiX className="h-5 w-5" />
             </button>
           </div>
@@ -161,7 +161,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
               <div className="space-y-3">
                 {(order.items || []).map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden border border-[#E8E0D8] bg-[#F5F3EE]">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#E8E0D8] bg-[#F5F3EE]">
                       {item.productImage
                         ? <img src={item.productImage} alt={item.productName} className="h-full w-full object-cover" />
                         : <FiPackage className="m-auto mt-3 h-5 w-5 text-[#D1C4B9]" />}
@@ -275,7 +275,7 @@ export default function AdminOrders() {
   ]
 
   return (
-    <div className="flex min-h-screen flex-col gap-6 px-8 pb-16 pt-8">
+    <div className="flex min-h-screen flex-col gap-6 bg-[#FBF9F4] px-8 pb-16 pt-8">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
@@ -284,7 +284,7 @@ export default function AdminOrders() {
             Tổng cộng <span className="font-semibold">{total}</span> đơn hàng
           </p>
         </div>
-        <button onClick={load} className="flex items-center gap-2 border border-[#D1C4B9] px-4 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
+        <button onClick={load} className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
           <FiRefreshCw className="h-4 w-4" />
           Làm mới
         </button>
@@ -310,7 +310,7 @@ export default function AdminOrders() {
       {/* Search */}
       <div className="border border-[#D1C4B9] bg-white p-4">
         <div className="flex items-center gap-3">
-          <div className="flex flex-1 items-center gap-2 border border-[#D1C4B9] px-4 py-2.5">
+          <div className="flex flex-1 items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19]">
             <FiSearch className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
             <input
               value={inputKw}
@@ -325,7 +325,7 @@ export default function AdminOrders() {
           </div>
           <button
             onClick={() => { setKeyword(inputKw); setPage(0) }}
-            className="bg-[#1B1C19] px-5 py-2.5 font-beVietnamPro text-sm text-white hover:bg-[#333]"
+            className="rounded-xl bg-[#1B1C19] px-5 py-2.5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 font-beVietnamPro text-sm text-white hover:bg-[#333]"
           >
             Tìm kiếm
           </button>
@@ -333,7 +333,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Table */}
-      <div className="border border-[#D1C4B9] bg-white overflow-x-auto">
+      <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
         <table className="w-full min-w-[800px]">
           <thead>
             <tr className="border-b border-[#D1C4B9] bg-[#F5F3EE]">
@@ -366,7 +366,7 @@ export default function AdminOrders() {
                   key={order.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-colors"
+                  className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-all duration-300"
                 >
                   <td className="px-5 py-4">
                     <p className="font-beVietnamPro text-sm font-semibold text-[#1B1C19]">{order.orderCode}</p>
@@ -400,7 +400,7 @@ export default function AdminOrders() {
                   <td className="px-5 py-4">
                     <button
                       onClick={() => openDetail(order.id)}
-                      className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
+                      className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
                       title="Xem chi tiết"
                     >
                       <FiEye className="h-4 w-4" />
@@ -421,14 +421,14 @@ export default function AdminOrders() {
           </p>
           <div className="flex items-center gap-1">
             <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
-              className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
+              className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
               <FiChevronLeft className="h-4 w-4" />
             </button>
             {[...Array(Math.min(5, totalPages))].map((_, i) => {
               const pg = Math.max(0, Math.min(page - 2, totalPages - 5)) + i
               return (
                 <button key={pg} onClick={() => setPage(pg)}
-                  className={`flex h-9 w-9 items-center justify-center border font-beVietnamPro text-sm ${
+                  className={`flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border font-beVietnamPro text-sm ${
                     page === pg ? 'border-[#1B1C19] bg-[#1B1C19] text-white' : 'border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9]'
                   }`}>
                   {pg + 1}
@@ -436,7 +436,7 @@ export default function AdminOrders() {
               )
             })}
             <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-              className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
+              className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
               <FiChevronRight className="h-4 w-4" />
             </button>
           </div>

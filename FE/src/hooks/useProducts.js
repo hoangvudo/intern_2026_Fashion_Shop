@@ -55,6 +55,8 @@ export function useAdminProducts() {
 // Hook public search (cho trang chủ, danh mục...)
 export function usePublicProducts(initialParams = {}) {
   const [products, setProducts] = useState([])
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState(null)
 
@@ -64,6 +66,8 @@ export function usePublicProducts(initialParams = {}) {
     try {
       const data = await productService.search(params)
       setProducts(data.content ?? data ?? [])
+      setTotalPages(data.totalPages ?? 0)
+      setTotalElements(data.totalElements ?? 0)
     } catch (err) {
       console.error('usePublicProducts error:', err)
       setError(err)
@@ -76,5 +80,5 @@ export function usePublicProducts(initialParams = {}) {
     fetchProducts(initialParams)
   }, [])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { products, loading, error, refetch: fetchProducts }
+  return { products, totalPages, totalElements, loading, error, refetch: fetchProducts }
 }

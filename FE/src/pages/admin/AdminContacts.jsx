@@ -185,6 +185,7 @@ function AdminContacts() {
               <tr>
                 <th className="px-6 py-4">Tên khách hàng</th>
                 <th className="px-6 py-4">Email / SĐT</th>
+                <th className="px-6 py-4">Nội dung</th>
                 <th className="px-6 py-4">Thời gian</th>
                 <th className="px-6 py-4">Trạng thái</th>
                 <th className="px-6 py-4 text-right">Hành động</th>
@@ -193,21 +194,26 @@ function AdminContacts() {
             <tbody className="divide-y divide-[#D1C4B9]">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-[#9E8E7E]">Đang tải...</td>
+                  <td colSpan="6" className="px-6 py-8 text-center text-[#9E8E7E]">Đang tải...</td>
                 </tr>
               ) : contacts.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-[#9E8E7E]">Không tìm thấy liên hệ nào.</td>
+                  <td colSpan="6" className="px-6 py-8 text-center text-[#9E8E7E]">Không tìm thấy liên hệ nào.</td>
                 </tr>
               ) : (
                 contacts.map((c) => (
-                  <tr key={c.id} className="hover:bg-[#FAFAF8] transition-colors">
+                  <tr key={c.id} className="hover:bg-[#FAFAF8] transition-all duration-300">
                     <td className="px-6 py-4">
                       <div className="font-semibold">{c.name}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-[#4E453D]">{c.email}</div>
                       <div className="text-xs text-[#9E8E7E] mt-0.5">{c.phone || "Không có SĐT"}</div>
+                    </td>
+                    <td className="px-6 py-4 text-[#4E453D]">
+                      <div className="line-clamp-2 max-w-xs text-xs leading-relaxed" title={c.message}>
+                        {c.message}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-[#4E453D]">{fmtDate(c.createdAt)}</td>
                     <td className="px-6 py-4">

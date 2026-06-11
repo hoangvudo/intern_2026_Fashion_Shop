@@ -61,7 +61,7 @@ function SaveButton({ loading, saved }) {
     <button
       type="submit"
       disabled={loading}
-      className="flex items-center gap-2 bg-[#1B1C19] px-5 py-2.5 font-beVietnamPro text-sm text-white hover:bg-[#2e2f2b] disabled:opacity-60 transition-colors"
+      className="flex items-center gap-2 rounded-xl bg-[#1B1C19] px-5 py-2.5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 font-beVietnamPro text-sm text-white hover:bg-[#2e2f2b] disabled:opacity-60 transition-colors"
     >
       {saved ? <FiCheck className="h-4 w-4" /> : <FiSave className="h-4 w-4" />}
       {loading ? 'Đang lưu...' : saved ? 'Đã lưu' : 'Lưu thay đổi'}

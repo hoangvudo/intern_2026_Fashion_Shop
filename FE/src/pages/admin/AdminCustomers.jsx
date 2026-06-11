@@ -131,7 +131,7 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive }) {
             </h2>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]"
+              className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]"
             >
               <FiX className="h-5 w-5" />
             </button>
@@ -139,7 +139,7 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive }) {
 
           {loading ? (
             <div className="flex h-48 items-center justify-center">
-              <span className="h-8 w-8 rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D] animate-spin" />
+              <span className="h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D] animate-spin" />
             </div>
           ) : customer ? (
             <div className="flex flex-col gap-5 p-6">

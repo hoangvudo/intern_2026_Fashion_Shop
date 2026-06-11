@@ -86,7 +86,7 @@ export default function AdminProducts() {
   const [keyword, setKeyword] = useState(filters.keyword)
 
   return (
-    <div className="flex min-h-screen flex-col gap-6 px-8 pb-16 pt-8">
+    <div className="flex min-h-screen flex-col gap-6 bg-[#FBF9F4] px-8 pb-16 pt-8">
       {/* Page header */}
       <div className="flex items-end justify-between">
         <div>
@@ -97,7 +97,7 @@ export default function AdminProducts() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 bg-[#1B1C19] px-5 py-2.5 font-beVietnamPro text-sm text-white hover:bg-[#333] transition-colors"
+          className="flex items-center gap-2 rounded-xl bg-[#1B1C19] px-5 py-2.5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 font-beVietnamPro text-sm text-white hover:bg-[#333] transition-colors"
         >
           <FiPlus className="h-4 w-4" />
           Thêm sản phẩm
@@ -105,10 +105,10 @@ export default function AdminProducts() {
       </div>
 
       {/* Filters bar */}
-      <div className="border border-[#D1C4B9] bg-white p-5">
+      <div className="rounded-2xl border border-[#D1C4B9] bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
-          <div className="flex flex-1 min-w-[240px] items-center gap-2 border border-[#D1C4B9] px-4 py-2.5">
+          <div className="flex flex-1 min-w-[240px] items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19]">
             <FiSearch className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
             <input
               value={keyword}
@@ -127,7 +127,7 @@ export default function AdminProducts() {
           <select
             value={filters.categoryId}
             onChange={e => updateFilter('categoryId', e.target.value)}
-            className="border border-[#D1C4B9] bg-white px-4 py-2.5 font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
+            className="rounded-xl border border-[#D1C4B9] bg-white px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
           >
             <option value="">Tất cả danh mục</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -137,7 +137,7 @@ export default function AdminProducts() {
           <select
             value={filters.brandId}
             onChange={e => updateFilter('brandId', e.target.value)}
-            className="border border-[#D1C4B9] bg-white px-4 py-2.5 font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
+            className="rounded-xl border border-[#D1C4B9] bg-white px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
           >
             <option value="">Tất cả thương hiệu</option>
             {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -147,7 +147,7 @@ export default function AdminProducts() {
           <select
             value={filters.isActive}
             onChange={e => updateFilter('isActive', e.target.value)}
-            className="border border-[#D1C4B9] bg-white px-4 py-2.5 font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
+            className="rounded-xl border border-[#D1C4B9] bg-white px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="true">Đang bán</option>
@@ -158,7 +158,7 @@ export default function AdminProducts() {
           <select
             value={filters.sortBy}
             onChange={e => updateFilter('sortBy', e.target.value)}
-            className="border border-[#D1C4B9] bg-white px-4 py-2.5 font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
+            className="rounded-xl border border-[#D1C4B9] bg-white px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
           >
             <option value="newest">Mới nhất</option>
             <option value="name">Tên A→Z</option>
@@ -168,14 +168,14 @@ export default function AdminProducts() {
           </select>
 
           <button onClick={refresh}
-            className="flex items-center gap-2 border border-[#D1C4B9] px-4 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
+            className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
             <FiRefreshCw className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="border border-[#D1C4B9] bg-white overflow-x-auto">
+      <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
         {/* Table header */}
         <table className="w-full min-w-[900px]">
           <thead>
@@ -213,12 +213,12 @@ export default function AdminProducts() {
                     key={p.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-colors"
+                    className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-all duration-300"
                   >
                     {/* Product */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 shrink-0 overflow-hidden border border-[#E8E0D8] bg-[#F5F3EE]">
+                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#E8E0D8] bg-[#F5F3EE]">
                           {p.thumbnailUrl
                             ? <img src={p.thumbnailUrl} alt={p.name} className="h-full w-full object-cover" />
                             : <FiPackage className="m-auto h-6 w-6 text-[#D1C4B9] mt-3" />
@@ -274,7 +274,7 @@ export default function AdminProducts() {
                           onClick={() => handleToggleActive(p)}
                           disabled={toggling === p.id}
                           title={p.isActive ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
-                          className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#6F583D] disabled:opacity-40"
+                          className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#6F583D] disabled:opacity-40"
                         >
                           {toggling === p.id
                             ? <span className="h-3.5 w-3.5 rounded-full border-2 border-[#9E8E7E] border-t-[#6F583D] animate-spin" />
@@ -286,7 +286,7 @@ export default function AdminProducts() {
                         <button
                           onClick={() => openEdit(p)}
                           title="Chỉnh sửa"
-                          className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
+                          className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
                         >
                           <FiEdit2 className="h-4 w-4" />
                         </button>
@@ -295,7 +295,7 @@ export default function AdminProducts() {
                         <button
                           onClick={() => openDelete(p)}
                           title="Xoá"
-                          className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-red-50 hover:text-red-500"
+                          className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-red-50 hover:text-red-500"
                         >
                           <FiTrash2 className="h-4 w-4" />
                         </button>
@@ -319,7 +319,7 @@ export default function AdminProducts() {
             <button
               disabled={filters.page === 0}
               onClick={() => updateFilter('page', filters.page - 1)}
-              className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40"
+              className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40"
             >
               <FiChevronLeft className="h-4 w-4" />
             </button>
@@ -330,7 +330,7 @@ export default function AdminProducts() {
                 <button
                   key={pageNum}
                   onClick={() => updateFilter('page', pageNum)}
-                  className={`flex h-9 w-9 items-center justify-center border font-beVietnamPro text-sm ${
+                  className={`flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border font-beVietnamPro text-sm ${
                     filters.page === pageNum
                       ? 'border-[#1B1C19] bg-[#1B1C19] text-white'
                       : 'border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9]'
@@ -344,7 +344,7 @@ export default function AdminProducts() {
             <button
               disabled={filters.page >= totalPages - 1}
               onClick={() => updateFilter('page', filters.page + 1)}
-              className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40"
+              className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40"
             >
               <FiChevronRight className="h-4 w-4" />
             </button>
