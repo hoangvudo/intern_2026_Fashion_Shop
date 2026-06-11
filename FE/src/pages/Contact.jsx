@@ -3,8 +3,32 @@ import Footer from "../components/Footer";
 import ProfessionalLuxuryTailorAtelier from "../assets/professional_luxury_tailor.png";
 import BannerImage from "../assets/high_end_luxury_fashion_brand_banner.png";
 import Reveal from "../components/Reveal";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import contactService from "../services/contactService";
 
 function ContactPage() {
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error("Vui lòng nhập đầy đủ thông tin bắt buộc (Tên, Email, Lời nhắn)");
+      return;
+    }
+    setLoading(true);
+    try {
+      await contactService.submitContact(formData);
+      toast.success("Gửi lời nhắn thành công. Chúng tôi sẽ phản hồi sớm nhất!");
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error) {
+      toast.error("Gửi lời nhắn thất bại, vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
       <TopNav />
@@ -118,24 +142,30 @@ function ContactPage() {
                     </p>
                   </div>
 
-                  <form className="space-y-8">
+                  <form className="space-y-8" onSubmit={handleSubmit}>
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-xs uppercase tracking-[0.22em] text-[#695D4B]">
-                          Họ và tên
+                          Họ và tên <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="Nguyễn Văn A"
                           className="w-full border-b border-[#DDC0B8] bg-transparent py-3 text-sm outline-none transition-colors placeholder:text-[#9A8C80] focus:border-[#BB5734] dark:border-white/15 dark:text-white dark:placeholder:text-slate-500"
                         />
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs uppercase tracking-[0.22em] text-[#695D4B]">
-                          Email
+                          Email <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           placeholder="example@email.com"
                           className="w-full border-b border-[#DDC0B8] bg-transparent py-3 text-sm outline-none transition-colors placeholder:text-[#9A8C80] focus:border-[#BB5734] dark:border-white/15 dark:text-white dark:placeholder:text-slate-500"
                         />
@@ -148,6 +178,8 @@ function ContactPage() {
                       </label>
                       <input
                         type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+84 ..."
                         className="w-full border-b border-[#DDC0B8] bg-transparent py-3 text-sm outline-none transition-colors placeholder:text-[#9A8C80] focus:border-[#BB5734] dark:border-white/15 dark:text-white dark:placeholder:text-slate-500"
                       />
@@ -155,17 +187,24 @@ function ContactPage() {
 
                     <div className="space-y-2">
                       <label className="text-xs uppercase tracking-[0.22em] text-[#695D4B]">
-                        Lời nhắn
+                        Lời nhắn <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         rows="5"
+                        required
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder="Chúng tôi có thể giúp gì cho bạn?"
                         className="w-full resize-none border-b border-[#DDC0B8] bg-transparent py-3 text-sm outline-none transition-colors placeholder:text-[#9A8C80] focus:border-[#BB5734] dark:border-white/15 dark:text-white dark:placeholder:text-slate-500"
                       />
                     </div>
 
-                    <button className="inline-flex w-full items-center justify-center rounded-full bg-[#BB5734] px-6 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#9F4A2D]">
-                      Gửi tin nhắn
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="inline-flex w-full items-center justify-center rounded-full bg-[#BB5734] px-6 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#9F4A2D] disabled:opacity-50"
+                    >
+                      {loading ? "Đang gửi..." : "Gửi tin nhắn"}
                     </button>
                   </form>
                 </div>

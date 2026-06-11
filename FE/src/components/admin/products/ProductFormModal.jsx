@@ -5,6 +5,7 @@ import {
   FiTag, FiPackage, FiDollarSign, FiImage, FiList
 } from 'react-icons/fi'
 import productService from '../../../services/productService'
+import uploadService from '../../../services/uploadService'
 import toast from 'react-hot-toast'
 
 const SIZES  = ['XS','S','M','L','XL','2XL','3XL','Free']
@@ -103,7 +104,9 @@ function VariantRow({ variant, index, onUpdate, onRemove }) {
 export default function ProductFormModal({ open, onClose, product, categories, brands, onSaved }) {
   const isEdit = Boolean(product?.id)
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [tab, setTab] = useState('basic') // basic | variants | images
+  const fileInputRef = useRef(null)
 
   const emptyForm = {
     name: '', slug: '', description: '', price: '', salePrice: '',
@@ -147,6 +150,23 @@ export default function ProductFormModal({ open, onClose, product, categories, b
 
   const removeVariant = (idx) =>
     setForm(f => ({ ...f, variants: f.variants.filter((_, i) => i !== idx) }))
+
+  const handleUploadThumbnail = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingImage(true)
+    try {
+      const res = await uploadService.uploadImage(file)
+      if (res && res.url) {
+        set('thumbnailUrl', res.url)
+        toast.success('Tải ảnh lên thành công')
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Lỗi khi tải ảnh lên')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
 
   // ── submit ───────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
@@ -416,12 +436,34 @@ export default function ProductFormModal({ open, onClose, product, categories, b
                   <div className="space-y-5">
                     <div>
                       <label className="mb-1.5 block font-beVietnamPro text-sm font-medium text-[#1B1C19]">URL ảnh đại diện</label>
-                      <input
-                        value={form.thumbnailUrl}
-                        onChange={e => set('thumbnailUrl', e.target.value)}
-                        placeholder="https://..."
-                        className="w-full border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none"
-                      />
+                      <div className="flex gap-2">
+                        <input
+                          value={form.thumbnailUrl}
+                          onChange={e => set('thumbnailUrl', e.target.value)}
+                          placeholder="https://..."
+                          className="flex-1 border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none"
+                        />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={fileInputRef}
+                          className="hidden"
+                          onChange={handleUploadThumbnail}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingImage}
+                          className="flex items-center gap-2 border border-[#D1C4B9] bg-[#FAFAF8] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] hover:bg-[#F0EEE9] disabled:opacity-50 transition-colors"
+                        >
+                          {uploadingImage ? (
+                            <span className="h-4 w-4 rounded-full border-2 border-[#1B1C19]/30 border-t-[#1B1C19] animate-spin" />
+                          ) : (
+                            <FiUpload className="h-4 w-4" />
+                          )}
+                          Tải ảnh lên
+                        </button>
+                      </div>
                     </div>
 
                     {form.thumbnailUrl && (
@@ -436,10 +478,13 @@ export default function ProductFormModal({ open, onClose, product, categories, b
                       </div>
                     )}
 
-                    <div className="flex flex-col items-center gap-3 border-2 border-dashed border-[#D1C4B9] py-10">
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex flex-col items-center gap-3 border-2 border-dashed border-[#D1C4B9] py-10 hover:bg-[#F0EEE9] transition-colors cursor-pointer"
+                    >
                       <FiUpload className="h-8 w-8 text-[#D1C4B9]" />
-                      <p className="font-beVietnamPro text-sm text-[#9E8E7E]">Upload nhiều ảnh</p>
-                      <p className="font-beVietnamPro text-xs text-[#C5B9AE]">Tính năng upload file sẽ tích hợp qua Cloudinary hoặc S3</p>
+                      <p className="font-beVietnamPro text-sm text-[#1B1C19] font-medium">Click để tải ảnh từ thiết bị</p>
+                      <p className="font-beVietnamPro text-xs text-[#9E8E7E]">Hỗ trợ JPG, PNG (Tối đa 5MB)</p>
                     </div>
                   </div>
                 )}

@@ -1,21 +1,22 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   FiGrid, FiShoppingBag, FiPackage, FiTag,
-  FiUsers, FiBarChart2, FiSettings, FiLogOut, FiX, FiStar, FiRotateCcw
+  FiUsers, FiBarChart2, FiSettings, FiLogOut, FiX, FiStar, FiRotateCcw, FiMessageSquare
 } from 'react-icons/fi'
 import useAuthStore from '../../store/authStore'
 import toast from 'react-hot-toast'
 
 const navItems = [
-  { to: '/admin',            label: 'Tổng quan',      icon: FiGrid,        end: true },
-  { to: '/admin/orders',     label: 'Đơn hàng',       icon: FiShoppingBag },
-  { to: '/admin/returns',    label: 'Hủy/Đổi/Trả',    icon: FiRotateCcw },
-  { to: '/admin/products',   label: 'Sản phẩm',       icon: FiPackage },
-  { to: '/admin/categories', label: 'Danh mục',       icon: FiTag },
-  { to: '/admin/reviews',    label: 'Đánh giá',       icon: FiStar },
-  { to: '/admin/customers',  label: 'Khách hàng',     icon: FiUsers },
-  { to: '/admin/reports',    label: 'Báo cáo',        icon: FiBarChart2 },
-  { to: '/admin/settings',   label: 'Cài đặt',        icon: FiSettings },
+  { to: '/admin', label: 'Tổng quan', icon: FiGrid, end: true },
+  { to: '/admin/orders', label: 'Đơn hàng', icon: FiShoppingBag },
+  { to: '/admin/returns', label: 'Hủy/Đổi/Trả', icon: FiRotateCcw },
+  { to: '/admin/products', label: 'Sản phẩm', icon: FiPackage },
+  { to: '/admin/categories', label: 'Danh mục', icon: FiTag },
+  { to: '/admin/reviews', label: 'Đánh giá', icon: FiStar },
+  { to: '/admin/customers', label: 'Khách hàng', icon: FiUsers },
+  { to: '/admin/contacts', label: 'Liên hệ', icon: FiMessageSquare },
+  { to: '/admin/reports', label: 'Báo cáo', icon: FiBarChart2 },
+  { to: '/admin/settings', label: 'Cài đặt', icon: FiSettings },
 ]
 
 // ✅ THÊM: prop open/onClose cho mobile
@@ -67,10 +68,9 @@ function AdminSidebar({ open, onClose }) {
             end={end}
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors ${
-                isActive
-                  ? 'border border-[#D1C4B9] bg-white text-[#1B1C19]'
-                  : 'text-[#4E453D] hover:bg-white/60'
+              `flex items-center gap-3 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors ${isActive
+                ? 'border border-[#D1C4B9] bg-white text-[#1B1C19]'
+                : 'text-[#4E453D] hover:bg-white/60'
               }`
             }
           >
