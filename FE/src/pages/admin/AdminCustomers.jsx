@@ -21,7 +21,7 @@ import {
   getAdminCustomerDetail,
   toggleCustomerActive,
   getVipStats,
-  createAdminCustomer,
+  deleteAdminCustomer,
 } from "../../services/adminService";
 import toast from "react-hot-toast";
 
@@ -81,7 +81,7 @@ function StatusBadge({ active }) {
   );
 }
 
-function CustomerDetailDrawer({ userId, onClose, onToggleActive }) {
+function CustomerDetailDrawer({ userId, onClose, onToggleActive, onDelete }) {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
@@ -211,22 +211,35 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive }) {
               </div>
 
               {customer.role !== "ADMIN" && (
-                <button
-                  onClick={handleToggle}
-                  disabled={toggling}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors disabled:opacity-60 ${
-                    customer.isActive
-                      ? "border border-red-200 text-red-600 hover:bg-red-50"
-                      : "bg-[#1B1C19] text-white hover:bg-black"
-                  }`}
-                >
-                  {customer.isActive ? (
-                    <FiLock className="h-4 w-4" />
-                  ) : (
-                    <FiUnlock className="h-4 w-4" />
-                  )}
-                  {customer.isActive ? "Khoá tài khoản" : "Mở khoá tài khoản"}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleToggle}
+                    disabled={toggling}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors disabled:opacity-60 ${
+                      customer.isActive
+                        ? "border border-red-200 text-red-600 hover:bg-red-50"
+                        : "bg-[#1B1C19] text-white hover:bg-black"
+                    }`}
+                  >
+                    {customer.isActive ? (
+                      <FiLock className="h-4 w-4" />
+                    ) : (
+                      <FiUnlock className="h-4 w-4" />
+                    )}
+                    {customer.isActive ? "Khoá tài khoản" : "Mở khoá tài khoản"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if(window.confirm('Bạn có chắc muốn xóa vĩnh viễn khách hàng này?')) {
+                        onDelete(customer.id);
+                      }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 font-beVietnamPro text-sm font-medium border border-red-200 bg-white text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <FiX className="h-4 w-4" />
+                    Xóa
+                  </button>
+                </div>
               )}
             </div>
           ) : null}
@@ -236,151 +249,7 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive }) {
   );
 }
 
-function AddCustomerModal({ open, onClose, onSaved }) {
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
-  const [saving, setSaving] = useState(false)
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (form.password !== form.confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp')
-      return
-    }
-    setSaving(true)
-    try {
-      await createAdminCustomer(form)
-      toast.success('Thêm khách hàng thành công')
-      setForm({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
-      onSaved()
-      onClose()
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (!open) return null
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }} transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed right-0 top-0 z-50 flex h-screen w-full max-w-2xl flex-col bg-white shadow-2xl"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#D1C4B9] px-8 py-6">
-              <div>
-                <h2 className="font-beVietnamPro text-xl font-semibold text-[#1B1C19]">Thêm khách hàng mới</h2>
-                <p className="mt-0.5 font-beVietnamPro text-sm text-[#6F583D]">Điền đầy đủ thông tin khách hàng</p>
-              </div>
-              <button onClick={onClose} className="flex h-10 w-10 items-center justify-center border border-[#D1C4B9] hover:bg-[#F0EEE9]">
-                <FiX className="h-5 w-5 text-[#4E453D]" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-8 py-6">
-                <div className="space-y-5">
-                  <div>
-                    <label className="mb-1.5 block font-beVietnamPro text-sm font-medium text-[#1B1C19]">
-                      Họ tên <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      required 
-                      value={form.fullName} 
-                      onChange={e => setForm({...form, fullName: e.target.value})} 
-                      placeholder="VD: Nguyễn Văn A"
-                      className="w-full border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none" 
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block font-beVietnamPro text-sm font-medium text-[#1B1C19]">
-                      Email <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      type="email" 
-                      required 
-                      value={form.email} 
-                      onChange={e => setForm({...form, email: e.target.value})} 
-                      placeholder="VD: nguyenvana@gmail.com"
-                      className="w-full border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none" 
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block font-beVietnamPro text-sm font-medium text-[#1B1C19]">
-                      Số điện thoại <span className="text-red-500">*</span>
-                    </label>
-                    <input 
-                      required 
-                      value={form.phone} 
-                      onChange={e => setForm({...form, phone: e.target.value})} 
-                      placeholder="VD: 0912345678"
-                      className="w-full border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none" 
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="mb-1.5 block font-beVietnamPro text-sm font-medium text-[#1B1C19]">
-                        Mật khẩu <span className="text-red-500">*</span>
-                      </label>
-                      <input 
-                        type="password" 
-                        required 
-                        minLength={6} 
-                        value={form.password} 
-                        onChange={e => setForm({...form, password: e.target.value})} 
-                        placeholder="Tối thiểu 6 ký tự"
-                        className="w-full border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none" 
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block font-beVietnamPro text-sm font-medium text-[#1B1C19]">
-                        Xác nhận mật khẩu <span className="text-red-500">*</span>
-                      </label>
-                      <input 
-                        type="password" 
-                        required 
-                        minLength={6} 
-                        value={form.confirmPassword} 
-                        onChange={e => setForm({...form, confirmPassword: e.target.value})} 
-                        placeholder="Nhập lại mật khẩu"
-                        className="w-full border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm text-[#1B1C19] placeholder:text-[#9E8E7E] focus:border-[#6F583D] focus:outline-none" 
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between border-t border-[#D1C4B9] px-8 py-5 bg-[#FAFAF8]">
-                <button type="button" onClick={onClose}
-                  className="border border-[#D1C4B9] px-6 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
-                  Huỷ
-                </button>
-                <button type="submit" disabled={saving}
-                  className="flex items-center gap-2 bg-[#1B1C19] px-8 py-2.5 font-beVietnamPro text-sm text-white hover:bg-[#333] disabled:opacity-50">
-                  {saving ? (
-                    <><span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Đang lưu...</>
-                  ) : (
-                    'Thêm khách hàng'
-                  )}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  )
-}
+// Removed AddCustomerModal
 
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState([]);
@@ -394,7 +263,6 @@ export default function AdminCustomers() {
   const [tier, setTier] = useState("ALL");
   const [page, setPage] = useState(0);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -435,6 +303,18 @@ export default function AdminCustomers() {
       prev.map((c) => (c.id === id ? { ...c, isActive: updated.isActive } : c)),
     );
     return updated;
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteAdminCustomer(id);
+      toast.success("Đã xóa khách hàng thành công");
+      setSelectedUserId(null);
+      load();
+      loadStats();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Không thể xóa khách hàng này");
+    }
   };
 
   return (
@@ -482,17 +362,8 @@ export default function AdminCustomers() {
               <option value="SILVER">Silver</option>
             </select>
             <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-[#696459] pointer-events-none" />
-          </div>
-
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex pt-2 pr-6 pb-2 pl-6 items-center gap-2 rounded bg-[#6F583D] text-white font-beVietnamPro text-base leading-6 shadow-sm hover:bg-[#5D4933] transition-colors"
-          >
-            <FiPlus className="w-5 h-5" />
-            <span>Thêm khách hàng</span>
-          </button>
         </div>
-
+      </div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <motion.div
@@ -795,21 +666,14 @@ export default function AdminCustomers() {
         )}
       </div>
 
-      {/* Detail Drawer */}
       {selectedUserId && (
         <CustomerDetailDrawer
           userId={selectedUserId}
           onClose={() => setSelectedUserId(null)}
           onToggleActive={handleToggleActive}
+          onDelete={handleDelete}
         />
       )}
-
-      {/* Add Customer Modal */}
-      <AddCustomerModal
-        open={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSaved={load}
-      />
     </div>
   );
 }

@@ -1,83 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
 import Reveal from "../components/Reveal";
 import BannerImage from "../assets/high_end_luxury_fashion_brand_banner.png";
-import ProfessionalLuxuryTailorAtelier from "../assets/professional_luxury_tailor.png";
-import HighendLuxuryFashionEditorial from "../assets/high_end_luxury_fashion.png";
-import CustomfitTailoring from "../assets/close_up_of_a_high_quality.png";
-import StoryImg1 from "../assets/Image1.png";
-import StoryImg2 from "../assets/Image2.png";
-import StoryImg3 from "../assets/Image3.png";
 import { FiArrowRight } from "react-icons/fi";
+import articleService from "../services/articleService";
 
 const CATEGORIES = ["Tất cả", "Xu hướng", "Phối đồ", "Sự kiện", "Sống Xanh"];
 
-const MOCK_ARTICLES = [
-  {
-    id: 1,
-    title: "10 Xu Hướng Thời Trang Bền Vững Sẽ Lên Ngôi Trong Năm 2026",
-    category: "Xu hướng",
-    image: HighendLuxuryFashionEditorial,
-    date: "10 Tháng 6, 2026",
-    excerpt:
-      "Sự lên ngôi của chất liệu thuần tự nhiên và thiết kế tái sinh đang định hình lại toàn bộ bức tranh của ngành công nghiệp thời trang hiện đại.",
-  },
-  {
-    id: 2,
-    title: "Bí Quyết Phối Đồ Cho Nữ Giới Tuổi 30: Tinh Tế & Thanh Lịch",
-    category: "Phối đồ",
-    image: StoryImg1,
-    date: "05 Tháng 6, 2026",
-    excerpt:
-      "Làm sao để luôn giữ được khí chất sang trọng nhưng vẫn thoải mái nơi công sở? Khám phá 5 cách mix & match không bao giờ lỗi mốt.",
-  },
-  {
-    id: 3,
-    title: "Sự Kiện Ra Mắt Bộ Sưu Tập 'Hồi Sinh' - Giao Thoa Quá Khứ & Hiện Tại",
-    category: "Sự kiện",
-    image: StoryImg2,
-    date: "02 Tháng 6, 2026",
-    excerpt:
-      "Sự kiện quy tụ hàng loạt gương mặt đình đám trong giới mộ điệu, đánh dấu bước chuyển mình mạnh mẽ của thiết kế thủ công Việt.",
-  },
-  {
-    id: 4,
-    title: "Vải Từ Trái Cây: Lời Giải Cho Bài Toán Thời Trang Xanh?",
-    category: "Sống Xanh",
-    image: StoryImg3,
-    date: "28 Tháng 5, 2026",
-    excerpt:
-      "Công nghệ mới cho phép chuyển đổi phụ phẩm nông nghiệp thành sợi dệt cao cấp, một bước tiến lớn cho thời trang thân thiện với môi trường.",
-  },
-  {
-    id: 5,
-    title: "Custom-fit: Khi Tủ Đồ Được Cá Nhân Hóa Hoàn Toàn",
-    category: "Phối đồ",
-    image: CustomfitTailoring,
-    date: "25 Tháng 5, 2026",
-    excerpt:
-      "May đo tinh chỉnh không chỉ là sự vừa vặn về mặt thể chất, mà còn là sự đồng điệu về phong cách sống và tâm hồn.",
-  },
-  {
-    id: 6,
-    title: "Góc Nhìn Của Nghệ Nhân: Đằng Sau Một Chiếc Váy Haute Couture",
-    category: "Sự kiện",
-    image: ProfessionalLuxuryTailorAtelier,
-    date: "20 Tháng 5, 2026",
-    excerpt:
-      "Hơn 300 giờ làm việc thủ công, hàng ngàn đường kim mũi chỉ là cái giá của sự hoàn mỹ trong thời trang thiết kế.",
-  },
-];
-
 function Blog() {
   const [activeCategory, setActiveCategory] = useState("Tất cả");
+  const [articles, setArticles] = useState([]);
+  const [featured, setFeatured] = useState(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const filteredArticles =
-    activeCategory === "Tất cả"
-      ? MOCK_ARTICLES
-      : MOCK_ARTICLES.filter((article) => article.category === activeCategory);
+  // Fetch featured
+  useEffect(() => {
+    articleService.getFeatured().then(data => {
+      if (data && data.length > 0) setFeatured(data[0]);
+    }).catch(console.error);
+  }, []);
+
+  // Fetch articles list
+  useEffect(() => {
+    const fetchList = async () => {
+      setLoading(true);
+      try {
+        const params = { page: 0, size: 6 };
+        if (activeCategory !== "Tất cả") params.category = activeCategory;
+        const res = await articleService.getPublished(params);
+        setArticles(res.content || []);
+        setHasMore(!res.last);
+        setPage(1);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchList();
+  }, [activeCategory]);
+
+  const handleLoadMore = async () => {
+    try {
+      const params = { page, size: 6 };
+      if (activeCategory !== "Tất cả") params.category = activeCategory;
+      const res = await articleService.getPublished(params);
+      setArticles(prev => [...prev, ...(res.content || [])]);
+      setHasMore(!res.last);
+      setPage(p => p + 1);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white flex flex-col">
@@ -100,13 +78,13 @@ function Blog() {
                   Bài Viết Nổi Bật
                 </span>
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-white leading-tight mb-6">
-                  Định hình phong cách thời trang đương đại với nét tinh hoa thủ công
+                  {featured?.title || "Định hình phong cách thời trang đương đại với nét tinh hoa thủ công"}
                 </h1>
                 <p className="text-lg text-white/80 mb-8 max-w-2xl line-clamp-3">
-                  Sự kết hợp giữa kỹ thuật cắt may truyền thống và tư duy thẩm mỹ hiện đại đã tạo nên một chuẩn mực mới cho cái đẹp. Khám phá hành trình tìm lại những giá trị cốt lõi của thời trang qua lăng kính của ZYRO.
+                  {featured?.excerpt || "Sự kết hợp giữa kỹ thuật cắt may truyền thống và tư duy thẩm mỹ hiện đại đã tạo nên một chuẩn mực mới cho cái đẹp. Khám phá hành trình tìm lại những giá trị cốt lõi của thời trang qua lăng kính của ZYRO."}
                 </p>
                 <Link
-                  to="/blog/featured"
+                  to={featured ? `/blog/${featured.slug}` : "/blog"}
                   className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-semibold text-sm uppercase tracking-wider rounded-full hover:bg-gray-200 transition-colors"
                 >
                   Đọc tiếp <FiArrowRight />
@@ -147,28 +125,38 @@ function Blog() {
 
             {/* Articles Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {filteredArticles.length > 0 ? (
-                filteredArticles.map((article, index) => (
-                  <Reveal key={article.id} delay={index * 0.1} direction="up">
+              {loading ? (
+                [...Array(6)].map((_, index) => (
+                  <div key={index} className="h-96 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+                ))
+              ) : articles.length > 0 ? (
+                articles.map((article, index) => (
+                  <Reveal key={article.id} delay={(index % 6) * 0.1} direction="up">
                     <article className="group cursor-pointer h-full flex flex-col">
                       {/* Image Container */}
-                      <div className="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6">
-                        <img
-                          src={article.image}
-                          alt={article.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute top-4 left-4">
-                          <span className="px-3 py-1 bg-white/90 dark:bg-black/80 backdrop-blur-md text-xs font-semibold uppercase tracking-wider rounded-full">
-                            {article.category}
-                          </span>
-                        </div>
+                      <div className="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6 bg-gray-100 dark:bg-gray-800">
+                        {article.thumbnailUrl && (
+                          <img
+                            src={article.thumbnailUrl}
+                            alt={article.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        )}
+                        {article.category && (
+                          <div className="absolute top-4 left-4">
+                            <span className="px-3 py-1 bg-white/90 dark:bg-black/80 backdrop-blur-md text-xs font-semibold uppercase tracking-wider rounded-full">
+                              {article.category}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Content */}
                       <div className="flex flex-col flex-grow">
                         <div className="text-xs text-gray-500 dark:text-gray-400 mb-3 tracking-widest uppercase">
-                          {article.date}
+                          {new Date(article.publishedAt).toLocaleDateString('vi-VN', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                          })}
                         </div>
                         <h3 className="text-xl font-serif font-semibold leading-snug mb-3 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors line-clamp-2">
                           {article.title}
@@ -178,7 +166,7 @@ function Blog() {
                         </p>
                         <div className="mt-auto">
                           <Link
-                            to={`/blog/${article.id}`}
+                            to={`/blog/${article.slug}`}
                             className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors"
                           >
                             Đọc bài viết <FiArrowRight className="transition-transform group-hover:translate-x-1" />
@@ -196,10 +184,13 @@ function Blog() {
             </div>
 
             {/* Load More Button */}
-            {filteredArticles.length > 0 && (
+            {hasMore && (
               <div className="mt-20 text-center">
                 <Reveal delay={0.2} direction="up">
-                  <button className="px-10 py-4 border border-gray-300 dark:border-gray-700 rounded-full text-sm font-semibold uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <button 
+                    onClick={handleLoadMore}
+                    className="px-10 py-4 border border-gray-300 dark:border-gray-700 rounded-full text-sm font-semibold uppercase tracking-wider hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
                     Tải thêm bài viết
                   </button>
                 </Reveal>

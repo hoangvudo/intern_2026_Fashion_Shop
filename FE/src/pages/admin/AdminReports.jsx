@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-import { FiTrendingUp, FiBarChart2, FiRefreshCw } from 'react-icons/fi'
+import { FiTrendingUp, FiBarChart2, FiRefreshCw, FiDownload } from 'react-icons/fi'
 import { getAdminRevenue, getAdminStats } from '../../services/adminService'
+import toast from 'react-hot-toast'
+import * as XLSX from 'xlsx'
 
 const fmtFull = (n) => Number(n || 0).toLocaleString('vi-VN') + '₫'
 const fmtM = (n) => {
@@ -242,6 +244,40 @@ export default function AdminReports() {
   const avgRevenue   = revenueData.length ? totalRevenue / revenueData.length : 0
   const peakDay      = revenueData.reduce((max, d) => d.revenue > (max?.revenue || 0) ? d : max, null)
 
+  const exportToExcel = () => {
+    if (!revenueData || revenueData.length === 0) {
+      toast.error('Không có dữ liệu để xuất')
+      return
+    }
+
+    const exportData = revenueData.map(d => ({
+      'Ngày': d.date,
+      'Doanh thu (VNĐ)': d.revenue,
+      'Lợi nhuận ước tính (VNĐ)': d.profit
+    }))
+
+    // Thêm dòng tổng cộng
+    exportData.push({
+      'Ngày': 'TỔNG CỘNG',
+      'Doanh thu (VNĐ)': totalRevenue,
+      'Lợi nhuận ước tính (VNĐ)': totalProfit
+    })
+
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    
+    // Auto adjust column widths
+    const colWidths = [
+      { wch: 15 }, // Ngày
+      { wch: 20 }, // Doanh thu
+      { wch: 25 }, // Lợi nhuận
+    ];
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "DoanhThu")
+    XLSX.writeFile(wb, `BaoCao_DoanhThu_${new Date().toISOString().slice(0,10)}.xlsx`)
+  }
+
   return (
     <div className="flex min-h-screen flex-col gap-6 px-8 pb-16 pt-8">
       {/* Header */}
@@ -261,6 +297,10 @@ export default function AdminReports() {
               </button>
             ))}
           </div>
+          <button onClick={exportToExcel} className="flex items-center gap-2 border border-[#D1C4B9] bg-green-600 px-4 py-2.5 text-white hover:bg-green-700 transition-colors">
+            <FiDownload className="h-4 w-4" />
+            <span className="font-beVietnamPro text-sm">Xuất Excel</span>
+          </button>
           <button onClick={load} className="flex items-center gap-2 border border-[#D1C4B9] px-3 py-2.5 text-[#4E453D] hover:bg-[#F0EEE9]">
             <FiRefreshCw className="h-4 w-4" />
           </button>

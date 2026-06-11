@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   FiSearch, FiRefreshCw, FiShoppingBag, FiChevronLeft, FiChevronRight,
   FiEye, FiX, FiMapPin, FiPhone, FiUser, FiPackage, FiClock, FiTruck,
-  FiCheckCircle, FiXCircle, FiAlertCircle, FiCreditCard,
+  FiCheckCircle, FiXCircle, FiAlertCircle, FiCreditCard, FiDownload
 } from 'react-icons/fi'
 import { getAdminOrders, getAdminOrderDetail, updateOrderStatus } from '../../services/adminService'
 import toast from 'react-hot-toast'
+import * as XLSX from 'xlsx'
 
 const fmt = (n) => Number(n || 0).toLocaleString('vi-VN') + '₫'
 
@@ -274,6 +275,42 @@ export default function AdminOrders() {
     { key: 'CANCELLED', label: 'Đã huỷ' },
   ]
 
+  const exportToExcel = () => {
+    if (!orders || orders.length === 0) {
+      toast.error('Không có dữ liệu để xuất')
+      return
+    }
+
+    const exportData = orders.map(o => ({
+      'Mã đơn': o.orderCode,
+      'Ngày tạo': o.createdAt ? new Date(o.createdAt).toLocaleString('vi-VN') : '',
+      'Khách hàng': o.shippingName,
+      'Số điện thoại': o.shippingPhone,
+      'Sản phẩm': o.items?.map(i => `${i.productName} (${i.quantity})`).join(', ') || '',
+      'Tổng tiền (VNĐ)': o.totalAmount,
+      'Thanh toán': PAYMENT_MAP[o.paymentMethod] || o.paymentMethod,
+      'Trạng thái': STATUS_CONFIG[o.status]?.label || o.status
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    
+    const colWidths = [
+      { wch: 15 }, // Mã đơn
+      { wch: 20 }, // Ngày tạo
+      { wch: 25 }, // Khách hàng
+      { wch: 15 }, // SĐT
+      { wch: 40 }, // Sản phẩm
+      { wch: 15 }, // Tổng tiền
+      { wch: 20 }, // Thanh toán
+      { wch: 15 }, // Trạng thái
+    ];
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "DonHang")
+    XLSX.writeFile(wb, `DanhSachDonHang_${new Date().toISOString().slice(0,10)}.xlsx`)
+  }
+
   return (
     <div className="flex min-h-screen flex-col gap-6 bg-[#FBF9F4] px-8 pb-16 pt-8">
       {/* Header */}
@@ -284,10 +321,16 @@ export default function AdminOrders() {
             Tổng cộng <span className="font-semibold">{total}</span> đơn hàng
           </p>
         </div>
-        <button onClick={load} className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
-          <FiRefreshCw className="h-4 w-4" />
-          Làm mới
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportToExcel} className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] bg-green-600 px-4 py-2.5 transition-all duration-300 font-beVietnamPro text-sm text-white hover:bg-green-700">
+            <FiDownload className="h-4 w-4" />
+            Xuất Excel
+          </button>
+          <button onClick={load} className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
+            <FiRefreshCw className="h-4 w-4" />
+            Làm mới
+          </button>
+        </div>
       </div>
 
       {/* Status Tabs */}

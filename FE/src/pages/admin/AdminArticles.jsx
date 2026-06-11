@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import articleService from "../../services/articleService";
+import uploadService from "../../services/uploadService";
 
 const CATEGORIES = [
   { value: "", label: "Tất cả" },
@@ -77,6 +78,23 @@ function ArticleFormModal({ article, onClose, onSaved }) {
       }
       return next;
     });
+  };
+
+  const handleFileUpload = async (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const loadingToast = toast.loading("Đang tải ảnh lên...");
+    try {
+      const res = await uploadService.uploadImage(file);
+      if (res && res.url) {
+        handleChange(field, res.url);
+        toast.success("Tải ảnh lên thành công", { id: loadingToast });
+      } else {
+        toast.error("Không nhận được đường dẫn ảnh", { id: loadingToast });
+      }
+    } catch (err) {
+      toast.error("Lỗi khi tải ảnh lên", { id: loadingToast });
+    }
   };
 
   const handleSave = async () => {
@@ -186,25 +204,38 @@ function ArticleFormModal({ article, onClose, onSaved }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Avatar tác giả (URL)</label>
-              <input
-                value={form.authorAvatar}
-                onChange={e => handleChange("authorAvatar", e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#BB5734] outline-none transition"
-                placeholder="https://..."
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Avatar tác giả (URL hoặc Tải lên)</label>
+              <div className="flex gap-2">
+                <input
+                  value={form.authorAvatar}
+                  onChange={e => handleChange("authorAvatar", e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#BB5734] outline-none transition"
+                  placeholder="https://..."
+                />
+                <label className="flex shrink-0 items-center justify-center cursor-pointer rounded-lg border border-gray-200 px-3 bg-gray-50 hover:bg-gray-100 transition">
+                  <FiImage className="text-gray-500" title="Tải ảnh lên" />
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'authorAvatar')} />
+                </label>
+              </div>
             </div>
           </div>
 
           {/* Cover image */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Ảnh bìa (URL)</label>
-            <input
-              value={form.coverImage}
-              onChange={e => handleChange("coverImage", e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#BB5734] outline-none transition"
-              placeholder="https://example.com/image.jpg"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Ảnh bìa (URL hoặc Tải lên)</label>
+            <div className="flex gap-2">
+              <input
+                value={form.coverImage}
+                onChange={e => handleChange("coverImage", e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#BB5734] outline-none transition"
+                placeholder="https://example.com/image.jpg"
+              />
+              <label className="flex shrink-0 items-center justify-center gap-2 cursor-pointer rounded-lg border border-gray-200 px-4 bg-gray-50 hover:bg-gray-100 transition">
+                <FiImage className="text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Tải lên</span>
+                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'coverImage')} />
+              </label>
+            </div>
             {form.coverImage && (
               <div className="mt-2 h-40 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                 <img src={form.coverImage} alt="preview" className="h-full w-full object-cover" onError={e => e.target.style.display = 'none'} />
@@ -362,6 +393,43 @@ function ArticleViewModal({ article, onClose }) {
 }
 
 // ========================
+// DELETE CONFIRM MODAL
+// ========================
+function DeleteConfirmModal({ onClose, onConfirm, deleting }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        className="w-full max-w-sm rounded-2xl bg-white shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="p-6 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <FiTrash2 className="h-6 w-6" />
+          </div>
+          <h3 className="mb-2 font-beVietnamPro text-lg font-bold text-[#1B1C19]">Xác nhận xoá</h3>
+          <p className="text-sm font-beVietnamPro text-[#4E453D] leading-relaxed">
+            Bạn có chắc chắn muốn xoá bài viết này không? Hành động này không thể hoàn tác.
+          </p>
+        </div>
+        <div className="flex gap-3 bg-[#F5F3EE] px-6 py-4">
+          <button onClick={onClose} className="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold font-beVietnamPro text-[#6F583D] border border-[#D1C4B9] transition-all hover:bg-[#F0EEE9]">
+            Huỷ
+          </button>
+          <button onClick={onConfirm} disabled={deleting} className="flex-1 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold font-beVietnamPro text-white transition-all hover:bg-red-600 disabled:opacity-50 flex items-center justify-center">
+            {deleting ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : "Xoá bài viết"}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ========================
 // MAIN PAGE
 // ========================
 export default function AdminArticles() {
@@ -377,6 +445,8 @@ export default function AdminArticles() {
   const [editArticle, setEditArticle] = useState(null);
   const [viewArticle, setViewArticle] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -397,14 +467,18 @@ export default function AdminArticles() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xoá bài viết này?")) return;
+  const handleDelete = async () => {
+    if (!articleToDelete) return;
+    setDeleting(true);
     try {
-      await articleService.delete(id);
+      await articleService.delete(articleToDelete);
       toast.success("Đã xoá bài viết");
+      setArticleToDelete(null);
       load();
     } catch {
       toast.error("Không thể xoá bài viết");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -581,7 +655,7 @@ export default function AdminArticles() {
                         className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#6F583D]">
                         {a.isPublished ? <FiEyeOff className="h-4 w-4" /> : <FiCheck className="h-4 w-4" />}
                       </button>
-                      <button onClick={() => handleDelete(a.id)} title="Xoá"
+                      <button onClick={() => setArticleToDelete(a.id)} title="Xoá"
                         className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-red-50 hover:text-red-500">
                         <FiTrash2 className="h-4 w-4" />
                       </button>
@@ -654,6 +728,13 @@ export default function AdminArticles() {
           <ArticleViewModal
             article={viewArticle}
             onClose={() => setViewArticle(null)}
+          />
+        )}
+        {articleToDelete && (
+          <DeleteConfirmModal
+            onClose={() => setArticleToDelete(null)}
+            onConfirm={handleDelete}
+            deleting={deleting}
           />
         )}
       </AnimatePresence>

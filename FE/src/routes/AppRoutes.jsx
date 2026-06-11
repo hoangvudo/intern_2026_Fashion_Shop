@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ClientLayout from "../components/ClientLayout";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -18,6 +19,7 @@ import Collection from "../pages/Collection";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminProducts from "../pages/admin/AdminProducts";
 import AdminCategories from "../pages/admin/AdminCategories";
+import AdminBrands from "../pages/admin/AdminBrands"; // 🆕
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminCustomers from "../pages/admin/AdminCustomers";
 import AdminContacts from "../pages/admin/AdminContacts";
@@ -35,33 +37,36 @@ import AdminRoute from "./AdminRoute";
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route
-        path="/reset-password-expired"
-        element={<ResetPasswordExpired />}
-      />
-      <Route path="/oauth2/callback" element={<OAuth2Callback />} />
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/product/:id" element={<ProductDetail />} />
-      <Route path="/design" element={<Design />} />
-      <Route path="/story" element={<Story />} />
-      <Route path="/stories" element={<Story />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/blog/:id" element={<BlogDetail />} />
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
-      <Route path="/order-success" element={<OrderSuccessPage />} />
-      <Route path="/my-orders" element={<MyOrders />} />
-      <Route path="/vnpay/result" element={<VNPayResult />} />
+      <Route element={<ClientLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/reset-password-expired"
+          element={<ResetPasswordExpired />}
+        />
+        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/design" element={<Design />} />
+        <Route path="/story" element={<Story />} />
+        <Route path="/stories" element={<Story />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogDetail />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/vnpay/result" element={<VNPayResult />} />
 
-      {/* Bộ sưu tập */}
-      <Route path="/collections" element={<Collection />} />
-      <Route path="/collections/:slug" element={<Collection />} />
+        {/* Bộ sưu tập */}
+        <Route path="/collections" element={<Collection />} />
+        <Route path="/collections/:slug" element={<Collection />} />
+        <Route path="*" element={<Home />} />
+      </Route>
 
       {/* Admin */}
       <Route path="/admin" element={<AdminRoute />}>
@@ -70,6 +75,7 @@ function AppRoutes() {
         <Route path="returns" element={<AdminReturns />} /> {/* 🆕 */}
         <Route path="products" element={<AdminProducts />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="brands" element={<AdminBrands />} /> {/* 🆕 */}
         <Route path="reviews" element={<AdminReviews />} /> {/* 🆕 */}
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="contacts" element={<AdminContacts />} />
@@ -77,8 +83,6 @@ function AppRoutes() {
         <Route path="reports" element={<AdminReports />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>
-
-      <Route path="*" element={<Home />} />
     </Routes>
   );
 }

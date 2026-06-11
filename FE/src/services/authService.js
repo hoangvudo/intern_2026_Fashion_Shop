@@ -175,6 +175,24 @@ const authService = {
       };
     }
   },
+
+  updateProfile: async (data) => {
+    try {
+      const response = await api.put("/auth/profile", data);
+      return response.data;
+    } catch (error) {
+      throw authService.extractError(error, "Cập nhật thông tin thất bại");
+    }
+  },
+
+  changePassword: async (data) => {
+    try {
+      const response = await api.put("/auth/change-password", data);
+      return response.data;
+    } catch (error) {
+      throw authService.extractError(error, "Thay đổi mật khẩu thất bại");
+    }
+  },
 };
 
 export default authService;

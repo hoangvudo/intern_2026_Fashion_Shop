@@ -23,8 +23,8 @@ export const getAdminCustomerDetail = (id) =>
 export const toggleCustomerActive = (id) =>
   api.patch(`/admin/customers/${id}/toggle-active`).then(r => r.data)
 
-export const createAdminCustomer = (data) =>
-  api.post('/admin/customers', data).then(r => r.data)
+export const deleteAdminCustomer = (id) =>
+  api.delete(`/admin/customers/${id}`).then(r => r.data)
 
 // ── Dashboard ────────────────────────────────────────────────
 export const getAdminStats = () =>

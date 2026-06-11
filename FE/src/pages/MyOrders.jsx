@@ -387,54 +387,6 @@ export default function MyOrders() {
           </div>
         </div>
 
-        {/* User VIP Info */}
-        {userProfile && (
-          <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-6 border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 text-white font-bold text-xl uppercase">
-                {userProfile.fullName?.charAt(0) || userProfile.email?.charAt(0) || 'U'}
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{userProfile.fullName || userProfile.email}</h2>
-                <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
-                  Hạng hiện tại: <span className="font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-xs dark:bg-amber-900/30">{userProfile.vipTier || 'MỚI'}</span>
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex-1 max-w-md w-full">
-              <div className="flex justify-between text-xs text-gray-500 mb-2">
-                <span>Tổng chi tiêu: <strong className="text-gray-900 dark:text-white">{fmt(userProfile.totalSpent)}</strong></span>
-                <span>Mức tiếp theo: <strong className="text-gray-900 dark:text-white">
-                  {userProfile.vipTier === 'DIAMOND' ? 'Đã đạt cao nhất' 
-                    : userProfile.vipTier === 'PLATINUM' ? '50.000.000₫' 
-                    : userProfile.vipTier === 'GOLD' ? '30.000.000₫' 
-                    : userProfile.vipTier === 'SILVER' ? '15.000.000₫' 
-                    : '5.000.000₫'}
-                </strong></span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-700">
-                <div 
-                  className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-1000" 
-                  style={{ width: `${
-                    userProfile.vipTier === 'DIAMOND' ? 100
-                    : userProfile.vipTier === 'PLATINUM' ? Math.min((userProfile.totalSpent / 50000000) * 100, 100)
-                    : userProfile.vipTier === 'GOLD' ? Math.min((userProfile.totalSpent / 30000000) * 100, 100)
-                    : userProfile.vipTier === 'SILVER' ? Math.min((userProfile.totalSpent / 15000000) * 100, 100)
-                    : Math.min((userProfile.totalSpent / 5000000) * 100, 100)
-                  }%` }}
-                />
-              </div>
-              <p className="mt-2 text-[11px] text-gray-400 flex justify-between">
-                <span>MỚI (0)</span>
-                <span>BẠC (5tr)</span>
-                <span>VÀNG (15tr)</span>
-                <span>BẠCH KIM (30tr)</span>
-                <span>KIM CƯƠNG (50tr)</span>
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Tabs */}
         <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-white p-1.5 shadow-sm dark:bg-gray-800">
