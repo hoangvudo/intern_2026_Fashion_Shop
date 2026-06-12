@@ -22,6 +22,7 @@ import AdminReports from "../pages/admin/AdminReports";
 import AdminSettings from "../pages/admin/AdminSettings";
 import AdminReturns from "../pages/admin/AdminReturns"; // 🆕
 import AdminReviews from "../pages/admin/AdminReviews"; // 🆕
+import AdminBrands from "../pages/admin/AdminBrands";
 import CheckoutPage from "../pages/Checkout";
 import OrderSuccessPage from "../pages/OrderSuccess";
 import MyOrders from "../pages/MyOrders";
@@ -65,6 +66,7 @@ function AppRoutes() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="reviews" element={<AdminReviews />} /> {/* 🆕 */}
+        <Route path="brands" element={<AdminBrands />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="settings" element={<AdminSettings />} />

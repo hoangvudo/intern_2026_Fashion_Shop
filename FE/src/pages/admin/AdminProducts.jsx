@@ -20,8 +20,7 @@ import DeleteConfirmModal from "../../components/admin/products/DeleteConfirmMod
 import productService from "../../services/productService";
 import toast from "react-hot-toast";
 
-const formatMoney = (value) =>
-  `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return "";
@@ -85,7 +84,9 @@ function StatusBadge({ active }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-        active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+        active
+          ? "bg-emerald-50 text-emerald-700"
+          : "bg-slate-100 text-slate-500"
       }`}
     >
       <span
@@ -143,8 +144,15 @@ function ProductFlags({ product }) {
 }
 
 export default function AdminProducts() {
-  const { products, total, totalPages, loading, filters, updateFilter, refresh } =
-    useAdminProducts();
+  const {
+    products,
+    total,
+    totalPages,
+    loading,
+    filters,
+    updateFilter,
+    refresh,
+  } = useAdminProducts();
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -160,8 +168,14 @@ export default function AdminProducts() {
   }, [filters.keyword]);
 
   useEffect(() => {
-    productService.getCategories().then(setCategories).catch(() => {});
-    productService.getBrands().then(setBrands).catch(() => {});
+    productService
+      .getCategories()
+      .then(setCategories)
+      .catch(() => {});
+    productService
+      .getBrands()
+      .then(setBrands)
+      .catch(() => {});
   }, []);
 
   const openCreate = () => {
@@ -213,8 +227,10 @@ export default function AdminProducts() {
     const lowStock = products.filter((p) => (p.totalStock ?? 0) < 10).length;
     const avgPrice =
       products.length > 0
-        ? products.reduce((sum, p) => sum + Number(p.salePrice ?? p.price ?? 0), 0) /
-          products.length
+        ? products.reduce(
+            (sum, p) => sum + Number(p.salePrice ?? p.price ?? 0),
+            0,
+          ) / products.length
         : 0;
 
     return { active, featured, lowStock, avgPrice };
@@ -242,8 +258,8 @@ export default function AdminProducts() {
               Quản lý sản phẩm
             </h1>
             <p className="mt-2 max-w-2xl font-beVietnamPro text-sm leading-6 text-[#6F583D]">
-              Quản lý danh mục hàng hóa, biến thể, ảnh đại diện, tồn kho và trạng thái bán trực tiếp từ
-              dữ liệu backend.
+              Quản lý danh mục hàng hóa, biến thể, ảnh đại diện, tồn kho và
+              trạng thái bán trực tiếp từ dữ liệu backend.
             </p>
           </div>
 
@@ -252,7 +268,9 @@ export default function AdminProducts() {
               onClick={refresh}
               className="inline-flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm font-medium text-[#4E453D] transition-colors hover:bg-[#F6F2EC]"
             >
-              <FiRefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              <FiRefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Làm mới
             </button>
             <button
@@ -301,7 +319,9 @@ export default function AdminProducts() {
                 </p>
                 <FiPackage className="h-5 w-5 text-[#D1C4B9]" />
               </div>
-              <p className="mt-2 text-xs leading-5 text-[#6F583D]">{item.note}</p>
+              <p className="mt-2 text-xs leading-5 text-[#6F583D]">
+                {item.note}
+              </p>
             </div>
           ))}
         </div>
@@ -487,7 +507,8 @@ export default function AdminProducts() {
                                 {product.slug || "Chưa có slug"}
                               </p>
                               <p className="mt-1 text-xs text-[#6F583D]">
-                                ID #{product.id} • {product.imageUrl2 ? "2 ảnh" : "1 ảnh"}
+                                ID #{product.id} •{" "}
+                                {product.imageUrl2 ? "2 ảnh" : "1 ảnh"}
                               </p>
                             </div>
                           </div>
@@ -498,7 +519,9 @@ export default function AdminProducts() {
                             {product.categoryName || "—"}
                           </p>
                           {product.brandName && (
-                            <p className="mt-1 text-xs text-[#9E8E7E]">{product.brandName}</p>
+                            <p className="mt-1 text-xs text-[#9E8E7E]">
+                              {product.brandName}
+                            </p>
                           )}
                         </td>
 
@@ -554,7 +577,11 @@ export default function AdminProducts() {
                             <button
                               onClick={() => handleToggleActive(product)}
                               disabled={toggling === product.id}
-                              title={product.isActive ? "Ẩn sản phẩm" : "Hiện sản phẩm"}
+                              title={
+                                product.isActive
+                                  ? "Ẩn sản phẩm"
+                                  : "Hiện sản phẩm"
+                              }
                               className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6F583D] transition-colors hover:bg-[#F0EEE9] disabled:opacity-50"
                             >
                               {toggling === product.id ? (
