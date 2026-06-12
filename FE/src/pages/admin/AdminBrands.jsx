@@ -1,393 +1,433 @@
-import { useState, useEffect, useCallback } from "react";
-import {
-  FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff,
-  FiX, FiTag, FiImage, FiCheck
-} from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
-import toast from "react-hot-toast";
-import brandService from "../../services/brandService";
+import { useMemo, useState } from "react";
 
-function slugify(str) {
-  return str.toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d").replace(/Đ/g, "D")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import {
+  FiSearch,
+  FiPlus,
+  FiEye,
+  FiEyeOff,
+  FiTrash2,
+  FiRefreshCw,
+  FiTag,
+  FiImage,
+  FiPackage,
+} from "react-icons/fi";
+
+import toast from "react-hot-toast";
+import { useAdminBrands } from "../../hooks/useBrands";
+import brandService from "../../services/brandService";
+import BrandFormModal from "../../components/admin/brands/BrandFormModal";
+import DeleteBrandModal from "../../components/admin/brands/DeleteBrandModal";
+
+function getImageUrl(imagePath) {
+  if (!imagePath) return "";
+
+  if (
+    /^(https?:)?\/\//.test(imagePath) ||
+    imagePath.startsWith("data:") ||
+    imagePath.startsWith("blob:")
+  ) {
+    return imagePath;
+  }
+
+  let cleanPath = imagePath.replace(/^\//, "");
+  if (cleanPath.startsWith("api/uploads/")) {
+    return `http://localhost:8080/${cleanPath}`;
+  }
+  if (cleanPath.startsWith("uploads/")) {
+    cleanPath = cleanPath.replace(/^uploads\//, "");
+  }
+
+  // folder: BE/uploads -> /api/uploads/{name}
+  return `http://localhost:8080/api/uploads/${cleanPath}`;
 }
 
-// ========================
-// FORM MODAL
-// ========================
-function BrandFormModal({ brand, onClose, onSaved }) {
-  const isEdit = !!brand;
-  const [form, setForm] = useState({
-    name: "", slug: "", description: "", logoUrl: "", isActive: true
-  });
-  const [saving, setSaving] = useState(false);
+function StatusBadge({ active }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+        active ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          active ? "bg-emerald-500" : "bg-red-500"
+        }`}
+      />
+      {active ? "Đang hiển thị" : "Đang ẩn"}
+    </span>
+  );
+}
 
-  useEffect(() => {
-    if (brand) {
-      setForm({
-        name: brand.name || "",
-        slug: brand.slug || "",
-        description: brand.description || "",
-        logoUrl: brand.logoUrl || "",
-        isActive: brand.isActive ?? true,
-      });
-    }
-  }, [brand]);
+export default function AdminBrands() {
+  const navigate = useNavigate();
+  const { brands, loading, refresh } = useAdminBrands();
 
-  const handleChange = (field, value) => {
-    setForm(prev => {
-      const next = { ...prev, [field]: value };
-      if (field === "name" && !isEdit) {
-        next.slug = slugify(value);
-      }
-      return next;
+  const [keyword, setKeyword] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editBrand, setEditBrand] = useState(null);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const [toggling, setToggling] = useState(null);
+
+  const filtered = useMemo(() => {
+    const k = keyword.toLowerCase().trim();
+    if (!k) return brands;
+    return brands.filter((b) => {
+      return (
+        (b.name || "").toLowerCase().includes(k) ||
+        (b.slug || "").toLowerCase().includes(k)
+      );
     });
+  }, [brands, keyword]);
+
+  const activeCount = useMemo(
+    () => brands.filter((b) => Boolean(b.isActive)).length,
+    [brands],
+  );
+
+  const openCreate = () => {
+    setEditBrand(null);
+    setFormOpen(true);
   };
 
-  const handleSave = async () => {
-    if (!form.name.trim()) return toast.error("Vui lòng nhập tên thương hiệu");
-    if (!form.slug.trim()) return toast.error("Vui lòng nhập slug");
-    setSaving(true);
+  const openEdit = (b) => {
+    setEditBrand(b);
+    setFormOpen(true);
+  };
+
+  const openDelete = (b) => {
+    setDeleteTarget(b);
+    setDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      if (isEdit) {
-        await brandService.updateBrand(brand.id, form);
-        toast.success("Cập nhật thương hiệu thành công");
-      } else {
-        await brandService.createBrand(form);
-        toast.success("Tạo thương hiệu thành công");
-      }
-      onSaved();
-    } catch (e) {
-      toast.error(e.response?.data?.message || "Có lỗi xảy ra");
+      await brandService.delete(deleteTarget.id);
+      toast.success("Đã xoá thương hiệu");
+      setDeleteOpen(false);
+      refresh();
+    } catch (err) {
+      console.error(err);
+      toast.error("Xoá thất bại");
     } finally {
-      setSaving(false);
+      setDeleting(false);
     }
   };
 
-  const [tab, setTab] = useState("basic");
+  const handleViewProducts = (brandId) => {
+    navigate(`/admin/products?brandId=${brandId}`);
+  };
+
+  const handleToggleActive = async (b) => {
+    setToggling(b.id);
+    try {
+      await brandService.update(b.id, {
+        ...b,
+        isActive: !b.isActive,
+      });
+      toast.success(b.isActive ? "Đã ẩn thương hiệu" : "Đã hiện thương hiệu");
+      refresh();
+    } catch (err) {
+      console.error(err);
+      toast.error("Cập nhật thất bại");
+    } finally {
+      setToggling(null);
+    }
+  };
+
+  const total = brands.length;
+  const percentActive = total ? Math.round((activeCount / total) * 100) : 0;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: '100%' }} transition={{ type: 'tween', duration: 0.3 }}
-        className="fixed right-0 top-0 z-[10000] flex h-screen w-full max-w-2xl flex-col bg-white shadow-2xl"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#D1C4B9] px-8 py-6">
-          <div>
-            <h2 className="font-beVietnamPro text-xl font-semibold text-[#1B1C19]">
-              {isEdit ? "Chỉnh sửa thương hiệu" : "Thêm thương hiệu mới"}
-            </h2>
-            <p className="mt-0.5 font-beVietnamPro text-sm text-[#6F583D]">
-              {isEdit ? `ID: #${brand.id}` : "Điền đầy đủ thông tin thương hiệu"}
+    <div className="min-h-screen bg-[#FBF9F4] px-8 pb-16 pt-8">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-4 rounded-3xl border border-[#E5E7EB] bg-white p-6 shadow-[0_18px_50px_rgba(27,28,25,0.05)] lg:flex-row lg:items-end lg:justify-between"
+        >
+          <div className="max-w-3xl">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#9E8E7E]">
+              Admin • Thương hiệu
+            </p>
+            <h1 className="font-beVietnamPro text-3xl font-semibold text-[#1B1C19]">
+              Quản lý thương hiệu
+            </h1>
+            <p className="mt-2 max-w-2xl font-beVietnamPro text-sm leading-6 text-[#6F583D]">
+              Tạo mới, cập nhật, ẩn/hiện và xoá thương hiệu trực tiếp từ
+              backend.
             </p>
           </div>
-          <button onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center border border-[#D1C4B9] hover:bg-[#F0EEE9]">
-            <FiX className="h-5 w-5 text-[#4E453D]" />
-          </button>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-[#D1C4B9] px-8">
-          {[
-            { id: "basic", label: "Thông tin cơ bản", icon: FiTag },
-            { id: "images", label: "Hình ảnh", icon: FiImage }
-          ].map(t => (
-            <button key={t.id} type="button" onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 border-b-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors ${
-                tab === t.id ? "border-[#1B1C19] text-[#1B1C19]" : "border-transparent text-[#9E8E7E] hover:text-[#4E453D]"
-              }`}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={refresh}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-3 font-beVietnamPro text-sm font-medium text-[#4E453D] transition-colors hover:bg-[#F6F2EC]"
             >
-              <t.icon className="h-4 w-4" /> {t.label}
+              <FiRefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
+              Làm mới
             </button>
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#1B1C19] px-5 py-3 font-beVietnamPro text-sm font-semibold text-white transition-colors hover:bg-[#2d2d28]"
+            >
+              <FiPlus className="h-4 w-4" />
+              Thêm thương hiệu
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              label: "Tổng thương hiệu",
+              value: total,
+              note: "Tổng số thương hiệu trong hệ thống",
+            },
+            {
+              label: "Đang hiển thị",
+              value: activeCount,
+              note: "Theo trạng thái isActive",
+            },
+            {
+              label: "Tỷ lệ hiển thị",
+              value: `${percentActive}%`,
+              note: "Phần trăm thương hiệu active",
+            },
+            {
+              label: "Kết quả lọc",
+              value: filtered.length,
+              note: "Khớp theo tên hoặc slug",
+            },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-[0_12px_30px_rgba(27,28,25,0.04)]"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9E8E7E]">
+                {item.label}
+              </p>
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <p className="font-beVietnamPro text-3xl font-semibold text-[#1B1C19]">
+                  {item.value}
+                </p>
+                <FiTag className="h-5 w-5 text-[#D1C4B9]" />
+              </div>
+              <p className="mt-2 text-xs leading-5 text-[#6F583D]">
+                {item.note}
+              </p>
+            </div>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          {tab === "basic" && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Tên thương hiệu <span className="text-red-500">*</span></label>
-                <input
-                  value={form.name}
-                  onChange={e => handleChange("name", e.target.value)}
-                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
-                  placeholder="VD: ZYRO Fashion"
-                />
+        {/* Filters */}
+        <div className="rounded-3xl border border-[#E5E7EB] bg-white p-5 shadow-[0_18px_50px_rgba(27,28,25,0.05)]">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div className="flex-1">
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#9E8E7E]">
+                <FiSearch className="h-3.5 w-3.5" />
+                Tìm kiếm
               </div>
-
-              <div>
-                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Slug (SEO URL)</label>
-                <input
-                  value={form.slug}
-                  onChange={e => handleChange("slug", e.target.value)}
-                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#6F583D] focus:border-[#6F583D] focus:outline-none"
-                  placeholder="zyro-fashion (tự sinh nếu bỏ trống)"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Mô tả thương hiệu</label>
-                <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={e => handleChange("description", e.target.value)}
-                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#1B1C19] focus:border-[#6F583D] focus:outline-none resize-none"
-                  placeholder="Mô tả chi tiết về thương hiệu..."
-                />
-              </div>
-
-              <label className="flex items-center gap-3 cursor-pointer select-none w-fit pt-2">
-                <div
-                  onClick={() => handleChange("isActive", !form.isActive)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${form.isActive ? "bg-[#1B1C19]" : "bg-[#D1C4B9]"}`}
-                >
-                  <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${form.isActive ? "translate-x-6" : ""}`} />
+              <div className="grid gap-3 lg:grid-cols-[1.5fr_repeat(1,minmax(0,1fr))]">
+                <div className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-3">
+                  <FiSearch className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
+                  <input
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                    placeholder="Tìm theo tên hoặc slug..."
+                    className="w-full bg-transparent font-beVietnamPro text-sm text-[#1B1C19] outline-none placeholder:text-[#9E8E7E]"
+                  />
                 </div>
-                <span className="text-sm font-medium font-beVietnamPro text-[#1B1C19]">Cho phép hiển thị (Hoạt động)</span>
-              </label>
-            </div>
-          )}
 
-          {tab === "images" && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Logo URL</label>
-                <input
-                  value={form.logoUrl}
-                  onChange={e => handleChange("logoUrl", e.target.value)}
-                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
-                  placeholder="https://example.com/logo.png"
-                />
-                {form.logoUrl && (
-                  <div className="mt-4 p-4 border border-[#D1C4B9] bg-[#F5F3EE] flex items-center justify-center">
-                    <img src={form.logoUrl} alt="preview" className="max-h-32 object-contain" onError={e => e.target.style.display = 'none'} />
-                  </div>
-                )}
+                <div className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] bg-white px-4 py-3">
+                  <FiImage className="h-4 w-4 text-[#9E8E7E]" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9E8E7E]">
+                    Hiển thị
+                  </span>
+                  <span className="ml-auto inline-flex items-center rounded-full bg-[#F5F3EE] px-3 py-1 font-beVietnamPro text-xs font-semibold text-[#6F583D]">
+                    {filtered.length}/{total}
+                  </span>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-[#D1C4B9] bg-white px-8 py-4 flex items-center justify-between">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium font-beVietnamPro border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] transition-all">
-            Huỷ
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-[#1B1C19] px-6 py-2.5 text-sm font-semibold font-beVietnamPro text-white transition-all duration-300 hover:bg-[#333] disabled:opacity-50"
-          >
-            {saving ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            ) : null}
-            {isEdit ? "Lưu thay đổi" : "Thêm thương hiệu"}
-          </button>
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
+        {/* Table */}
+        <div className="overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white shadow-[0_18px_50px_rgba(27,28,25,0.05)]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[980px]">
+              <thead>
+                <tr className="border-b border-[#E5E7EB] bg-[#F5F3EE]">
+                  {[
+                    "HÌNH",
+                    "TÊN THƯƠNG HIỆU",
+                    "SLUG",
+                    "TRẠNG THÁI",
+                    "THAO TÁC",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6F583D]"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence mode="wait">
+                  {loading ? (
+                    [...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b border-[#F0EEE9]">
+                        {[...Array(5)].map((__, j) => (
+                          <td key={j} className="px-5 py-5">
+                            <div className="h-4 w-full animate-pulse rounded bg-[#F0EEE9]" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-5 py-16 text-center">
+                        <div className="mx-auto flex max-w-xs flex-col items-center gap-2">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F3EE]">
+                            <FiImage className="h-5 w-5 text-[#D1C4B9]" />
+                          </div>
+                          <p className="font-beVietnamPro text-sm text-[#9E8E7E]">
+                            Không tìm thấy thương hiệu
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((b) => {
+                      const logo = b.logoUrl || b.logoURL || b.imageUrl || "";
+                      return (
+                        <motion.tr
+                          key={b.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="border-b border-[#F0EEE9] transition-colors hover:bg-[#FAF9F6]"
+                        >
+                          <td className="px-5 py-5">
+                            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-[#E8E0D8] bg-[#F5F3EE]">
+                              {logo ? (
+                                <img
+                                  src={getImageUrl(logo)}
+                                  alt={b.name}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              ) : null}
+                            </div>
+                          </td>
 
-// ========================
-// MAIN PAGE
-// ========================
-export default function AdminBrands() {
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [keyword, setKeyword] = useState("");
-  
-  const [editBrand, setEditBrand] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+                          <td className="px-5 py-5">
+                            <p className="font-beVietnamPro text-sm font-semibold text-[#1B1C19]">
+                              {b.name}
+                            </p>
+                            {b.description && (
+                              <p className="mt-1 text-xs text-[#6F583D] line-clamp-2">
+                                {b.description}
+                              </p>
+                            )}
+                          </td>
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await brandService.getAllBrands();
-      setBrands(data || []);
-    } catch {
-      toast.error("Không thể tải danh sách thương hiệu");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+                          <td className="px-5 py-5">
+                            <p className="font-beVietnamPro text-sm font-medium text-[#4E453D]">
+                              {b.slug || "—"}
+                            </p>
+                          </td>
 
-  useEffect(() => { load(); }, [load]);
+                          <td className="px-5 py-5">
+                            <StatusBadge active={Boolean(b.isActive)} />
+                          </td>
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xoá thương hiệu này? Cảnh báo: Việc xoá có thể lỗi nếu thương hiệu đang có sản phẩm.")) return;
-    try {
-      await brandService.deleteBrand(id);
-      toast.success("Đã xoá thương hiệu");
-      load();
-    } catch {
-      toast.error("Không thể xoá thương hiệu");
-    }
-  };
+                          <td className="px-5 py-5">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleToggleActive(b)}
+                                disabled={toggling === b.id}
+                                title={
+                                  b.isActive
+                                    ? "Ẩn thương hiệu"
+                                    : "Hiện thương hiệu"
+                                }
+                                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6F583D] transition-colors hover:bg-[#F0EEE9] disabled:opacity-50"
+                              >
+                                {toggling === b.id ? (
+                                  <span className="h-4 w-4 rounded-full border-2 border-[#9E8E7E] border-t-[#6F583D] animate-spin" />
+                                ) : b.isActive ? (
+                                  <FiEyeOff className="h-4 w-4" />
+                                ) : (
+                                  <FiEye className="h-4 w-4" />
+                                )}
+                              </button>
 
-  const handleToggleActive = async (id) => {
-    try {
-      await brandService.toggleActive(id);
-      toast.success("Đã cập nhật trạng thái");
-      load();
-    } catch {
-      toast.error("Không thể cập nhật trạng thái");
-    }
-  };
+                              <button
+                                onClick={() => handleViewProducts(b.id)}
+                                title="Xem sản phẩm của thương hiệu"
+                                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6F583D] transition-colors hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
+                              >
+                                <FiPackage className="h-4 w-4" />
+                              </button>
 
-  const filteredBrands = brands.filter(b => 
-    b.name.toLowerCase().includes(keyword.toLowerCase()) || 
-    b.slug.toLowerCase().includes(keyword.toLowerCase())
-  );
+                              <button
+                                onClick={() => openEdit(b)}
+                                title="Chỉnh sửa"
+                                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6F583D] transition-colors hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
+                              >
+                                <span className="text-base">✎</span>
+                              </button>
 
-  return (
-    <div className="flex min-h-screen flex-col gap-6 bg-[#FBF9F4] px-8 pb-16 pt-8">
-      {/* Header */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="font-beVietnamPro text-2xl font-semibold text-[#1B1C19]">Quản lý Thương hiệu</h1>
-          <p className="mt-1 font-beVietnamPro text-sm text-[#6F583D]">
-            Tổng cộng <span className="font-semibold">{brands.length}</span> thương hiệu
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 rounded-xl bg-[#1B1C19] px-5 py-2.5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 font-beVietnamPro text-sm text-white"
-        >
-          <FiPlus className="h-4 w-4" /> Tạo thương hiệu
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="rounded-2xl border border-[#D1C4B9] bg-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-1 min-w-[240px] items-center gap-2 rounded-xl border border-[#D1C4B9] transition-all duration-300 focus-within:border-[#1B1C19] focus-within:shadow-sm px-4 py-2.5">
-            <FiSearch className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
-            <input
-              value={keyword}
-              onChange={e => setKeyword(e.target.value)}
-              placeholder="Tìm kiếm thương hiệu..."
-              className="flex-1 bg-transparent font-beVietnamPro text-sm text-[#1B1C19] outline-none placeholder:text-[#9E8E7E]"
-            />
+                              <button
+                                onClick={() => openDelete(b)}
+                                title="Xoá"
+                                className="flex h-9 w-9 items-center justify-center rounded-xl text-red-500 transition-colors hover:bg-red-50"
+                              >
+                                <FiTrash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      );
+                    })
+                  )}
+                </AnimatePresence>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
-        <table className="w-full min-w-[800px]">
-          <thead>
-            <tr className="border-b border-[#D1C4B9] bg-[#F5F3EE]">
-              <th className="px-5 py-4 text-left font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D] w-16">ID</th>
-              <th className="px-5 py-4 text-left font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D]">Thương hiệu</th>
-              <th className="px-5 py-4 text-left font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D]">Mô tả</th>
-              <th className="px-5 py-4 text-center font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D]">Trạng thái</th>
-              <th className="px-5 py-4 text-right font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D]">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              [...Array(5)].map((_, i) => (
-                <tr key={i} className="border-b border-[#F0EEE9]">
-                  <td className="px-5 py-4"><div className="h-4 w-8 animate-pulse rounded bg-[#F0EEE9]" /></td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-16 animate-pulse rounded-xl bg-[#F0EEE9]" />
-                      <div className="h-4 w-32 animate-pulse rounded bg-[#F0EEE9]" />
-                    </div>
-                  </td>
-                  <td className="px-5 py-4"><div className="h-4 w-48 animate-pulse rounded bg-[#F0EEE9]" /></td>
-                  <td className="px-5 py-4"><div className="h-6 w-20 mx-auto animate-pulse rounded-full bg-[#F0EEE9]" /></td>
-                  <td className="px-5 py-4"><div className="h-8 w-24 ml-auto animate-pulse rounded-xl bg-[#F0EEE9]" /></td>
-                </tr>
-              ))
-            ) : filteredBrands.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-20 text-center">
-                  <FiTag className="mx-auto mb-3 h-10 w-10 text-[#D1C4B9]" />
-                  <p className="font-beVietnamPro text-sm text-[#9E8E7E]">Không tìm thấy thương hiệu nào</p>
-                </td>
-              </tr>
-            ) : filteredBrands.map(b => (
-              <tr key={b.id} className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-all duration-300">
-                <td className="px-5 py-4 font-beVietnamPro text-sm text-[#4E453D]">#{b.id}</td>
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-16 shrink-0 overflow-hidden rounded-xl border border-[#E8E0D8] bg-[#F5F3EE] p-1 flex items-center justify-center">
-                      {b.logoUrl ? (
-                        <img src={b.logoUrl} className="max-h-full max-w-full object-contain" alt="" />
-                      ) : (
-                        <FiImage className="h-5 w-5 text-[#D1C4B9]" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-beVietnamPro text-sm font-medium text-[#1B1C19]">{b.name}</p>
-                      <p className="font-beVietnamPro text-xs text-[#9E8E7E]">/{b.slug}</p>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="px-5 py-4 font-beVietnamPro text-sm text-[#6F583D] max-w-xs truncate">
-                  {b.description || "—"}
-                </td>
+      <BrandFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        brand={editBrand}
+        onSaved={refresh}
+      />
 
-                <td className="px-5 py-4 text-center">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 font-beVietnamPro text-xs font-medium rounded-full ${b.isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                    {b.isActive ? <><FiEye className="h-3 w-3" /> Đang hoạt động</> : <><FiEyeOff className="h-3 w-3" /> Đã ẩn</>}
-                  </span>
-                </td>
-
-                <td className="px-5 py-4">
-                  <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => setEditBrand(b)} title="Sửa"
-                      className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]">
-                      <FiEdit2 className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => handleToggleActive(b.id)} title={b.isActive ? "Ẩn thương hiệu" : "Hiện thương hiệu"}
-                      className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#6F583D]">
-                      {b.isActive ? <FiEyeOff className="h-4 w-4" /> : <FiCheck className="h-4 w-4" />}
-                    </button>
-                    <button onClick={() => handleDelete(b.id)} title="Xoá"
-                      className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-red-50 hover:text-red-500">
-                      <FiTrash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modals */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <BrandFormModal
-            brand={null}
-            onClose={() => setShowCreateModal(false)}
-            onSaved={() => { setShowCreateModal(false); load(); }}
-          />
-        )}
-        {editBrand && (
-          <BrandFormModal
-            brand={editBrand}
-            onClose={() => setEditBrand(null)}
-            onSaved={() => { setEditBrand(null); load(); }}
-          />
-        )}
-      </AnimatePresence>
+      <DeleteBrandModal
+        open={deleteOpen}
+        brand={deleteTarget}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
     </div>
   );
 }

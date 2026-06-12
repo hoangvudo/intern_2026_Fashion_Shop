@@ -13,6 +13,7 @@ import {
 } from "react-icons/fi";
 import { usePublicCategories } from "../hooks/useCategories";
 import { usePublicProducts } from "../hooks/useProducts";
+import { usePublicBrands } from "../hooks/useBrands";
 import BannerImage from "../assets/high_end_luxury_fashion_brand_banner.png";
 
 export default function Design() {
@@ -21,12 +22,14 @@ export default function Design() {
 
   const [searchTerm, setSearchTerm] = useState(initialKeyword);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState("S");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const { categories } = usePublicCategories();
+  const { brands } = usePublicBrands();
 
   const [productParams, setProductParams] = useState({
     page: 0,
@@ -68,15 +71,16 @@ export default function Design() {
       ...productParams,
       keyword: searchTerm || undefined,
       categoryId: selectedCategory?.id || undefined,
+      brandId: selectedBrand?.id || undefined,
       minPrice: selectedPrice?.min ?? undefined,
       maxPrice: selectedPrice?.max ?? undefined,
     };
     refetch(params);
-  }, [searchTerm, selectedCategory, selectedPrice, productParams, refetch]);
+  }, [searchTerm, selectedCategory, selectedBrand, selectedPrice, productParams, refetch]);
 
   useEffect(() => {
     setProductParams((prev) => ({ ...prev, page: 0 }));
-  }, [searchTerm, selectedCategory, selectedPrice]);
+  }, [searchTerm, selectedCategory, selectedBrand, selectedPrice]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage < totalPages) {
@@ -143,6 +147,32 @@ export default function Design() {
           ))}
         </div>
       </section>
+
+      {/* Brands */}
+      {brands.length > 0 && (
+        <section className="space-y-5">
+          <h3 className="text-xs font-semibold tracking-[0.2em] text-[#695D4B] dark:text-gray-400 uppercase">
+            Thương Hiệu
+          </h3>
+          <div className="space-y-3 font-beVietnamPro text-sm">
+            <p
+              onClick={() => setSelectedBrand(null)}
+              className={`cursor-pointer transition-colors ${!selectedBrand ? "text-[#BB5734] font-semibold" : "text-[#4A4A4A] dark:text-gray-300 hover:text-[#BB5734]"}`}
+            >
+              Tất cả thương hiệu
+            </p>
+            {brands.map((brand) => (
+              <p
+                key={brand.id}
+                onClick={() => setSelectedBrand(selectedBrand?.id === brand.id ? null : brand)}
+                className={`cursor-pointer transition-colors ${selectedBrand?.id === brand.id ? "text-[#BB5734] font-semibold" : "text-[#4A4A4A] dark:text-gray-300 hover:text-[#BB5734]"}`}
+              >
+                {brand.name}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Price Range */}
       <section className="space-y-5">
@@ -246,7 +276,7 @@ export default function Design() {
           {/* Mobile Filter Toggle */}
           <div className="lg:hidden flex justify-between items-center mb-8 pb-4 border-b border-[#DDC0B8] dark:border-gray-800">
             <span className="font-serif text-xl">
-              {selectedCategory ? selectedCategory.name : "Tất cả thiết kế"}
+              {selectedBrand?.name || selectedCategory?.name || "Tất cả thiết kế"}
             </span>
             <button 
               onClick={() => setIsMobileFilterOpen(true)}
@@ -297,7 +327,7 @@ export default function Design() {
               {/* Header Info */}
               <div className="hidden lg:flex items-end justify-between mb-10 pb-6 border-b border-[#DDC0B8] dark:border-gray-800">
                 <h2 className="text-3xl font-serif tracking-wide text-[#231916] dark:text-gray-100">
-                  {selectedCategory ? selectedCategory.name : "Tất cả thiết kế"}
+                  {selectedBrand?.name || selectedCategory?.name || "Tất cả thiết kế"}
                 </h2>
                 <span className="text-sm font-medium tracking-[0.1em] text-[#695D4B] dark:text-gray-400 uppercase">
                   {productsLoading ? "Đang tải..." : `${totalElements} Sản phẩm`}
@@ -339,6 +369,11 @@ export default function Design() {
                           </div>
                         </div>
                         <div className="text-center space-y-2">
+                          {product.brandName && (
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9A8C80] dark:text-gray-500">
+                              {product.brandName}
+                            </p>
+                          )}
                           <h3 className="text-sm font-semibold tracking-wider uppercase text-[#231916] dark:text-gray-100 group-hover:text-[#BB5734] transition-colors line-clamp-1">
                             {product.name}
                           </h3>
@@ -359,6 +394,7 @@ export default function Design() {
                     onClick={() => {
                       setSearchTerm("");
                       setSelectedCategory(null);
+                      setSelectedBrand(null);
                       setSelectedPrice(null);
                       setSelectedColor(null);
                       setSelectedSize(null);

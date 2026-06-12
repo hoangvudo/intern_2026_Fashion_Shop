@@ -81,35 +81,33 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: '100%' }} transition={{ type: 'tween', duration: 0.3 }}
-        className="fixed right-0 top-0 z-[10000] flex h-screen w-full max-w-lg flex-col bg-white shadow-2xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        onClick={e => { if (e.target === e.currentTarget) onClose() }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#D1C4B9] px-6 py-5 shrink-0">
-          <div>
-            <h2 className="font-beVietnamPro text-lg font-bold text-[#1B1C19]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: 20 }}
+          className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800"
+        >
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700"
+          >
+            <FiX className="h-4 w-4" />
+          </button>
+
+          <div className="p-6">
+            <h2 className="mb-1 text-lg font-bold text-gray-900 dark:text-white">
               Chi tiết yêu cầu
             </h2>
-            <p className="mt-0.5 font-beVietnamPro text-sm text-[#6F583D]">
-              {request.returnCode}
-            </p>
-          </div>
-          <button onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#D1C4B9] hover:bg-[#F0EEE9] transition-all duration-300">
-            <FiX className="h-5 w-5 text-[#4E453D]" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <p className="mb-5 text-sm text-gray-400">{request.returnCode}</p>
 
             {/* Info grid */}
-            <div className="mb-5 space-y-3 rounded-xl bg-[#F5F3EE] p-4">
+            <div className="mb-5 space-y-3 rounded-xl bg-gray-50 p-4 dark:bg-gray-700/50">
               <InfoRow label="Đơn hàng" value={`#${request.orderCode}`} />
               <InfoRow label="Loại" value={<TypeBadge type={request.type} />} />
               <InfoRow label="Trạng thái" value={<StatusBadge status={request.status} />} />
@@ -122,26 +120,13 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
                 <InfoRow label="Màu muốn đổi" value={request.exchangeColor} />
               )}
               <InfoRow label="Ngày tạo" value={fmtDate(request.createdAt)} />
-
-              {request.imageUrls && (
-                <div className="mt-2 border-t border-[#D1C4B9] pt-3">
-                  <span className="mb-2 block text-xs font-medium text-gray-500">Ảnh đính kèm:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {request.imageUrls.split(',').filter(Boolean).map((url, idx) => (
-                      <a key={idx} href={url.trim()} target="_blank" rel="noreferrer" className="block h-16 w-16 overflow-hidden rounded-lg border border-gray-200">
-                        <img src={url.trim()} alt="minh chứng" className="h-full w-full object-cover transition-opacity hover:opacity-80" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Admin note */}
             {request.status === 'PENDING' && (
               <>
                 <div className="mb-4">
-                  <label className="mb-1.5 block text-sm font-medium font-beVietnamPro text-[#4E453D]">
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Ghi chú admin (tùy chọn)
                   </label>
                   <textarea
@@ -149,7 +134,7 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
                     value={adminNote}
                     onChange={e => setAdminNote(e.target.value)}
                     placeholder="Nhập phản hồi cho khách hàng..."
-                    className="w-full rounded-lg border border-[#D1C4B9] px-3 py-2.5 text-sm outline-none focus:border-[#6F583D] font-beVietnamPro text-[#1B1C19]"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
 
@@ -157,14 +142,14 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
                   <button
                     disabled={updating}
                     onClick={() => handleUpdate('REJECTED')}
-                    className="flex-1 rounded-full border border-red-200 py-2.5 text-sm font-semibold font-beVietnamPro text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    className="flex-1 rounded-full border border-red-200 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
                   >
                     Từ chối
                   </button>
                   <button
                     disabled={updating}
                     onClick={() => handleUpdate('APPROVED')}
-                    className="flex-1 rounded-full bg-[#1B1C19] py-2.5 text-sm font-semibold font-beVietnamPro text-white hover:bg-[#333] disabled:opacity-50"
+                    className="flex-1 rounded-full bg-green-600 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
                   >
                     {updating ? 'Đang xử lý...' : 'Phê duyệt'}
                   </button>
@@ -176,20 +161,21 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
               <button
                 disabled={updating}
                 onClick={() => handleUpdate('COMPLETED')}
-                className="w-full rounded-full bg-[#1B1C19] py-2.5 text-sm font-semibold font-beVietnamPro text-white hover:bg-[#333] disabled:opacity-50"
+                className="w-full rounded-full bg-gray-900 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-50 dark:bg-white dark:text-black"
               >
                 {updating ? 'Đang xử lý...' : 'Đánh dấu Hoàn tất'}
               </button>
             )}
 
             {request.adminNote && request.status !== 'PENDING' && (
-              <div className="mt-4 rounded-xl bg-[#F5F3EE] p-3 text-sm">
-                <span className="font-medium text-[#6F583D]">Ghi chú admin: </span>
-                <span className="text-[#1B1C19]">{request.adminNote}</span>
+              <div className="mt-4 rounded-xl bg-gray-50 p-3 text-sm dark:bg-gray-700/40">
+                <span className="font-medium text-gray-500">Ghi chú admin: </span>
+                <span className="text-gray-700 dark:text-gray-200">{request.adminNote}</span>
               </div>
             )}
           </div>
         </motion.div>
+      </motion.div>
     </AnimatePresence>
   )
 }
@@ -197,8 +183,8 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
 function InfoRow({ label, value }) {
   return (
     <div className="flex items-start justify-between gap-4 text-sm">
-      <span className="shrink-0 text-[#9E8E7E] font-beVietnamPro">{label}</span>
-      <span className="font-medium font-beVietnamPro text-[#1B1C19] text-right">{value}</span>
+      <span className="shrink-0 text-gray-400">{label}</span>
+      <span className="font-medium text-gray-800 dark:text-gray-200 text-right">{value}</span>
     </div>
   )
 }
@@ -236,100 +222,94 @@ export default function AdminReturns() {
   const requests = data.content || []
 
   return (
-    <div className="flex min-h-screen flex-col gap-6 bg-[#FBF9F4] px-8 pb-16 pt-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="mx-auto max-w-6xl px-4 py-8">
 
         {/* Header */}
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="font-beVietnamPro text-2xl font-semibold text-[#1B1C19]">Yêu cầu Hủy / Đổi / Trả</h1>
-            <p className="mt-1 font-beVietnamPro text-sm text-[#6F583D]">
-              Tổng cộng <span className="font-semibold">{data.totalElements || 0}</span> yêu cầu
-            </p>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Yêu cầu Hủy / Đổi / Trả</h1>
+          <p className="mt-1 text-sm text-gray-400">
+            Tổng {data.totalElements || 0} yêu cầu
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <FiSearch className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm theo mã đơn, tên khách..."
+              value={keyword}
+              onChange={e => { setKeyword(e.target.value); setPage(0) }}
+              className="h-10 w-full rounded-lg border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
           </div>
           <button
             onClick={fetchData}
-            className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
           >
             <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Làm mới
           </button>
         </div>
 
-        {/* Filters bar */}
-        <div className="rounded-2xl border border-[#D1C4B9] bg-white p-5 shadow-sm">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search */}
-            <div className="flex flex-1 min-w-[240px] items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19]">
-              <FiSearch className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
-              <input
-                type="text"
-                placeholder="Tìm theo mã đơn, tên khách..."
-                value={keyword}
-                onChange={e => { setKeyword(e.target.value); setPage(0) }}
-                className="flex-1 bg-transparent font-beVietnamPro text-sm text-[#1B1C19] outline-none placeholder:text-[#9E8E7E]"
-              />
-            </div>
-
-            {/* Status Tabs */}
-            {FILTER_TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => { setStatusFilter(tab.key); setPage(0) }}
-                className={`px-4 py-2.5 font-beVietnamPro text-sm font-medium transition-colors ${
-                  statusFilter === tab.key
-                    ? 'border border-[#1B1C19] bg-[#1B1C19] text-white'
-                    : 'border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+        {/* Status Tabs */}
+        <div className="mb-5 flex gap-1 overflow-x-auto rounded-xl bg-white p-1.5 shadow-sm dark:bg-gray-800">
+          {FILTER_TABS.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => { setStatusFilter(tab.key); setPage(0) }}
+              className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                statusFilter === tab.key
+                  ? 'bg-black text-white shadow dark:bg-white dark:text-black'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Table */}
-        <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 animate-spin rounded-full border-2 border-[#D1C4B9] border-t-[#1B1C19]" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-black dark:border-t-white" />
             </div>
           ) : requests.length === 0 ? (
-            <div className="py-20 text-center">
-              <FiRotateCcw className="mx-auto mb-3 h-10 w-10 text-[#D1C4B9]" />
-              <p className="font-beVietnamPro text-sm text-[#9E8E7E]">Không có yêu cầu nào</p>
-            </div>
+            <div className="py-16 text-center text-sm text-gray-400">Không có yêu cầu nào</div>
           ) : (
-            <div className="divide-y divide-[#F0EEE9]">
+            <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {requests.map(req => {
                 const tcfg = TYPE_CONFIG[req.type] || TYPE_CONFIG.RETURN
                 const TIcon = tcfg.icon
                 return (
                   <div
                     key={req.id}
-                    className="flex items-center gap-4 px-5 py-4 hover:bg-[#FAFAF8] transition-all duration-300"
+                    className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30"
                   >
-                    <div className={`flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 shrink-0 items-center justify-center rounded-full ${tcfg.bg}`}>
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${tcfg.bg}`}>
                       <TIcon className={`h-4 w-4 ${tcfg.text}`} />
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium font-beVietnamPro text-[#1B1C19] text-sm">
+                        <span className="font-medium text-gray-900 dark:text-white text-sm">
                           #{req.orderCode}
                         </span>
                         <TypeBadge type={req.type} />
                       </div>
-                      <p className="mt-0.5 text-xs font-beVietnamPro text-[#9E8E7E] truncate">{req.reason}</p>
+                      <p className="mt-0.5 text-xs text-gray-400 truncate">{req.reason}</p>
                     </div>
 
                     <div className="shrink-0 text-right">
                       <StatusBadge status={req.status} />
-                      <p className="mt-1 text-xs font-beVietnamPro text-[#9E8E7E]">{fmtDate(req.createdAt)}</p>
+                      <p className="mt-1 text-xs text-gray-400">{fmtDate(req.createdAt)}</p>
                     </div>
 
                     <button
                       onClick={() => setSelected(req)}
-                      className="ml-2 flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 shrink-0 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#6F583D]"
+                      className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-700 dark:border-gray-600"
                     >
                       <FiEye className="h-4 w-4" />
                     </button>
@@ -342,28 +322,27 @@ export default function AdminReturns() {
 
         {/* Pagination */}
         {data.totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="font-beVietnamPro text-sm text-[#9E8E7E]">
-              Trang {page + 1} / {data.totalPages} — {data.totalElements} yêu cầu
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                disabled={page === 0}
-                onClick={() => setPage(p => p - 1)}
-                className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40"
-              >
-                ←
-              </button>
-              <button
-                disabled={page >= data.totalPages - 1}
-                onClick={() => setPage(p => p + 1)}
-                className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40"
-              >
-                →
-              </button>
-            </div>
+          <div className="mt-5 flex items-center justify-center gap-2">
+            <button
+              disabled={page === 0}
+              onClick={() => setPage(p => p - 1)}
+              className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-40 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              ← Trước
+            </button>
+            <span className="text-sm text-gray-500">
+              Trang {page + 1} / {data.totalPages}
+            </span>
+            <button
+              disabled={page >= data.totalPages - 1}
+              onClick={() => setPage(p => p + 1)}
+              className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-40 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              Sau →
+            </button>
           </div>
         )}
+      </div>
 
       {/* Detail Modal */}
       {selected && (

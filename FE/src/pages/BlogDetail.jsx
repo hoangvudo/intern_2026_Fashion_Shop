@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import Reveal from "../components/Reveal";
 import { FiArrowLeft, FiClock, FiTag } from "react-icons/fi";
 import articleService from "../services/articleService";
+import { getImageUrl } from "../utils/imageUrl";
 
 function BlogDetail() {
   const { id } = useParams(); // id holds the slug from URL
@@ -82,9 +83,9 @@ function BlogDetail() {
             <Reveal delay={0.1}>
               <div className="flex items-center justify-center gap-4 mb-6 text-sm font-medium text-gray-600 dark:text-gray-400">
                 <span className="px-3 py-1 bg-white dark:bg-gray-800 shadow-sm rounded-full uppercase tracking-widest text-xs">
-                  {article.category?.name || "Tin tức"}
+                  {article.category || "Tin tức"}
                 </span>
-                <span className="flex items-center gap-1"><FiClock /> {article.readTime || "5"} phút</span>
+                <span className="flex items-center gap-1"><FiClock /> {article.readMinutes || 5} phút</span>
               </div>
             </Reveal>
 
@@ -97,11 +98,15 @@ function BlogDetail() {
             <Reveal delay={0.3}>
               <div className="flex items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800 pb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-serif text-lg text-black dark:text-white">
-                    {article.author?.name?.charAt(0) || "A"}
+                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-serif text-lg text-black dark:text-white overflow-hidden">
+                    {article.authorAvatar ? (
+                      <img src={getImageUrl(article.authorAvatar)} alt={article.author} className="h-full w-full object-cover" />
+                    ) : (
+                      (article.author || "A").charAt(0)
+                    )}
                   </div>
                     <div className="text-gray-500 dark:text-gray-400">
-                      <p className="font-medium text-black dark:text-white">{article.author?.name || "Admin"}</p>
+                      <p className="font-medium text-black dark:text-white">{article.author || "Admin"}</p>
                       <p className="text-sm">
                         {new Date(article.publishedAt).toLocaleDateString('vi-VN', {
                           day: '2-digit', month: 'long', year: 'numeric'
@@ -116,12 +121,17 @@ function BlogDetail() {
               {/* Cover Image */}
               <Reveal direction="up" delay={0.2}>
                 <div className="w-full aspect-[21/9] rounded-3xl overflow-hidden mb-16 shadow-2xl relative bg-gray-100 dark:bg-gray-800">
-                  {article.thumbnailUrl && (
+                  {article.coverImage ? (
                     <img
-                      src={article.thumbnailUrl}
+                      src={getImageUrl(article.coverImage)}
                       alt={article.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
                     />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-gray-400">
+                      Chưa có ảnh bìa
+                    </div>
                   )}
                 </div>
               </Reveal>
@@ -164,24 +174,37 @@ function BlogDetail() {
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {MOCK_ARTICLES.filter(a => a.id !== article.id && a.id !== "featured").slice(0, 3).map((relatedArticle, index) => (
+            {recentArticles.length > 0 ? recentArticles.map((relatedArticle, index) => (
               <Reveal key={relatedArticle.id} delay={index * 0.1} direction="up">
-                <Link to={`/blog/${relatedArticle.id}`} className="group block cursor-pointer h-full flex flex-col">
-                  <div className="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6">
-                    <img
-                      src={relatedArticle.image}
-                      alt={relatedArticle.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-white/90 dark:bg-black/80 backdrop-blur-md text-xs font-semibold uppercase tracking-wider rounded-full text-black dark:text-white">
-                        {relatedArticle.category}
-                      </span>
-                    </div>
+                <Link to={`/blog/${relatedArticle.slug}`} className="group block cursor-pointer h-full flex flex-col">
+                  <div className="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6 bg-gray-100 dark:bg-gray-800">
+                    {relatedArticle.coverImage ? (
+                      <img
+                        src={getImageUrl(relatedArticle.coverImage)}
+                        alt={relatedArticle.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                        Chưa có ảnh
+                      </div>
+                    )}
+                    {relatedArticle.category && (
+                      <div className="absolute top-4 left-4">
+                        <span className="px-3 py-1 bg-white/90 dark:bg-black/80 backdrop-blur-md text-xs font-semibold uppercase tracking-wider rounded-full text-black dark:text-white">
+                          {relatedArticle.category}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col flex-grow">
                     <div className="text-xs text-gray-500 dark:text-gray-400 mb-3 tracking-widest uppercase">
-                      {relatedArticle.date}
+                      {relatedArticle.publishedAt
+                        ? new Date(relatedArticle.publishedAt).toLocaleDateString('vi-VN', {
+                            day: '2-digit', month: 'long', year: 'numeric',
+                          })
+                        : ''}
                     </div>
                     <h4 className="text-xl font-serif font-semibold leading-snug mb-3 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors line-clamp-2">
                       {relatedArticle.title}
@@ -189,7 +212,9 @@ function BlogDetail() {
                   </div>
                 </Link>
               </Reveal>
-            ))}
+            )) : (
+              <p className="col-span-full text-center text-gray-500">Chưa có bài viết liên quan.</p>
+            )}
           </div>
         </div>
       </section>

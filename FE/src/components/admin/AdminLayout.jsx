@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Outlet } from 'react-router-dom'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 
 function AdminLayout() {
+  // ✅ THÊM: state mobile sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const location = useLocation()
 
   return (
     <div className="min-h-screen bg-[#F5F3EE] font-beVietnamPro">
@@ -21,10 +20,8 @@ function AdminLayout() {
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <AdminHeader onMenuClick={() => setSidebarOpen(o => !o)} />
 
-      <main className="min-h-screen pt-20 lg:ml-72 overflow-hidden relative">
-        <div className="relative z-10 min-h-full bg-[#F5F3EE]">
-          <Outlet />
-        </div>
+      <main className="min-h-screen pt-20 lg:ml-72">
+        <Outlet />
       </main>
     </div>
   )

@@ -15,7 +15,7 @@ export const placeOrder = async (orderData) => {
  * @param {number} id
  */
 export const getOrderById = async (id) => {
- const response = await api.get(`/orders/my/${id}`)
+  const response = await api.get(`/orders/my/${id}`)
   return response.data
 }
 
@@ -58,6 +58,7 @@ export const getMyOrderById = async (id) => {
   const response = await api.get(`/orders/my/${id}`)
   return response.data
 }
+
 /**
  * Huỷ đơn hàng
  * @param {number} orderId

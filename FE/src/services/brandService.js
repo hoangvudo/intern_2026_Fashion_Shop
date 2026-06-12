@@ -1,47 +1,32 @@
-import api from './api';
+import axios from '../utils/axios'
+
+const API = '/brands'
 
 const brandService = {
-  // Public
-  getActiveBrands: async () => {
-    const res = await api.get('/brands');
-    return res.data;
+  getAll: async () => {
+    const res = await axios.get(`${API}/all`)
+    return res.data
   },
 
-  getBrandBySlug: async (slug) => {
-    const res = await api.get(`/brands/slug/${slug}`);
-    return res.data;
+  getActive: async () => {
+    const res = await axios.get(API)
+    return res.data
   },
 
-  getBrandById: async (id) => {
-    const res = await api.get(`/brands/${id}`);
-    return res.data;
+  create: async (data) => {
+    const res = await axios.post(API, data)
+    return res.data
   },
 
-  // Admin
-  getAllBrands: async () => {
-    const res = await api.get('/brands/all');
-    return res.data;
+  update: async (id, data) => {
+    const res = await axios.put(`${API}/${id}`, data)
+    return res.data
   },
 
-  createBrand: async (data) => {
-    const res = await api.post('/brands', data);
-    return res.data;
+  delete: async (id) => {
+    const res = await axios.delete(`${API}/${id}`)
+    return res.data
   },
+}
 
-  updateBrand: async (id, data) => {
-    const res = await api.put(`/brands/${id}`, data);
-    return res.data;
-  },
-
-  toggleActive: async (id) => {
-    const res = await api.patch(`/brands/${id}/toggle-active`);
-    return res.data;
-  },
-
-  deleteBrand: async (id) => {
-    const res = await api.delete(`/brands/${id}`);
-    return res.data;
-  }
-};
-
-export default brandService;
+export default brandService

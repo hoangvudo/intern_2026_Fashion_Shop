@@ -319,10 +319,11 @@ export default function ProductFormModal({
                   key={t.id}
                   type="button"
                   onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-2 border-b-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors ${tab === t.id
-                    ? "border-[#6F583D] text-[#6F583D]"
-                    : "border-transparent text-[#9E8E7E] hover:text-[#4E453D]"
-                    }`}
+                  className={`flex items-center gap-2 border-b-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors ${
+                    tab === t.id
+                      ? "border-[#6F583D] text-[#6F583D]"
+                      : "border-transparent text-[#9E8E7E] hover:text-[#4E453D]"
+                  }`}
                 >
                   <t.icon className="h-4 w-4" />
                   {t.label}

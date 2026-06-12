@@ -1,10 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FiX, FiAlertCircle, FiRefreshCw, FiRotateCcw,
-  FiCheckCircle, FiUpload, FiTrash2,
+  FiChevronDown, FiCheckCircle
 } from 'react-icons/fi'
-import { cancelOrder, createReturnRequest } from '../../services/orderService'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 
@@ -44,7 +43,7 @@ const TYPE_CONFIG = {
     border: 'border-red-200',
     btnClass: 'bg-red-600 hover:bg-red-700 text-white',
     desc: 'Đơn hàng sẽ bị hủy ngay lập tức.',
-    allowedStatuses: ['PENDING', 'CONFIRMED'],
+    allowedStatuses: ['PENDING'],
   },
   RETURN: {
     label: 'Trả hàng / Hoàn tiền',
@@ -68,101 +67,47 @@ const TYPE_CONFIG = {
   },
 }
 
-const MAX_IMAGES = 5
-
 /* ── Component chính ─────────────────────────────────────────── */
-export default function CancelReturnModal({ order, defaultType, onClose, onSuccess }) {
-  const [step, setStep] = useState(defaultType ? 2 : 1)
-  const [type, setType] = useState(defaultType || null)
+export default function CancelReturnModal({ order, onClose, onSuccess }) {
+  const [step, setStep] = useState(1) // 1=chọn loại, 2=nhập lý do, 3=xác nhận
+  const [type, setType] = useState(null)
   const [reason, setReason] = useState('')
   const [description, setDescription] = useState('')
-  const [images, setImages] = useState([])      // { file, previewUrl }
-  const [uploadingImages, setUploadingImages] = useState(false)
+  const [exchangeSize, setExchangeSize] = useState('')
+  const [exchangeColor, setExchangeColor] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
-  const fileInputRef = useRef(null)
 
   const status = order?.status
-  const available = Object.entries(TYPE_CONFIG).filter(([, cfg]) =>
+
+  // Xác định các hành động được phép
+  const available = Object.entries(TYPE_CONFIG).filter(([key, cfg]) =>
     cfg.allowedStatuses.includes(status)
   )
+
   const cfg = type ? TYPE_CONFIG[type] : null
   const Icon = cfg?.icon
 
-  const canSubmit = reason.trim().length > 0
+  const canSubmit = reason.trim() &&
+    (type !== 'EXCHANGE' || (exchangeSize.trim() || exchangeColor.trim()))
 
-  /* ── Upload ảnh lên server ─────────────────────────────────── */
-  const handleImagePick = (e) => {
-    const files = Array.from(e.target.files || [])
-    if (!files.length) return
-    const remaining = MAX_IMAGES - images.length
-    const picked = files.slice(0, remaining).map(file => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-    }))
-    setImages(prev => [...prev, ...picked])
-    // reset input để chọn lại cùng file nếu cần
-    e.target.value = ''
-  }
-
-  const removeImage = (idx) => {
-    setImages(prev => {
-      URL.revokeObjectURL(prev[idx].previewUrl)
-      return prev.filter((_, i) => i !== idx)
-    })
-  }
-
-  const uploadImages = async () => {
-    if (images.length === 0) return []
-    setUploadingImages(true)
-    try {
-      const urls = await Promise.all(
-        images.map(async ({ file }) => {
-          const form = new FormData()
-          form.append('file', file)
-          const res = await api.post('/upload/image', form, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
-          // BE trả về { url: '...' } hoặc string
-          return res.data?.url ?? res.data
-        })
-      )
-      return urls.filter(Boolean)
-    } finally {
-      setUploadingImages(false)
-    }
-  }
-
-  /* ── Submit ────────────────────────────────────────────────── */
   const handleSubmit = async () => {
     setLoading(true)
     try {
-      if (type === 'CANCEL') {
-        // Hủy đơn: PATCH /orders/my/:id/cancel
-        await cancelOrder(order.id, reason)
-        toast.success('Đơn hàng đã được hủy thành công')
-      } else {
-        // Đổi/trả: upload ảnh trước, rồi POST /orders/return-requests
-        let imageUrls = []
-        if (images.length > 0) {
-          try {
-            imageUrls = await uploadImages()
-          } catch {
-            toast.error('Upload ảnh thất bại, vui lòng thử lại')
-            setLoading(false)
-            return
-          }
-        }
-        await createReturnRequest({
-          orderId: order.id,
-          type,
-          reason,
-          description,
-          imageUrls: imageUrls.join(','),
-        })
-        toast.success('Yêu cầu của bạn đã được gửi!')
-      }
+      await api.post('/orders/returns', {
+        orderId: order.id,
+        type,
+        reason,
+        description: description || undefined,
+        exchangeSize: exchangeSize || undefined,
+        exchangeColor: exchangeColor || undefined,
+      })
       setDone(true)
+      toast.success(
+        type === 'CANCEL'
+          ? 'Đơn hàng đã được hủy thành công'
+          : 'Yêu cầu của bạn đã được gửi!'
+      )
       onSuccess?.()
     } catch (err) {
       const msg = err?.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại'
@@ -172,7 +117,6 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
     }
   }
 
-  /* ── Done screen ────────────────────────────────────────────── */
   if (done) {
     return (
       <ModalShell onClose={onClose}>
@@ -185,7 +129,7 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
           </h3>
           <p className="text-sm text-gray-500 max-w-xs">
             {type === 'CANCEL'
-              ? `Đơn hàng #${order.orderCode} đã được hủy thành công.`
+              ? `Đơn hàng #${order.orderCode || order.id} đã được hủy thành công.`
               : `Yêu cầu ${cfg?.label?.toLowerCase()} của bạn đang chờ admin xem xét. Chúng tôi sẽ phản hồi trong 1–2 ngày làm việc.`}
           </p>
           <button
@@ -208,7 +152,7 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
             Bạn cần hỗ trợ gì?
           </h2>
           <p className="mb-5 text-sm text-gray-400">
-            Đơn hàng <span className="font-medium text-gray-600 dark:text-gray-300">#{order.orderCode}</span>
+            Đơn hàng <span className="font-medium text-gray-600 dark:text-gray-300">#{order.orderCode || order.id}</span>
           </p>
 
           {available.length === 0 ? (
@@ -225,7 +169,7 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
                     onClick={() => { setType(key); setStep(2) }}
                     className={`group flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-all hover:shadow-sm ${c.bg} ${c.border}`}
                   >
-                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                    <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow-sm`}>
                       <TIcon className={`h-4 w-4 ${c.color}`} />
                     </div>
                     <div>
@@ -240,17 +184,15 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
         </div>
       )}
 
-      {/* ── STEP 2: Nhập lý do + ảnh ────────────────── */}
+      {/* ── STEP 2: Nhập lý do ────────────────────── */}
       {step === 2 && cfg && (
-        <div className="max-h-[80vh] overflow-y-auto p-6">
-          {!defaultType && (
-            <button
-              onClick={() => setStep(1)}
-              className="mb-4 flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700"
-            >
-              ← Quay lại
-            </button>
-          )}
+        <div className="p-6">
+          <button
+            onClick={() => setStep(1)}
+            className="mb-4 flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700"
+          >
+            ← Quay lại
+          </button>
           <div className={`mb-5 flex items-center gap-3 rounded-xl border px-4 py-3 ${cfg.bg} ${cfg.border}`}>
             <Icon className={`h-5 w-5 ${cfg.color}`} />
             <span className={`font-semibold ${cfg.color}`}>{cfg.label}</span>
@@ -285,8 +227,38 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
             </div>
           </div>
 
+          {/* Đổi hàng: nhập size/màu mới */}
+          {type === 'EXCHANGE' && (
+            <div className="mb-4 grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Size muốn đổi
+                </label>
+                <input
+                  type="text"
+                  placeholder="VD: XL, 42..."
+                  value={exchangeSize}
+                  onChange={e => setExchangeSize(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Màu muốn đổi
+                </label>
+                <input
+                  type="text"
+                  placeholder="VD: Đen, Trắng..."
+                  value={exchangeColor}
+                  onChange={e => setExchangeColor(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Mô tả thêm */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Mô tả thêm (tùy chọn)
             </label>
@@ -298,49 +270,6 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
           </div>
-
-          {/* Upload ảnh – chỉ hiện cho RETURN và EXCHANGE */}
-          {type !== 'CANCEL' && (
-            <div className="mb-6">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Ảnh minh chứng{' '}
-                <span className="font-normal text-gray-400">(tối đa {MAX_IMAGES} ảnh, tùy chọn)</span>
-              </label>
-
-              <div className="flex flex-wrap gap-2">
-                {images.map(({ previewUrl }, idx) => (
-                  <div key={idx} className="relative h-20 w-20 overflow-hidden rounded-lg border border-gray-200">
-                    <img src={previewUrl} alt="" className="h-full w-full object-cover" />
-                    <button
-                      onClick={() => removeImage(idx)}
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-                    >
-                      <FiTrash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-
-                {images.length < MAX_IMAGES && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-200 text-gray-400 transition hover:border-gray-400 hover:text-gray-600"
-                  >
-                    <FiUpload className="h-5 w-5" />
-                    <span className="text-xs">Thêm ảnh</span>
-                  </button>
-                )}
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleImagePick}
-              />
-            </div>
-          )}
 
           <button
             disabled={!canSubmit}
@@ -367,13 +296,12 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
           </h3>
 
           <div className={`mb-5 rounded-xl border p-4 space-y-3 ${cfg.bg} ${cfg.border}`}>
-            <Row label="Đơn hàng" value={`#${order.orderCode}`} />
+            <Row label="Đơn hàng" value={`#${order.orderCode || order.id}`} />
             <Row label="Loại yêu cầu" value={cfg.label} />
             <Row label="Lý do" value={reason} />
             {description && <Row label="Mô tả" value={description} />}
-            {images.length > 0 && (
-              <Row label="Ảnh đính kèm" value={`${images.length} ảnh`} />
-            )}
+            {type === 'EXCHANGE' && exchangeSize && <Row label="Size muốn đổi" value={exchangeSize} />}
+            {type === 'EXCHANGE' && exchangeColor && <Row label="Màu muốn đổi" value={exchangeColor} />}
           </div>
 
           {type === 'CANCEL' && (
@@ -392,13 +320,13 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
             </button>
             <button
               onClick={handleSubmit}
-              disabled={loading || uploadingImages}
+              disabled={loading}
               className={`flex-1 rounded-full py-3 text-sm font-semibold transition-all disabled:opacity-60 ${cfg.btnClass}`}
             >
-              {loading || uploadingImages ? (
+              {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  {uploadingImages ? 'Đang upload ảnh...' : 'Đang xử lý...'}
+                  Đang xử lý...
                 </span>
               ) : (
                 type === 'CANCEL' ? 'Xác nhận hủy đơn' : 'Gửi yêu cầu'
@@ -412,6 +340,7 @@ export default function CancelReturnModal({ order, defaultType, onClose, onSucce
 }
 
 /* ── Sub components ─────────────────────────────────────────── */
+
 function ModalShell({ children, onClose }) {
   return (
     <AnimatePresence>

@@ -26,16 +26,29 @@ export default function AdminReviews() {
   const [detailTarget, setDetailTarget] = useState(null);
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
-    if (imagePath.startsWith("http")) return imagePath;
+    if (!imagePath) return "https://via.placeholder.com/40x40?text=No+Image";
+    if (/^(https?:)?\/\//.test(imagePath) || imagePath.startsWith("data:") || imagePath.startsWith("blob:")) {
+      return imagePath;
+    }
 
     let cleanPath = imagePath.replace(/^\//, "");
     if (cleanPath.startsWith("api/uploads/")) {
       return `http://localhost:8080/${cleanPath}`;
     }
 
+    if (cleanPath.startsWith("uploads/")) {
+      cleanPath = cleanPath.replace(/^uploads\//, "");
+    }
+
     return `http://localhost:8080/api/uploads/${cleanPath}`;
   };
+
+  const getProductImage = (review) =>
+    review.productThumbnailUrl ||
+    review.productImage ||
+    review.productMainImage ||
+    review.thumbnailUrl ||
+    "";
 
   const handleToggleVisible = async (r) => {
     setToggling(r.id);
@@ -88,7 +101,7 @@ export default function AdminReviews() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 rounded-lg border border-[#D1C4B9] bg-white px-3 py-2">
             <span className="text-xs font-medium text-[#9E8E7E] uppercase tracking-wider">Lọc sao:</span>
-            <select
+            <select 
               value={params.rating || 'all'}
               onChange={(e) => updateParam('rating', e.target.value)}
               className="bg-transparent text-sm font-semibold text-[#4E453D] focus:outline-none"
@@ -100,7 +113,7 @@ export default function AdminReviews() {
             </select>
           </div>
           <button onClick={refresh}
-            className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9] transition-colors">
+            className="flex items-center gap-2 border border-[#D1C4B9] px-4 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9] transition-colors">
             <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Làm mới
           </button>
@@ -108,7 +121,7 @@ export default function AdminReviews() {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
+      <div className="border border-[#D1C4B9] bg-white overflow-x-auto">
         <table className="w-full min-w-[1000px]">
           <thead>
             <tr className="border-b border-[#D1C4B9] bg-[#F5F3EE]">
@@ -162,24 +175,12 @@ export default function AdminReviews() {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 shrink-0 bg-[#F0EEE9] overflow-hidden flex items-center justify-center">
-                          {getImageUrl(r.productMainImage) ? (
-                            <img
-                              src={getImageUrl(r.productMainImage)}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.nextSibling.style.display = "flex";
-                              }}
-                            />
-                          ) : null}
-                          <span
-                            className="text-[#9E8E7E] text-[10px] font-medium"
-                            style={{ display: getImageUrl(r.productMainImage) ? "none" : "flex" }}
-                          >
-                            N/A
-                          </span>
+                        <div className="h-10 w-10 shrink-0 bg-[#F0EEE9] overflow-hidden">
+                          <img
+                            src={getImageUrl(getProductImage(r))}
+                            alt={r.productName || "Sản phẩm"}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                         <span className="font-beVietnamPro text-sm font-medium text-[#1B1C19] line-clamp-1 max-w-[150px]">
                           {r.productName}
@@ -219,10 +220,11 @@ export default function AdminReviews() {
                     </td>
                     <td className="px-5 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 font-beVietnamPro text-xs font-medium ${r.isVisible
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                          }`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 font-beVietnamPro text-xs font-medium ${
+                          r.isVisible
+                            ? "bg-green-50 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${r.isVisible ? "bg-green-500" : "bg-gray-400"}`}
@@ -274,7 +276,7 @@ export default function AdminReviews() {
           <button
             onClick={() => updateParam("page", params.page - 1)}
             disabled={params.page === 0}
-            className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
           >
             <FiChevronLeft className="h-4 w-4" />
           </button>
@@ -282,10 +284,11 @@ export default function AdminReviews() {
             <button
               key={i}
               onClick={() => updateParam("page", i)}
-              className={`h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 font-beVietnamPro text-sm transition-colors ${params.page === i
-                ? "bg-[#1B1C19] text-white"
-                : "border border-[#D1C4B9] hover:bg-[#F0EEE9]"
-                }`}
+              className={`h-9 w-9 font-beVietnamPro text-sm transition-colors ${
+                params.page === i
+                  ? "bg-[#1B1C19] text-white"
+                  : "border border-[#D1C4B9] hover:bg-[#F0EEE9]"
+              }`}
             >
               {i + 1}
             </button>
@@ -293,7 +296,7 @@ export default function AdminReviews() {
           <button
             onClick={() => updateParam("page", params.page + 1)}
             disabled={params.page === totalPages - 1}
-            className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] disabled:opacity-30"
           >
             <FiChevronRight className="h-4 w-4" />
           </button>

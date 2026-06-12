@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import articleService from "../../services/articleService";
 import uploadService from "../../services/uploadService";
+import { getImageUrl } from "../../utils/imageUrl";
 
 const CATEGORIES = [
   { value: "", label: "Tất cả" },
@@ -238,7 +239,7 @@ function ArticleFormModal({ article, onClose, onSaved }) {
             </div>
             {form.coverImage && (
               <div className="mt-2 h-40 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                <img src={form.coverImage} alt="preview" className="h-full w-full object-cover" onError={e => e.target.style.display = 'none'} />
+                <img src={getImageUrl(form.coverImage)} alt="preview" className="h-full w-full object-cover" onError={e => e.target.style.display = 'none'} />
               </div>
             )}
           </div>
@@ -333,7 +334,7 @@ function ArticleViewModal({ article, onClose }) {
         {/* Cover */}
         {article.coverImage && (
           <div className="h-56 overflow-hidden">
-            <img src={article.coverImage} className="w-full h-full object-cover" alt="" />
+            <img src={getImageUrl(article.coverImage)} className="w-full h-full object-cover" alt="" />
           </div>
         )}
 
@@ -600,7 +601,7 @@ export default function AdminArticles() {
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-16 shrink-0 overflow-hidden rounded-xl border border-[#E8E0D8] bg-[#F5F3EE]">
                         {a.coverImage ? (
-                          <img src={a.coverImage} className="h-full w-full object-cover" alt="" />
+                          <img src={getImageUrl(a.coverImage)} className="h-full w-full object-cover" alt="" onError={e => e.currentTarget.style.display = 'none'} />
                         ) : (
                           <div className="flex h-full items-center justify-center"><FiImage className="h-5 w-5 text-[#D1C4B9]" /></div>
                         )}

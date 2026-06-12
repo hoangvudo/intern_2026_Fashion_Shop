@@ -6,6 +6,7 @@ import Reveal from "../components/Reveal";
 import BannerImage from "../assets/high_end_luxury_fashion_brand_banner.png";
 import { FiArrowRight } from "react-icons/fi";
 import articleService from "../services/articleService";
+import { getImageUrl } from "../utils/imageUrl";
 
 const CATEGORIES = ["Tất cả", "Xu hướng", "Phối đồ", "Sự kiện", "Sống Xanh"];
 
@@ -65,9 +66,10 @@ function Blog() {
         {/* Hero Section - Featured Article */}
         <section className="relative min-h-[70vh] flex items-center">
           <img
-            src={BannerImage}
-            alt="Featured Article Banner"
+            src={featured?.coverImage ? getImageUrl(featured.coverImage) : BannerImage}
+            alt={featured?.title || "Featured Article Banner"}
             className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => { e.currentTarget.src = BannerImage }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           
@@ -135,12 +137,17 @@ function Blog() {
                     <article className="group cursor-pointer h-full flex flex-col">
                       {/* Image Container */}
                       <div className="relative overflow-hidden rounded-2xl aspect-[4/3] mb-6 bg-gray-100 dark:bg-gray-800">
-                        {article.thumbnailUrl && (
+                        {article.coverImage ? (
                           <img
-                            src={article.thumbnailUrl}
+                            src={getImageUrl(article.coverImage)}
                             alt={article.title}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            onError={(e) => { e.currentTarget.style.display = 'none' }}
                           />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                            Chưa có ảnh
+                          </div>
                         )}
                         {article.category && (
                           <div className="absolute top-4 left-4">

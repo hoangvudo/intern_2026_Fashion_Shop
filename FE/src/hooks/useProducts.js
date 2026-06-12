@@ -67,7 +67,7 @@ export function usePublicProducts(initialParams = {}) {
       const data = await productService.search(params)
       setProducts(data.content ?? data ?? [])
       setTotalPages(data.totalPages ?? 0)
-      setTotalElements(data.totalElements ?? 0)
+      setTotalElements(data.totalElements ?? (data.content?.length ?? data?.length ?? 0))
     } catch (err) {
       console.error('usePublicProducts error:', err)
       setError(err)

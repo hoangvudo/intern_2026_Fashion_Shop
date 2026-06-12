@@ -10,6 +10,7 @@ import Footer from '../components/Footer'
 import Reveal from '../components/Reveal'
 import categoryService from '../services/categoryService'
 import productService from '../services/productService'
+import { usePublicBrands } from '../hooks/useBrands'
 import useCartStore from '../store/cartStore'
 import toast from 'react-hot-toast'
 import BannerImage from "../assets/high_end_luxury_fashion_brand_banner.png"
@@ -113,6 +114,11 @@ function ProductCard({ product }) {
 
         {/* Info */}
         <div className="text-center space-y-1.5 px-2">
+          {product.brandName && (
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9A8C80] dark:text-gray-500">
+              {product.brandName}
+            </p>
+          )}
           <p className="text-sm font-semibold tracking-wider uppercase text-[#231916] dark:text-gray-100 group-hover:text-[#BB5734] transition-colors line-clamp-1">
             {product.name}
           </p>
@@ -203,10 +209,11 @@ export default function Collection() {
   const [catLoading, setCatLoading] = useState(true)
 
   const [filters, setFilters] = useState({
-    keyword: initialKeyword, sortBy: 'newest', page: 0, size: 12,
+    keyword: initialKeyword, sortBy: 'newest', page: 0, size: 12, brandId: '',
   })
   const [keyword, setKeyword] = useState(initialKeyword)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const { brands } = usePublicBrands()
 
   // Listen for URL search param changes
   useEffect(() => {
@@ -238,6 +245,7 @@ export default function Collection() {
       const params = {
         ...(catId ? { categoryId: catId } : {}),
         keyword:   f.keyword || undefined,
+        brandId:   f.brandId || undefined,
         sortBy:    f.sortBy,
         page:      f.page,
         size:      f.size,
@@ -265,6 +273,8 @@ export default function Collection() {
   }
 
   const pageTitle = category?.name ?? (slug ? slug : 'Tất cả bộ sưu tập')
+  const selectedBrand = brands.find(b => String(b.id) === String(filters.brandId)) ?? null
+  const displayTitle = selectedBrand?.name || pageTitle
 
   const SidebarContent = () => (
     <div className="space-y-10">
@@ -336,6 +346,47 @@ export default function Collection() {
           ))}
         </div>
       </section>
+
+      {brands.length > 0 && (
+        <section className="space-y-5">
+          <h3 className="text-xs font-semibold tracking-[0.2em] text-[#695D4B] dark:text-gray-400 uppercase">
+            Thương Hiệu
+          </h3>
+          <div className="space-y-2 font-beVietnamPro text-sm">
+            <button
+              type="button"
+              onClick={() => {
+                updateFilter('brandId', '')
+                setIsMobileFilterOpen(false)
+              }}
+              className={`block w-full text-left p-2 rounded-sm transition-all ${
+                !filters.brandId
+                  ? 'bg-[#EAE2D4] dark:bg-gray-900/50 text-[#BB5734] font-semibold'
+                  : 'hover:bg-[#EAE2D4] dark:bg-gray-900/30 text-[#4A4A4A] dark:text-gray-300 hover:text-[#BB5734]'
+              }`}
+            >
+              Tất cả thương hiệu
+            </button>
+            {brands.map((brand) => (
+              <button
+                key={brand.id}
+                type="button"
+                onClick={() => {
+                  updateFilter('brandId', String(brand.id))
+                  setIsMobileFilterOpen(false)
+                }}
+                className={`block w-full text-left p-2 rounded-sm transition-all ${
+                  String(filters.brandId) === String(brand.id)
+                    ? 'bg-[#EAE2D4] dark:bg-gray-900/50 text-[#BB5734] font-semibold'
+                    : 'hover:bg-[#EAE2D4] dark:bg-gray-900/30 text-[#4A4A4A] dark:text-gray-300 hover:text-[#BB5734]'
+                }`}
+              >
+                {brand.name}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 
@@ -361,7 +412,7 @@ export default function Collection() {
                 ZYRO Editorial
               </p>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white tracking-wide uppercase">
-                {pageTitle}
+                {displayTitle}
               </h1>
               {category?.description && (
                 <p className="mt-6 max-w-2xl mx-auto text-white/90 text-sm md:text-base font-beVietnamPro tracking-wider font-light leading-relaxed">
@@ -393,7 +444,7 @@ export default function Collection() {
                 onClick={() => setIsMobileFilterOpen(true)}
                 className="lg:hidden flex-1 flex items-center justify-center gap-2 text-sm font-medium uppercase tracking-wider text-[#695D4B] dark:text-gray-400 border border-[#DDC0B8] dark:border-gray-800 px-4 py-2 rounded-full"
               >
-                <FiFilter /> Danh mục
+                <FiFilter /> Bộ lọc
               </button>
               
               <select

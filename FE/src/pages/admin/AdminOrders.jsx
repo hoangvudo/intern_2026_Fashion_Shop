@@ -3,11 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   FiSearch, FiRefreshCw, FiShoppingBag, FiChevronLeft, FiChevronRight,
   FiEye, FiX, FiMapPin, FiPhone, FiUser, FiPackage, FiClock, FiTruck,
-  FiCheckCircle, FiXCircle, FiAlertCircle, FiCreditCard, FiDownload
+  FiCheckCircle, FiXCircle, FiAlertCircle, FiCreditCard,
 } from 'react-icons/fi'
-import { getAdminOrders, getAdminOrderDetail, updateOrderStatus } from '../../services/adminService'
+import { getAdminOrders, getAdminOrderDetail, updateOrderStatus, confirmOrderPayment } from '../../services/adminService'
 import toast from 'react-hot-toast'
-import * as XLSX from 'xlsx'
 
 const fmt = (n) => Number(n || 0).toLocaleString('vi-VN') + '₫'
 
@@ -41,7 +40,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function OrderDetailModal({ order, onClose, onStatusChange }) {
+function OrderDetailModal({ order, onClose, onStatusChange, onConfirmPayment }) {
   const [updating, setUpdating] = useState(false)
 
   const handleStatus = async (newStatus) => {
@@ -81,12 +80,12 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
           {/* Header */}
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E8E0D8] bg-white px-6 py-4">
             <div>
-              <h2 className="font-beVietnamPro text-lg font-semibold text-[#1B1C19]">{order.orderCode}</h2>
+<h2 className="font-beVietnamPro text-lg font-semibold text-[#1B1C19]">{order.orderCode}</h2>
               <p className="font-beVietnamPro text-xs text-[#9E8E7E]">
                 {order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : '—'}
               </p>
             </div>
-            <button onClick={onClose} className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]">
+            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]">
               <FiX className="h-5 w-5" />
             </button>
           </div>
@@ -139,7 +138,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
               <p className="mb-3 font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D]">Thông tin khách hàng</p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <FiUser className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
+<FiUser className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
                   <span className="font-beVietnamPro text-sm text-[#1B1C19]">{order.shippingName}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -162,7 +161,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
               <div className="space-y-3">
                 {(order.items || []).map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#E8E0D8] bg-[#F5F3EE]">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden border border-[#E8E0D8] bg-[#F5F3EE]">
                       {item.productImage
                         ? <img src={item.productImage} alt={item.productName} className="h-full w-full object-cover" />
                         : <FiPackage className="m-auto mt-3 h-5 w-5 text-[#D1C4B9]" />}
@@ -188,7 +187,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
                 </div>
                 <div className="flex justify-between text-[#4E453D]">
                   <span>Phí vận chuyển ({SHIP_MAP[order.shippingMethod] || order.shippingMethod})</span>
-                  <span>{fmt(order.shippingFee)}</span>
+<span>{fmt(order.shippingFee)}</span>
                 </div>
                 {Number(order.discountAmount) > 0 && (
                   <div className="flex justify-between text-green-600">
@@ -203,6 +202,32 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
                   <FiCreditCard className="h-4 w-4 text-[#9E8E7E]" />
                   <span className="text-[#4E453D]">{PAYMENT_MAP[order.paymentMethod] || order.paymentMethod}</span>
                 </div>
+                <div className="flex items-center justify-between border-t border-[#E8E0D8] pt-2 mt-1">
+                  <span className="font-medium text-[#4E453D] font-beVietnamPro text-sm">Trạng thái CK</span>
+                  {order.paymentStatus === 'PAID' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-green-50 text-green-700">
+                      <FiCheckCircle className="h-3.5 w-3.5" /> Đã chuyển khoản
+                    </span>
+                  ) : order.paymentStatus === 'FAILED' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-red-50 text-red-700">
+                      <FiXCircle className="h-3.5 w-3.5" /> Thanh toán lỗi
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-amber-50 text-amber-700">
+                      <FiAlertCircle className="h-3.5 w-3.5" /> Chưa chuyển khoản
+                    </span>
+                  )}
+                </div>
+                {(order.paymentMethod === 'PAYOS' || order.paymentMethod === 'BANK_TRANSFER') && order.paymentStatus !== 'PAID' && (
+                  <button
+                    onClick={() => onConfirmPayment(order.id)}
+                    disabled={updating}
+                    className="mt-2 flex w-full items-center justify-center gap-2 bg-emerald-600 px-4 py-2 font-beVietnamPro text-xs text-white hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    <FiCheckCircle className="h-3.5 w-3.5" />
+                    Xác nhận đã nhận tiền CK
+                  </button>
+                )}
               </div>
             </div>
 
@@ -210,7 +235,7 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
             {order.note && (
               <div className="border border-[#E8E0D8] p-4">
                 <p className="mb-1 font-beVietnamPro text-xs font-semibold uppercase tracking-wider text-[#6F583D]">Ghi chú</p>
-                <p className="font-beVietnamPro text-sm text-[#4E453D]">{order.note}</p>
+<p className="font-beVietnamPro text-sm text-[#4E453D]">{order.note}</p>
               </div>
             )}
           </div>
@@ -261,6 +286,17 @@ export default function AdminOrders() {
     }
   }
 
+  const handleConfirmPayment = async (id) => {
+    try {
+      const updated = await confirmOrderPayment(id)
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, paymentStatus: 'PAID' } : o))
+      setDetailOrder(updated)
+      toast.success('Đã xác nhận thanh toán thành công')
+    } catch {
+      toast.error('Xác nhận thất bại')
+    }
+  }
+
   const handleStatusChange = async (id, newStatus) => {
     const updated = await updateOrderStatus(id, newStatus)
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status: updated.status } : o))
@@ -275,44 +311,8 @@ export default function AdminOrders() {
     { key: 'CANCELLED', label: 'Đã huỷ' },
   ]
 
-  const exportToExcel = () => {
-    if (!orders || orders.length === 0) {
-      toast.error('Không có dữ liệu để xuất')
-      return
-    }
-
-    const exportData = orders.map(o => ({
-      'Mã đơn': o.orderCode,
-      'Ngày tạo': o.createdAt ? new Date(o.createdAt).toLocaleString('vi-VN') : '',
-      'Khách hàng': o.shippingName,
-      'Số điện thoại': o.shippingPhone,
-      'Sản phẩm': o.items?.map(i => `${i.productName} (${i.quantity})`).join(', ') || '',
-      'Tổng tiền (VNĐ)': o.totalAmount,
-      'Thanh toán': PAYMENT_MAP[o.paymentMethod] || o.paymentMethod,
-      'Trạng thái': STATUS_CONFIG[o.status]?.label || o.status
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    
-    const colWidths = [
-      { wch: 15 }, // Mã đơn
-      { wch: 20 }, // Ngày tạo
-      { wch: 25 }, // Khách hàng
-      { wch: 15 }, // SĐT
-      { wch: 40 }, // Sản phẩm
-      { wch: 15 }, // Tổng tiền
-      { wch: 20 }, // Thanh toán
-      { wch: 15 }, // Trạng thái
-    ];
-    ws['!cols'] = colWidths;
-
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "DonHang")
-    XLSX.writeFile(wb, `DanhSachDonHang_${new Date().toISOString().slice(0,10)}.xlsx`)
-  }
-
   return (
-    <div className="flex min-h-screen flex-col gap-6 bg-[#FBF9F4] px-8 pb-16 pt-8">
+    <div className="flex min-h-screen flex-col gap-6 px-8 pb-16 pt-8">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
@@ -321,17 +321,11 @@ export default function AdminOrders() {
             Tổng cộng <span className="font-semibold">{total}</span> đơn hàng
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={exportToExcel} className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] bg-green-600 px-4 py-2.5 transition-all duration-300 font-beVietnamPro text-sm text-white hover:bg-green-700">
-            <FiDownload className="h-4 w-4" />
-            Xuất Excel
-          </button>
-          <button onClick={load} className="flex items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19] font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
-            <FiRefreshCw className="h-4 w-4" />
-            Làm mới
-          </button>
-        </div>
-      </div>
+        <button onClick={load} className="flex items-center gap-2 border border-[#D1C4B9] px-4 py-2.5 font-beVietnamPro text-sm text-[#4E453D] hover:bg-[#F0EEE9]">
+          <FiRefreshCw className="h-4 w-4" />
+          Làm mới
+        </button>
+</div>
 
       {/* Status Tabs */}
       <div className="flex overflow-x-auto border-b border-[#D1C4B9]">
@@ -353,7 +347,7 @@ export default function AdminOrders() {
       {/* Search */}
       <div className="border border-[#D1C4B9] bg-white p-4">
         <div className="flex items-center gap-3">
-          <div className="flex flex-1 items-center gap-2 rounded-xl border border-[#D1C4B9] px-4 py-2.5 transition-all duration-300 focus:border-[#1B1C19]">
+          <div className="flex flex-1 items-center gap-2 border border-[#D1C4B9] px-4 py-2.5">
             <FiSearch className="h-4 w-4 shrink-0 text-[#9E8E7E]" />
             <input
               value={inputKw}
@@ -368,7 +362,7 @@ export default function AdminOrders() {
           </div>
           <button
             onClick={() => { setKeyword(inputKw); setPage(0) }}
-            className="rounded-xl bg-[#1B1C19] px-5 py-2.5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 font-beVietnamPro text-sm text-white hover:bg-[#333]"
+            className="bg-[#1B1C19] px-5 py-2.5 font-beVietnamPro text-sm text-white hover:bg-[#333]"
           >
             Tìm kiếm
           </button>
@@ -376,7 +370,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-[#D1C4B9] bg-white overflow-hidden shadow-sm overflow-x-auto">
+      <div className="border border-[#D1C4B9] bg-white overflow-x-auto">
         <table className="w-full min-w-[800px]">
           <thead>
             <tr className="border-b border-[#D1C4B9] bg-[#F5F3EE]">
@@ -399,7 +393,7 @@ export default function AdminOrders() {
             ) : orders.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-20 text-center">
-                  <FiShoppingBag className="mx-auto mb-3 h-10 w-10 text-[#D1C4B9]" />
+<FiShoppingBag className="mx-auto mb-3 h-10 w-10 text-[#D1C4B9]" />
                   <p className="font-beVietnamPro text-sm text-[#9E8E7E]">Không tìm thấy đơn hàng nào</p>
                 </td>
               </tr>
@@ -409,7 +403,7 @@ export default function AdminOrders() {
                   key={order.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-all duration-300"
+                  className="border-b border-[#F0EEE9] hover:bg-[#FAFAF8] transition-colors"
                 >
                   <td className="px-5 py-4">
                     <p className="font-beVietnamPro text-sm font-semibold text-[#1B1C19]">{order.orderCode}</p>
@@ -436,6 +430,11 @@ export default function AdminOrders() {
                   </td>
                   <td className="px-5 py-4">
                     <p className="font-beVietnamPro text-xs text-[#4E453D]">{PAYMENT_MAP[order.paymentMethod] || order.paymentMethod}</p>
+                    {(order.paymentMethod === 'PAYOS' || order.paymentMethod === 'BANK_TRANSFER') && (
+                      order.paymentStatus === 'PAID'
+                        ? <span className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-50 text-green-700">✓ Đã CK</span>
+                        : <span className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-700">⏳ Chưa CK</span>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={order.status} />
@@ -443,8 +442,8 @@ export default function AdminOrders() {
                   <td className="px-5 py-4">
                     <button
                       onClick={() => openDetail(order.id)}
-                      className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
-                      title="Xem chi tiết"
+                      className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9] hover:text-[#1B1C19]"
+title="Xem chi tiết"
                     >
                       <FiEye className="h-4 w-4" />
                     </button>
@@ -464,14 +463,14 @@ export default function AdminOrders() {
           </p>
           <div className="flex items-center gap-1">
             <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
-              className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
+              className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
               <FiChevronLeft className="h-4 w-4" />
             </button>
             {[...Array(Math.min(5, totalPages))].map((_, i) => {
               const pg = Math.max(0, Math.min(page - 2, totalPages - 5)) + i
               return (
                 <button key={pg} onClick={() => setPage(pg)}
-                  className={`flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border font-beVietnamPro text-sm ${
+                  className={`flex h-9 w-9 items-center justify-center border font-beVietnamPro text-sm ${
                     page === pg ? 'border-[#1B1C19] bg-[#1B1C19] text-white' : 'border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9]'
                   }`}>
                   {pg + 1}
@@ -479,7 +478,7 @@ export default function AdminOrders() {
               )
             })}
             <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-              className="flex h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
+              className="flex h-9 w-9 items-center justify-center border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] disabled:opacity-40">
               <FiChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -492,6 +491,7 @@ export default function AdminOrders() {
           order={detailOrder}
           onClose={() => setDetailOrder(null)}
           onStatusChange={handleStatusChange}
+          onConfirmPayment={handleConfirmPayment}
         />
       )}
     </div>

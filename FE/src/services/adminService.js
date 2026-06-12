@@ -10,6 +10,9 @@ export const getAdminOrderDetail = (id) =>
 export const updateOrderStatus = (id, status) =>
   api.patch(`/admin/orders/${id}/status`, { status }).then(r => r.data)
 
+export const confirmOrderPayment = (id) =>
+  api.patch(`/admin/orders/${id}/confirm-payment`).then(r => r.data)
+
 // ── Customers ────────────────────────────────────────────────
 export const getAdminCustomers = (params = {}) =>
   api.get('/admin/customers', { params }).then(r => r.data)
@@ -32,3 +35,6 @@ export const getAdminStats = () =>
 
 export const getAdminRevenue = (period = 'month') =>
   api.get('/admin/revenue', { params: { period } }).then(r => r.data)
+
+export const getAdminReports = () =>
+  api.get('/admin/reports').then(r => r.data)

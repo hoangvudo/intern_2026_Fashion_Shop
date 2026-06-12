@@ -21,7 +21,6 @@ import {
   getAdminCustomerDetail,
   toggleCustomerActive,
   getVipStats,
-  deleteAdminCustomer,
 } from "../../services/adminService";
 import toast from "react-hot-toast";
 
@@ -81,7 +80,7 @@ function StatusBadge({ active }) {
   );
 }
 
-function CustomerDetailDrawer({ userId, onClose, onToggleActive, onDelete }) {
+function CustomerDetailDrawer({ userId, onClose, onToggleActive }) {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
@@ -131,7 +130,7 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive, onDelete }) {
             </h2>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]"
+              className="flex h-8 w-8 items-center justify-center text-[#9E8E7E] hover:bg-[#F0EEE9]"
             >
               <FiX className="h-5 w-5" />
             </button>
@@ -139,7 +138,7 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive, onDelete }) {
 
           {loading ? (
             <div className="flex h-48 items-center justify-center">
-              <span className="h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D] animate-spin" />
+              <span className="h-8 w-8 rounded-full border-2 border-[#D1C4B9] border-t-[#6F583D] animate-spin" />
             </div>
           ) : customer ? (
             <div className="flex flex-col gap-5 p-6">
@@ -211,35 +210,22 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive, onDelete }) {
               </div>
 
               {customer.role !== "ADMIN" && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleToggle}
-                    disabled={toggling}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors disabled:opacity-60 ${
-                      customer.isActive
-                        ? "border border-red-200 text-red-600 hover:bg-red-50"
-                        : "bg-[#1B1C19] text-white hover:bg-black"
-                    }`}
-                  >
-                    {customer.isActive ? (
-                      <FiLock className="h-4 w-4" />
-                    ) : (
-                      <FiUnlock className="h-4 w-4" />
-                    )}
-                    {customer.isActive ? "Khoá tài khoản" : "Mở khoá tài khoản"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if(window.confirm('Bạn có chắc muốn xóa vĩnh viễn khách hàng này?')) {
-                        onDelete(customer.id);
-                      }
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 font-beVietnamPro text-sm font-medium border border-red-200 bg-white text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <FiX className="h-4 w-4" />
-                    Xóa
-                  </button>
-                </div>
+                <button
+                  onClick={handleToggle}
+                  disabled={toggling}
+                  className={`flex items-center justify-center gap-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors disabled:opacity-60 ${
+                    customer.isActive
+                      ? "border border-red-200 text-red-600 hover:bg-red-50"
+                      : "bg-[#1B1C19] text-white hover:bg-black"
+                  }`}
+                >
+                  {customer.isActive ? (
+                    <FiLock className="h-4 w-4" />
+                  ) : (
+                    <FiUnlock className="h-4 w-4" />
+                  )}
+                  {customer.isActive ? "Khoá tài khoản" : "Mở khoá tài khoản"}
+                </button>
               )}
             </div>
           ) : null}
@@ -248,8 +234,6 @@ function CustomerDetailDrawer({ userId, onClose, onToggleActive, onDelete }) {
     </AnimatePresence>
   );
 }
-
-// Removed AddCustomerModal
 
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState([]);
@@ -305,22 +289,10 @@ export default function AdminCustomers() {
     return updated;
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteAdminCustomer(id);
-      toast.success("Đã xóa khách hàng thành công");
-      setSelectedUserId(null);
-      load();
-      loadStats();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Không thể xóa khách hàng này");
-    }
-  };
-
   return (
     <div className="flex flex-col items-start gap-10 bg-[#FBF9F4] w-full min-h-screen p-8">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end w-full gap-4">
+      <div className="flex justify-between items-end w-full">
         <div className="flex flex-col items-start gap-2 w-fit">
           <h1 className="text-[#6F583D] font-beVietnamPro text-2xl font-semibold leading-8 w-fit">
             Danh sách Khách hàng VIP
@@ -330,21 +302,8 @@ export default function AdminCustomers() {
             nhất.
           </p>
         </div>
-      </div>
 
-      {/* Tier Info Banner */}
-      <div className="w-full rounded-xl border border-amber-200 bg-amber-50/70 p-4 shadow-sm">
-        <h3 className="font-beVietnamPro text-sm font-semibold text-amber-800">Quy định mức chi tiêu đạt hạng VIP:</h3>
-        <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-amber-700">
-          <span><strong className="font-medium">MỚI:</strong> Dưới 5 triệu</span>
-          <span><strong className="font-medium">SILVER:</strong> Từ 5 triệu</span>
-          <span><strong className="font-medium">GOLD:</strong> Từ 15 triệu</span>
-          <span><strong className="font-medium">PLATINUM:</strong> Từ 30 triệu</span>
-          <span><strong className="font-medium">DIAMOND:</strong> Từ 50 triệu</span>
-        </div>
-      </div>
-
-      <div className="flex items-start gap-4 w-fit">
+        <div className="flex items-start gap-4 w-fit">
           {/* Tier Filter */}
           <div className="relative group">
             <select
@@ -362,8 +321,15 @@ export default function AdminCustomers() {
               <option value="SILVER">Silver</option>
             </select>
             <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-[#696459] pointer-events-none" />
+          </div>
+
+          <button className="flex pt-2 pr-6 pb-2 pl-6 items-center gap-2 rounded bg-[#6F583D] text-white font-beVietnamPro text-base leading-6 shadow-sm hover:bg-[#5D4933] transition-colors">
+            <FiPlus className="w-5 h-5" />
+            <span>Thêm khách hàng</span>
+          </button>
         </div>
       </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <motion.div
@@ -666,12 +632,12 @@ export default function AdminCustomers() {
         )}
       </div>
 
+      {/* Detail Drawer */}
       {selectedUserId && (
         <CustomerDetailDrawer
           userId={selectedUserId}
           onClose={() => setSelectedUserId(null)}
           onToggleActive={handleToggleActive}
-          onDelete={handleDelete}
         />
       )}
     </div>
