@@ -5,7 +5,7 @@ export default function ReviewDetailModal({ open, onClose, review }) {
   if (!review) return null
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return "";
+    if (!imagePath) return null;
     if (imagePath.startsWith("http")) return imagePath;
 
     let cleanPath = imagePath.replace(/^\//, "");
@@ -53,12 +53,24 @@ export default function ReviewDetailModal({ open, onClose, review }) {
                 {/* Left side: Info */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 shrink-0 bg-[#F5F3EE] overflow-hidden">
-                      <img 
-                        src={getImageUrl(review.productMainImage)} 
-                        alt="" 
-                        className="h-full w-full object-cover" 
-                      />
+                    <div className="h-16 w-16 shrink-0 bg-[#F5F3EE] overflow-hidden flex items-center justify-center">
+                      {getImageUrl(review.productMainImage) ? (
+                        <img
+                          src={getImageUrl(review.productMainImage)}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className="text-[#9E8E7E] text-[10px] font-medium"
+                        style={{ display: getImageUrl(review.productMainImage) ? "none" : "flex" }}
+                      >
+                        N/A
+                      </span>
                     </div>
                     <div>
                       <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[#9E8E7E]">
@@ -117,10 +129,10 @@ export default function ReviewDetailModal({ open, onClose, review }) {
                       <div className="flex flex-wrap gap-2">
                         {review.imageUrls.map((url, i) => (
                           <div key={i} className="h-20 w-20 overflow-hidden bg-[#F5F3EE] border border-[#F0EEE9]">
-                            <img 
-                              src={getImageUrl(url)} 
-                              alt={`Review image ${i + 1}`} 
-                              className="h-full w-full object-cover hover:scale-110 transition-transform cursor-pointer" 
+                            <img
+                              src={getImageUrl(url)}
+                              alt={`Review image ${i + 1}`}
+                              className="h-full w-full object-cover hover:scale-110 transition-transform cursor-pointer"
                               onClick={() => window.open(getImageUrl(url), '_blank')}
                             />
                           </div>
