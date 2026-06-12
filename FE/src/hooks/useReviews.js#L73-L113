@@ -1,0 +1,46 @@
+import { useState, useEffect, useCallback } from 'react'
+import reviewService from '../services/reviewService'
+import toast from 'react-hot-toast'
+
+export function useAdminReviews() {
+  const [reviews, setReviews]     = useState([])
+  const [totalPages, setTotalPages] = useState(0)
+  const [total, setTotal]         = useState(0)
+  const [loading, setLoading]     = useState(false)
+  const [params, setParams]       = useState({
+    page: 0, size: 10
+  })
+
+  const fetchReviews = useCallback(async (p) => {
+    setLoading(true)
+    try {
+      const data = await reviewService.adminGetAll(p)
+      setReviews(data.content ?? [])
+      setTotal(data.totalElements ?? 0)
+      setTotalPages(data.totalPages ?? 0)
+    } catch (err) {
+      console.error('useAdminReviews fetch error:', err)
+      toast.error('Không tải được danh sách đánh giá')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchReviews(params)
+  }, [params, fetchReviews])
+
+  const updateParam = (key, value) =>
+    setParams(prev => ({
+      ...prev,
+      [key]: value,
+      page: key === 'page' ? value : 0,
+    }))
+
+  const refresh = () => fetchReviews(params)
+
+  return {
+    reviews, total, totalPages, loading,
+    params, updateParam, refresh
+  }
+}
