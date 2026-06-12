@@ -26,7 +26,7 @@ export default function AdminReviews() {
   const [detailTarget, setDetailTarget] = useState(null);
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return "https://via.placeholder.com/40x40?text=No+Image";
+    if (!imagePath) return null;
     if (imagePath.startsWith("http")) return imagePath;
 
     let cleanPath = imagePath.replace(/^\//, "");
@@ -88,7 +88,7 @@ export default function AdminReviews() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 rounded-lg border border-[#D1C4B9] bg-white px-3 py-2">
             <span className="text-xs font-medium text-[#9E8E7E] uppercase tracking-wider">Lọc sao:</span>
-            <select 
+            <select
               value={params.rating || 'all'}
               onChange={(e) => updateParam('rating', e.target.value)}
               className="bg-transparent text-sm font-semibold text-[#4E453D] focus:outline-none"
@@ -162,12 +162,24 @@ export default function AdminReviews() {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 shrink-0 bg-[#F0EEE9] overflow-hidden">
-                          <img
-                            src={getImageUrl(r.productMainImage)}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
+                        <div className="h-10 w-10 shrink-0 bg-[#F0EEE9] overflow-hidden flex items-center justify-center">
+                          {getImageUrl(r.productMainImage) ? (
+                            <img
+                              src={getImageUrl(r.productMainImage)}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                          <span
+                            className="text-[#9E8E7E] text-[10px] font-medium"
+                            style={{ display: getImageUrl(r.productMainImage) ? "none" : "flex" }}
+                          >
+                            N/A
+                          </span>
                         </div>
                         <span className="font-beVietnamPro text-sm font-medium text-[#1B1C19] line-clamp-1 max-w-[150px]">
                           {r.productName}
@@ -207,11 +219,10 @@ export default function AdminReviews() {
                     </td>
                     <td className="px-5 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 font-beVietnamPro text-xs font-medium ${
-                          r.isVisible
-                            ? "bg-green-50 text-green-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 font-beVietnamPro text-xs font-medium ${r.isVisible
+                          ? "bg-green-50 text-green-700"
+                          : "bg-gray-100 text-gray-500"
+                          }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${r.isVisible ? "bg-green-500" : "bg-gray-400"}`}
@@ -271,11 +282,10 @@ export default function AdminReviews() {
             <button
               key={i}
               onClick={() => updateParam("page", i)}
-              className={`h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 font-beVietnamPro text-sm transition-colors ${
-                params.page === i
-                  ? "bg-[#1B1C19] text-white"
-                  : "border border-[#D1C4B9] hover:bg-[#F0EEE9]"
-              }`}
+              className={`h-9 w-9 rounded-xl transition-all duration-300 hover:-translate-y-0.5 font-beVietnamPro text-sm transition-colors ${params.page === i
+                ? "bg-[#1B1C19] text-white"
+                : "border border-[#D1C4B9] hover:bg-[#F0EEE9]"
+                }`}
             >
               {i + 1}
             </button>

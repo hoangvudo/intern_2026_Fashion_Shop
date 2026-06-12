@@ -81,30 +81,32 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        onClick={e => { if (e.target === e.currentTarget) onClose() }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: '100%' }} transition={{ type: 'tween', duration: 0.3 }}
+        className="fixed right-0 top-0 z-[10000] flex h-screen w-full max-w-lg flex-col bg-white shadow-2xl"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 20 }}
-          className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl"
-        >
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 flex h-8 w-8 rounded-xl transition-all duration-300 hover:-translate-y-0.5 items-center justify-center rounded-full bg-[#F0EEE9] text-[#4E453D] hover:bg-[#E8E0D8]"
-          >
-            <FiX className="h-4 w-4" />
-          </button>
-
-          <div className="p-6">
-            <h2 className="mb-1 text-lg font-bold font-beVietnamPro text-[#1B1C19]">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#D1C4B9] px-6 py-5 shrink-0">
+          <div>
+            <h2 className="font-beVietnamPro text-lg font-bold text-[#1B1C19]">
               Chi tiết yêu cầu
             </h2>
-            <p className="mb-5 text-sm text-gray-400">{request.returnCode}</p>
+            <p className="mt-0.5 font-beVietnamPro text-sm text-[#6F583D]">
+              {request.returnCode}
+            </p>
+          </div>
+          <button onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#D1C4B9] hover:bg-[#F0EEE9] transition-all duration-300">
+            <FiX className="h-5 w-5 text-[#4E453D]" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
 
             {/* Info grid */}
             <div className="mb-5 space-y-3 rounded-xl bg-[#F5F3EE] p-4">
@@ -188,7 +190,6 @@ function ReturnDetailModal({ request, onClose, onUpdate }) {
             )}
           </div>
         </motion.div>
-      </motion.div>
     </AnimatePresence>
   )
 }

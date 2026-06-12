@@ -67,108 +67,137 @@ function BrandFormModal({ brand, onClose, onSaved }) {
     }
   };
 
+  const [tab, setTab] = useState("basic");
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4"
-      onClick={onClose}
-    >
+    <AnimatePresence>
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-lg rounded-2xl bg-white shadow-2xl"
-        onClick={e => e.stopPropagation()}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: '100%' }} transition={{ type: 'tween', duration: 0.3 }}
+        className="fixed right-0 top-0 z-[10000] flex h-screen w-full max-w-2xl flex-col bg-white shadow-2xl"
       >
-        <div className="flex items-center justify-between border-b border-[#D1C4B9] px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F0EEE9]">
-              <FiTag className="h-5 w-5 text-[#1B1C19]" />
-            </div>
-            <h2 className="font-beVietnamPro text-lg font-bold text-[#1B1C19]">
-              {isEdit ? "Chỉnh sửa thương hiệu" : "Tạo thương hiệu mới"}
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#D1C4B9] px-8 py-6">
+          <div>
+            <h2 className="font-beVietnamPro text-xl font-semibold text-[#1B1C19]">
+              {isEdit ? "Chỉnh sửa thương hiệu" : "Thêm thương hiệu mới"}
             </h2>
+            <p className="mt-0.5 font-beVietnamPro text-sm text-[#6F583D]">
+              {isEdit ? `ID: #${brand.id}` : "Điền đầy đủ thông tin thương hiệu"}
+            </p>
           </div>
-          <button onClick={onClose} className="p-2 text-[#9E8E7E] hover:text-[#1B1C19] hover:bg-[#F0EEE9] rounded-xl transition-all duration-300">
-            <FiX className="h-5 w-5" />
+          <button onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center border border-[#D1C4B9] hover:bg-[#F0EEE9]">
+            <FiX className="h-5 w-5 text-[#4E453D]" />
           </button>
         </div>
 
-        <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
-          <div>
-            <label className="block text-sm font-medium font-beVietnamPro text-[#4E453D] mb-1.5">Tên thương hiệu *</label>
-            <input
-              value={form.name}
-              onChange={e => handleChange("name", e.target.value)}
-              className="w-full rounded-xl border border-[#D1C4B9] px-4 py-2.5 text-sm transition-all duration-300 focus:border-[#1B1C19] outline-none font-beVietnamPro"
-              placeholder="Nhập tên thương hiệu..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium font-beVietnamPro text-[#4E453D] mb-1.5">Đường dẫn (slug) *</label>
-            <input
-              value={form.slug}
-              onChange={e => handleChange("slug", e.target.value)}
-              className="w-full rounded-xl border border-[#D1C4B9] px-4 py-2.5 text-sm transition-all duration-300 focus:border-[#1B1C19] outline-none font-mono text-[#6F583D]"
-              placeholder="ten-thuong-hieu"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium font-beVietnamPro text-[#4E453D] mb-1.5">Logo URL</label>
-            <input
-              value={form.logoUrl}
-              onChange={e => handleChange("logoUrl", e.target.value)}
-              className="w-full rounded-xl border border-[#D1C4B9] px-4 py-2.5 text-sm transition-all duration-300 focus:border-[#1B1C19] outline-none font-beVietnamPro"
-              placeholder="https://example.com/logo.png"
-            />
-            {form.logoUrl && (
-              <div className="mt-2 h-20 w-40 overflow-hidden rounded-xl border border-[#D1C4B9] bg-[#F5F3EE] flex items-center justify-center p-2">
-                <img src={form.logoUrl} alt="preview" className="max-h-full max-w-full object-contain" onError={e => e.target.style.display = 'none'} />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium font-beVietnamPro text-[#4E453D] mb-1.5">Mô tả</label>
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={e => handleChange("description", e.target.value)}
-              className="w-full rounded-xl border border-[#D1C4B9] px-4 py-2.5 text-sm transition-all duration-300 focus:border-[#1B1C19] outline-none resize-none font-beVietnamPro"
-              placeholder="Mô tả thương hiệu..."
-            />
-          </div>
-
-          <label className="flex items-center gap-2 cursor-pointer select-none group w-fit pt-2">
-            <div
-              onClick={() => handleChange("isActive", !form.isActive)}
-              className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${form.isActive ? "bg-[#1B1C19]" : "bg-[#D1C4B9]"}`}
+        {/* Tabs */}
+        <div className="flex border-b border-[#D1C4B9] px-8">
+          {[
+            { id: "basic", label: "Thông tin cơ bản", icon: FiTag },
+            { id: "images", label: "Hình ảnh", icon: FiImage }
+          ].map(t => (
+            <button key={t.id} type="button" onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 font-beVietnamPro text-sm font-medium transition-colors ${
+                tab === t.id ? "border-[#1B1C19] text-[#1B1C19]" : "border-transparent text-[#9E8E7E] hover:text-[#4E453D]"
+              }`}
             >
-              <div className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${form.isActive ? "translate-x-5" : ""}`} />
-            </div>
-            <span className="text-sm font-medium font-beVietnamPro text-[#4E453D]">Hoạt động</span>
-          </label>
+              <t.icon className="h-4 w-4" /> {t.label}
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-[#D1C4B9] px-6 py-4 bg-[#F5F3EE] rounded-b-2xl">
-          <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium font-beVietnamPro text-[#6F583D] hover:text-[#1B1C19] hover:bg-[#E8E0D8] rounded-xl transition-all duration-300">
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          {tab === "basic" && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Tên thương hiệu <span className="text-red-500">*</span></label>
+                <input
+                  value={form.name}
+                  onChange={e => handleChange("name", e.target.value)}
+                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
+                  placeholder="VD: ZYRO Fashion"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Slug (SEO URL)</label>
+                <input
+                  value={form.slug}
+                  onChange={e => handleChange("slug", e.target.value)}
+                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#6F583D] focus:border-[#6F583D] focus:outline-none"
+                  placeholder="zyro-fashion (tự sinh nếu bỏ trống)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Mô tả thương hiệu</label>
+                <textarea
+                  rows={4}
+                  value={form.description}
+                  onChange={e => handleChange("description", e.target.value)}
+                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#1B1C19] focus:border-[#6F583D] focus:outline-none resize-none"
+                  placeholder="Mô tả chi tiết về thương hiệu..."
+                />
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer select-none w-fit pt-2">
+                <div
+                  onClick={() => handleChange("isActive", !form.isActive)}
+                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${form.isActive ? "bg-[#1B1C19]" : "bg-[#D1C4B9]"}`}
+                >
+                  <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${form.isActive ? "translate-x-6" : ""}`} />
+                </div>
+                <span className="text-sm font-medium font-beVietnamPro text-[#1B1C19]">Cho phép hiển thị (Hoạt động)</span>
+              </label>
+            </div>
+          )}
+
+          {tab === "images" && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium font-beVietnamPro text-[#1B1C19] mb-2">Logo URL</label>
+                <input
+                  value={form.logoUrl}
+                  onChange={e => handleChange("logoUrl", e.target.value)}
+                  className="w-full border border-[#D1C4B9] bg-white px-4 py-2.5 text-sm font-beVietnamPro text-[#1B1C19] focus:border-[#6F583D] focus:outline-none"
+                  placeholder="https://example.com/logo.png"
+                />
+                {form.logoUrl && (
+                  <div className="mt-4 p-4 border border-[#D1C4B9] bg-[#F5F3EE] flex items-center justify-center">
+                    <img src={form.logoUrl} alt="preview" className="max-h-32 object-contain" onError={e => e.target.style.display = 'none'} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-[#D1C4B9] bg-white px-8 py-4 flex items-center justify-between">
+          <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium font-beVietnamPro border border-[#D1C4B9] text-[#4E453D] hover:bg-[#F0EEE9] transition-all">
             Huỷ
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 rounded-xl bg-[#1B1C19] px-6 py-2.5 text-sm font-semibold font-beVietnamPro text-white transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50"
+            className="flex items-center gap-2 bg-[#1B1C19] px-6 py-2.5 text-sm font-semibold font-beVietnamPro text-white transition-all duration-300 hover:bg-[#333] disabled:opacity-50"
           >
             {saving ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            ) : (
-              <FiCheck className="h-4 w-4" />
-            )}
-            {isEdit ? "Lưu thay đổi" : "Tạo thương hiệu"}
+            ) : null}
+            {isEdit ? "Lưu thay đổi" : "Thêm thương hiệu"}
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 }
 
