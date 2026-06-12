@@ -14,6 +14,10 @@ public class ProductRequest {
     private Long categoryId;
     private Long brandId;
     private String thumbnailUrl;
+<<<<<<< Updated upstream
+=======
+    private String imageUrl2;
+>>>>>>> Stashed changes
     private Boolean isActive = true;
     private Boolean isFeatured = false;
     private Boolean isNewArrival = false;
@@ -28,4 +32,8 @@ public class ProductRequest {
         private Integer stock;
         private String sku;
     }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes

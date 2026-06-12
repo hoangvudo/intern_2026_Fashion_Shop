@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 @Table(name = "brands")
 @Data
 public class Brand {
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,6 +24,13 @@ public class Brand {
 
     private String description;
     private String logoUrl;
+<<<<<<< Updated upstream
     private Boolean isActive = true;
     private LocalDateTime createdAt = LocalDateTime.now();
 }
+=======
+    private String bannerUrl;
+    private Boolean isActive = true;
+    private LocalDateTime createdAt = LocalDateTime.now();
+}
+>>>>>>> Stashed changes

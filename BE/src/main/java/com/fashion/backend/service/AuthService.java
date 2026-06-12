@@ -70,10 +70,17 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
 
         userRepository.save(user);
+<<<<<<< Updated upstream
         
         log.info("[Auth] User registered - email: {}, token: {}, tokenExpiredAt: {}", 
                 user.getEmail(), user.getEmailToken(), user.getTokenExpiredAt());
         
+=======
+
+        log.info("[Auth] User registered - email: {}, token: {}, tokenExpiredAt: {}",
+                user.getEmail(), user.getEmailToken(), user.getTokenExpiredAt());
+
+>>>>>>> Stashed changes
         emailService.sendVerifyEmail(user);
     }
 
@@ -81,7 +88,11 @@ public class AuthService {
     // VERIFY EMAIL
     // =========================
     public void verifyEmail(String token) {
+<<<<<<< Updated upstream
         
+=======
+
+>>>>>>> Stashed changes
         log.info("[Auth] Attempting to verify email with token: {}", token);
 
         User user = userRepository
@@ -108,7 +119,11 @@ public class AuthService {
         user.setEmailToken(null);
         user.setTokenExpiredAt(null);
         userRepository.save(user);
+<<<<<<< Updated upstream
         
+=======
+
+>>>>>>> Stashed changes
         log.info("[Auth] Email verified successfully for user: {}", user.getEmail());
     }
 
@@ -148,7 +163,11 @@ public class AuthService {
         String accessToken  = jwtUtils.generateAccessToken(user.getEmail(), user.getRole());
         String refreshToken = refreshTokenService.createRefreshToken(user);
 
+<<<<<<< Updated upstream
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+=======
+        UserDto userDto = UserDto.builder().id(user.getId()).email(user.getEmail()).fullName(user.getFullName()).role(user.getRole()).build();
+>>>>>>> Stashed changes
         return new LoginResponse(accessToken, refreshToken, userDto);
     }
 
@@ -164,7 +183,11 @@ public class AuthService {
         String newAccessToken  = jwtUtils.generateAccessToken(user.getEmail(), user.getRole());
         String newRefreshToken = refreshTokenService.createRefreshToken(user);
 
+<<<<<<< Updated upstream
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+=======
+        UserDto userDto = UserDto.builder().id(user.getId()).email(user.getEmail()).fullName(user.getFullName()).role(user.getRole()).build();
+>>>>>>> Stashed changes
         return new TokenRefreshResponse(newAccessToken, newRefreshToken, userDto);
     }
 

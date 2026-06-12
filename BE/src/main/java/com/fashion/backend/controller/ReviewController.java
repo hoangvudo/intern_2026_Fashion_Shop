@@ -22,11 +22,19 @@ public class ReviewController {
     @GetMapping("/api/products/{productId}/reviews")
     public ResponseEntity<Page<ReviewResponse>> getByProduct(
             @PathVariable Long productId,
+<<<<<<< Updated upstream
+=======
+            @RequestParam(required = false)        Integer rating,
+>>>>>>> Stashed changes
             @RequestParam(defaultValue = "0")      int page,
             @RequestParam(defaultValue = "10")     int size,
             @RequestParam(defaultValue = "newest") String sortBy
     ) {
+<<<<<<< Updated upstream
         return ResponseEntity.ok(reviewService.getByProduct(productId, page, size, sortBy));
+=======
+        return ResponseEntity.ok(reviewService.getByProduct(productId, rating, page, size, sortBy));
+>>>>>>> Stashed changes
     }
 
     // ── USER: tạo review ──────────────────────────────────────────
@@ -78,15 +86,37 @@ public class ReviewController {
     }
 
     // ── ADMIN: lấy tất cả review (kể cả ẩn) ──────────────────────
+<<<<<<< Updated upstream
+=======
+    // GET /api/admin/reviews
+    @GetMapping("/api/admin/reviews")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Page<ReviewResponse>> adminGetAll(
+            @RequestParam(required = false)    Integer rating,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(reviewService.adminGetAll(rating, page, size));
+    }
+
+>>>>>>> Stashed changes
     // GET /api/admin/products/{productId}/reviews
     @GetMapping("/api/admin/products/{productId}/reviews")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Page<ReviewResponse>> adminGetByProduct(
             @PathVariable Long productId,
+<<<<<<< Updated upstream
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(reviewService.adminGetByProduct(productId, page, size));
+=======
+            @RequestParam(required = false)    Integer rating,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(reviewService.adminGetByProduct(productId, rating, page, size));
+>>>>>>> Stashed changes
     }
 
     // ── ADMIN: ẩn / hiện review ───────────────────────────────────
@@ -109,4 +139,8 @@ public class ReviewController {
         reviewService.adminDelete(reviewId);
         return ResponseEntity.noContent().build();
     }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes

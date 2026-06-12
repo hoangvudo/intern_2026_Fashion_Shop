@@ -24,7 +24,11 @@ public class EmailService {
     public void sendVerifyEmail(User user) {
         try {
             String verifyLink = frontendUrl + "/verify-email?token=" + user.getEmailToken();
+<<<<<<< Updated upstream
             
+=======
+
+>>>>>>> Stashed changes
             log.info("[Email] Sending verify email to: {} with token: {}", user.getEmail(), user.getEmailToken());
 
             String body = """
@@ -95,6 +99,40 @@ public class EmailService {
         sendHtml(toEmail, "[Fashion Shop] Mật khẩu đã được thay đổi", body);
     }
 
+<<<<<<< Updated upstream
+=======
+    // ── Phản hồi tin nhắn liên hệ ─────────────────────────────────────────────
+
+    public void sendContactReply(String toEmail, String userName, String originalSubject,
+                                 String originalMessage, String replyContent) {
+        String subject = "Re: " + (originalSubject != null && !originalSubject.isBlank()
+                ? originalSubject : "Phản hồi từ ZYRO Fashion");
+        String body = """
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#333">
+                  <div style="background:#1B1C19;padding:20px 24px;margin-bottom:24px">
+                    <h1 style="color:#fff;margin:0;font-size:20px;letter-spacing:2px">ZYRO FASHION</h1>
+                  </div>
+                  <p>Xin chào <strong>%s</strong>,</p>
+                  <p>Cảm ơn bạn đã liên hệ với chúng tôi. Đây là phản hồi của đội ngũ ZYRO Fashion:</p>
+                  <div style="background:#F5F0EB;border-left:4px solid #6F583D;padding:16px 20px;margin:20px 0;border-radius:0 4px 4px 0">
+                    <p style="margin:0;white-space:pre-line;line-height:1.7">%s</p>
+                  </div>
+                  <hr style="border:none;border-top:1px solid #E8E0D8;margin:24px 0"/>
+                  <p style="color:#9E8E7E;font-size:13px">
+                    <strong>Tin nhắn gốc của bạn:</strong><br/>
+                    <em style="white-space:pre-line">%s</em>
+                  </p>
+                  <hr style="border:none;border-top:1px solid #E8E0D8;margin:24px 0"/>
+                  <p style="color:#9E8E7E;font-size:12px;text-align:center">
+                    © ZYRO Fashion · Nếu bạn cần hỗ trợ thêm, hãy trả lời email này.
+                  </p>
+                </div>
+                """.formatted(userName, replyContent, originalMessage);
+
+        sendHtml(toEmail, subject, body);
+    }
+
+>>>>>>> Stashed changes
     // ── Helper dùng chung ─────────────────────────────────────────────────────
 
     private void sendHtml(String to, String subject, String html) {
@@ -109,4 +147,8 @@ public class EmailService {
             throw new RuntimeException("Không gửi được email: " + e.getMessage());
         }
     }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes

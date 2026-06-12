@@ -5,6 +5,10 @@ import com.fashion.backend.entity.Order;
 import com.fashion.backend.entity.OrderStatus;
 import com.fashion.backend.exception.NotFoundException;
 import com.fashion.backend.repository.OrderRepository;
+<<<<<<< Updated upstream
+=======
+import com.fashion.backend.repository.ProductVariantRepository;
+>>>>>>> Stashed changes
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,10 @@ import java.util.stream.Collectors;
 public class AdminOrderService {
 
     private final OrderRepository orderRepository;
+<<<<<<< Updated upstream
+=======
+    private final ProductVariantRepository productVariantRepository;
+>>>>>>> Stashed changes
 
     public Page<AdminOrderDto> getOrders(String keyword, String status, int page, int size) {
         OrderStatus statusEnum = null;

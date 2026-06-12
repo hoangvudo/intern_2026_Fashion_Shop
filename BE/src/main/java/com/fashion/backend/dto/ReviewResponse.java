@@ -10,6 +10,11 @@ public class ReviewResponse {
 
     private Long id;
     private Long productId;
+<<<<<<< Updated upstream
+=======
+    private String productName;
+    private String productMainImage;
+>>>>>>> Stashed changes
     private Long userId;
     private String userFullName;
     private Long orderId;
@@ -24,6 +29,24 @@ public class ReviewResponse {
         ReviewResponse res = new ReviewResponse();
         res.setId(r.getId());
         res.setProductId(r.getProduct().getId());
+<<<<<<< Updated upstream
+=======
+        res.setProductName(r.getProduct().getName());
+
+        // Ưu tiên thumbnailUrl, nếu null thì lấy ảnh đầu tiên trong product_images
+        String thumb = r.getProduct().getThumbnailUrl();
+        if (thumb == null || thumb.isBlank()) {
+            if (r.getProduct().getImages() != null && !r.getProduct().getImages().isEmpty()) {
+                thumb = r.getProduct().getImages().stream()
+                        .filter(img -> Boolean.TRUE.equals(img.getIsPrimary()))
+                        .map(img -> img.getImageUrl())
+                        .findFirst()
+                        .orElse(r.getProduct().getImages().get(0).getImageUrl());
+            }
+        }
+        res.setProductMainImage(thumb);
+
+>>>>>>> Stashed changes
         res.setUserId(r.getUser().getId());
         res.setUserFullName(r.getUser().getFullName());
         res.setOrderId(r.getOrderId());

@@ -17,4 +17,8 @@ public class AdminUserDto {
     private LocalDateTime createdAt;
     private Long totalOrders;
     private java.math.BigDecimal totalSpent;
+<<<<<<< Updated upstream
+=======
+    private String vipTier;
+>>>>>>> Stashed changes
 }

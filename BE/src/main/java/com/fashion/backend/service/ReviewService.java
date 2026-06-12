@@ -27,7 +27,11 @@ public class ReviewService {
     private final UserRepository   userRepository;
 
     // ── PUBLIC: lấy review của sản phẩm ──────────────────────────
+<<<<<<< Updated upstream
     public Page<ReviewResponse> getByProduct(Long productId, int page, int size, String sortBy) {
+=======
+    public Page<ReviewResponse> getByProduct(Long productId, Integer rating, int page, int size, String sortBy) {
+>>>>>>> Stashed changes
         Sort sort = switch (sortBy == null ? "newest" : sortBy) {
             case "rating_desc" -> Sort.by("rating").descending();
             case "rating_asc"  -> Sort.by("rating").ascending();
@@ -35,7 +39,11 @@ public class ReviewService {
         };
         Pageable pageable = PageRequest.of(page, size, sort);
         return reviewRepository
+<<<<<<< Updated upstream
                 .findByProductIdAndIsVisibleTrue(productId, pageable)
+=======
+                .findByProductIdAndIsVisibleTrueWithFilter(productId, rating, pageable)
+>>>>>>> Stashed changes
                 .map(ReviewResponse::from);
     }
 
@@ -127,9 +135,22 @@ public class ReviewService {
     }
 
     // ── ADMIN: lấy tất cả review (kể cả ẩn) ──────────────────────
+<<<<<<< Updated upstream
     public Page<ReviewResponse> adminGetByProduct(Long productId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return reviewRepository.findByProductId(productId, pageable).map(ReviewResponse::from);
+=======
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> adminGetAll(Integer rating, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return reviewRepository.adminFindAll(rating, pageable).map(ReviewResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> adminGetByProduct(Long productId, Integer rating, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return reviewRepository.adminFindByProductId(productId, rating, pageable).map(ReviewResponse::from);
+>>>>>>> Stashed changes
     }
 
     // ── ADMIN: ẩn / hiện review ───────────────────────────────────

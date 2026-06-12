@@ -87,7 +87,11 @@ public class OAuth2Service {
 
         log.info("[OAuth2] Google login thành công: {}", user.getEmail());
 
+<<<<<<< Updated upstream
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+=======
+        UserDto userDto = UserDto.builder().id(user.getId()).email(user.getEmail()).fullName(user.getFullName()).role(user.getRole()).build();
+>>>>>>> Stashed changes
         return new LoginResponse(accessToken, refreshToken, userDto);
     }
 
@@ -114,7 +118,11 @@ public class OAuth2Service {
 
         log.info("[OAuth2] Facebook login thành công: {}", user.getEmail());
 
+<<<<<<< Updated upstream
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getFullName(), user.getRole());
+=======
+        UserDto userDto = UserDto.builder().id(user.getId()).email(user.getEmail()).fullName(user.getFullName()).role(user.getRole()).build();
+>>>>>>> Stashed changes
         return new LoginResponse(accessToken, refreshToken, userDto);
     }
 
@@ -262,7 +270,11 @@ public class OAuth2Service {
 
     private FacebookUserInfo fetchFacebookUserInfo(String facebookAccessToken) {
 
+<<<<<<< Updated upstream
         String url = FACEBOOK_USERINFO_URL + 
+=======
+        String url = FACEBOOK_USERINFO_URL +
+>>>>>>> Stashed changes
                 "?fields=id,name,email,picture.width(200).height(200)" +
                 "&access_token=" + facebookAccessToken;
 
@@ -276,7 +288,11 @@ public class OAuth2Service {
                 throw new RuntimeException("Không lấy được profile từ Facebook");
             }
 
+<<<<<<< Updated upstream
             log.info("[OAuth2] Facebook profile: id={}, name={}, email={}", 
+=======
+            log.info("[OAuth2] Facebook profile: id={}, name={}, email={}",
+>>>>>>> Stashed changes
                     info.getId(), info.getName(), info.getEmail());
 
             // Nếu không có email (do scope), tạo email fake từ ID

@@ -1,8 +1,15 @@
     package com.fashion.backend.controller;
 
+<<<<<<< Updated upstream
     import com.fashion.backend.dto.ProductRequest;
     import com.fashion.backend.dto.ProductResponse;
     import com.fashion.backend.service.ProductService;
+=======
+import com.fashion.backend.dto.ProductRequest;
+import com.fashion.backend.dto.ProductResponse;
+import com.fashion.backend.repository.ProductVariantRepository;
+import com.fashion.backend.service.ProductService;
+>>>>>>> Stashed changes
 
     import lombok.RequiredArgsConstructor;
 
@@ -13,15 +20,25 @@
     import org.springframework.security.access.prepost.PreAuthorize;
 
     import org.springframework.web.bind.annotation.*;
+<<<<<<< Updated upstream
     import java.util.Map;
     import java.math.BigDecimal;
+=======
+
+import java.math.BigDecimal;
+>>>>>>> Stashed changes
 
     @RestController
     @RequestMapping("/api/products")
     @RequiredArgsConstructor
     public class ProductController {
 
+<<<<<<< Updated upstream
         private final ProductService productService;
+=======
+    private final ProductService productService;
+    private final ProductVariantRepository productVariantRepository;
+>>>>>>> Stashed changes
 
         // ───────────────── PUBLIC ─────────────────
 
@@ -64,6 +81,7 @@
         }
     // ───────────────── STOCK ─────────────────
 
+<<<<<<< Updated upstream
         @GetMapping("/{id}/stock")
         public ResponseEntity<?> getStock(
                 @PathVariable Long id,
@@ -73,6 +91,9 @@
             int stock = productService.getStock(id, size, color);
             return ResponseEntity.ok(Map.of("stock", stock));
         }
+=======
+   
+>>>>>>> Stashed changes
         // ───────────────── DETAIL ─────────────────
 
         @GetMapping("/{id}")
@@ -85,7 +106,40 @@
             );
         }
 
+<<<<<<< Updated upstream
         // ───────────────── ADMIN ─────────────────
+=======
+
+    // ───────────────── STOCK CHECK (PUBLIC) ─────────────────
+
+    /**
+     * GET /api/products/{id}/stock?size=M&color=Đen
+     * Trả về stock realtime của 1 variant cụ thể
+     */
+    @GetMapping("/{id}/stock")
+    public ResponseEntity<java.util.Map<String, Object>> getStock(
+            @PathVariable Long id,
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) String color
+    ) {
+        java.util.Map<String, Object> result = new java.util.LinkedHashMap<>();
+        productVariantRepository
+                .findByProductIdAndSizeAndColor(id, size, color)
+                .ifPresentOrElse(v -> {
+                    result.put("stock", v.getStock());
+                    result.put("available", v.getStock() > 0);
+                }, () -> {
+                    // Fallback: tổng stock tất cả variants của sản phẩm
+                    int total = productVariantRepository.findByProductId(id)
+                            .stream().mapToInt(v -> v.getStock() != null ? v.getStock() : 0).sum();
+                    result.put("stock", total);
+                    result.put("available", total > 0);
+                });
+        return ResponseEntity.ok(result);
+    }
+
+    // ───────────────── ADMIN ─────────────────
+>>>>>>> Stashed changes
 
         @GetMapping("/admin")
         @PreAuthorize("hasAuthority('ADMIN')")

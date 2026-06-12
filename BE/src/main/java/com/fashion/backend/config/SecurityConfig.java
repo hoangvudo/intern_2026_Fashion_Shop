@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
         package com.fashion.backend.config;
 
         import com.fashion.backend.security.JwtFilter;
@@ -34,6 +35,40 @@
         @EnableMethodSecurity
         @RequiredArgsConstructor
         public class SecurityConfig {
+=======
+package com.fashion.backend.config;
+
+import com.fashion.backend.security.JwtFilter;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import org.springframework.http.HttpMethod;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+@Configuration
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+>>>>>>> Stashed changes
 
         private final JwtFilter jwtFilter;
 
@@ -47,7 +82,10 @@
                 throws Exception {
 
                 http
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
                         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                         .csrf(csrf -> csrf.disable())
@@ -57,11 +95,20 @@
                         )
 
                         .authorizeHttpRequests(auth -> auth
+<<<<<<< Updated upstream
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+=======
+
+                                // Preflight request
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                                // Auth API
+>>>>>>> Stashed changes
                                 .requestMatchers(
                                         "/api/auth/**"
                                 ).permitAll()
 
+<<<<<<< Updated upstream
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/categories",
                                         "/api/products/**",
@@ -71,6 +118,34 @@
                                 // Upload ảnh - cho phép admin
                                 .requestMatchers("/api/upload/**").authenticated()
 
+=======
+                                // Public GET APIs
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/categories",
+                                        "/api/products/**",
+                                        "/api/products/*/reviews",
+                                        "/api/articles",
+                                        "/api/articles/featured",
+                                        "/api/articles/recent",
+                                        "/api/articles/slug/**"
+                                ).permitAll()
+
+                                // Tăng lượt xem bài viết
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/articles/*/view"
+                                ).permitAll()
+
+                                // Gửi liên hệ từ khách hàng
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/contacts"
+                                ).permitAll()
+
+                                // Upload ảnh
+                                .requestMatchers("/api/upload/**")
+                                .authenticated()
+
+                                // Các API còn lại
+>>>>>>> Stashed changes
                                 .anyRequest().permitAll()
                         )
 
@@ -93,7 +168,10 @@
                         "http://localhost:5173"
                 ));
 
+<<<<<<< Updated upstream
                 // ✅ FIX: Thêm PATCH vào allowedMethods
+=======
+>>>>>>> Stashed changes
                 configuration.setAllowedMethods(List.of(
                         "GET",
                         "POST",
@@ -122,4 +200,8 @@
 
                 return config.getAuthenticationManager();
         }
+<<<<<<< Updated upstream
         }
+=======
+}
+>>>>>>> Stashed changes
